@@ -33,6 +33,7 @@ use pocketmine\event\Timings;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ShortTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\utils\BlockIterator;
 
@@ -53,10 +54,8 @@ abstract class Living extends Entity implements Damageable{
 		if(isset($this->namedtag->HealF)){
 			$this->namedtag->Health = new FloatTag("Health", (float) $this->namedtag["HealF"]);
 			unset($this->namedtag->HealF);
-		}elseif(isset($this->namedtag->Health)){
-			if(!($this->namedtag->Health instanceof FloatTag)){
-				$this->namedtag->Health = new FloatTag("Health", (float) $this->namedtag->Health->getValue());
-			}
+		}elseif(isset($this->namedtag->Health) and !($this->namedtag->Health instanceof FloatTag)){
+			$this->namedtag->Health = new FloatTag("Health", (float) $this->namedtag->Health->getValue());
 		}else{
 			$this->namedtag->Health = new FloatTag("Health", (float) $this->getMaxHealth());
 		}
@@ -274,7 +273,7 @@ abstract class Living extends Entity implements Damageable{
 	/**
 	 * @return ItemItem[]
 	 */
-	public function getDrops() : array{
+	public function getDrops(){
 		return [];
 	}
 
@@ -329,7 +328,7 @@ abstract class Living extends Entity implements Damageable{
 	 * @param int   $maxDistance
 	 * @param array $transparent
 	 *
-	 * @return Block|null
+	 * @return Block
 	 */
 	public function getTargetBlock($maxDistance, array $transparent = []){
 		try{
