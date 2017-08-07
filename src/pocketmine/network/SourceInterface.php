@@ -42,27 +42,28 @@ interface SourceInterface{
 	 * @param bool       $needACK
 	 * @param bool       $immediate
 	 *
-	 * @return int|null
+	 * @return int
 	 */
-	public function putPacket(Player $player, DataPacket $packet, bool $needACK = false, bool $immediate = true);
+	public function putPacket(Player $player, DataPacket $packet, $needACK = false, $immediate = true);
 
 	/**
 	 * Terminates the connection
 	 *
 	 * @param Player $player
 	 * @param string $reason
+	 *
 	 */
-	public function close(Player $player, string $reason = "unknown reason");
+	public function close(Player $player, $reason = "unknown reason");
 
 	/**
 	 * @param string $name
 	 */
-	public function setName(string $name);
+	public function setName($name);
 
 	/**
 	 * @return bool
 	 */
-	public function process() : bool;
+	public function process();
 
 	public function shutdown();
 
