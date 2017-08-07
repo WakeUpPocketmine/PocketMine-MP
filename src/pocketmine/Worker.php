@@ -44,13 +44,6 @@ abstract class Worker extends \Worker{
 		$this->classLoader = $loader;
 	}
 
-	/**
-	 * Registers the class loader for this thread.
-	 *
-	 * WARNING: This method MUST be called from any descendent threads' run() method to make autoloading usable.
-	 * If you do not do this, you will not be able to use new classes that were not loaded when the thread was started
-	 * (unless you are using a custom autoloader).
-	 */
 	public function registerClassLoader(){
 		if(!interface_exists("ClassLoader", false)){
 			require(\pocketmine\PATH . "src/spl/ClassLoader.php");
@@ -95,7 +88,7 @@ abstract class Worker extends \Worker{
 		ThreadManager::getInstance()->remove($this);
 	}
 
-	public function getThreadName() : string{
+	public function getThreadName(){
 		return (new \ReflectionClass($this))->getShortName();
 	}
 }
