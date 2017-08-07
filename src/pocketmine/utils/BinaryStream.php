@@ -57,30 +57,17 @@ class BinaryStream{
 		return $this->buffer;
 	}
 
-	/**
-	 * @param int|bool $len
-	 *
-	 * @return string
-	 */
-	public function get($len) : string{
-		if($len === true){
-			$str = substr($this->buffer, $this->offset);
-			$this->offset = strlen($this->buffer);
-			return $str;
-		}elseif($len < 0){
+	public function get(int $len) : string{
+		if($len < 0){
 			$this->offset = strlen($this->buffer) - 1;
 			return "";
 		}elseif($len === 0){
-			return "";
+			$str = substr($this->buffer, $this->offset);
+			$this->offset = strlen($this->buffer);
+			return $str;
 		}
 
 		return $len === 1 ? $this->buffer{$this->offset++} : substr($this->buffer, ($this->offset += $len) - $len, $len);
-	}
-
-	public function getRemaining() : string{
-		$str = substr($this->buffer, $this->offset);
-		$this->offset = strlen($this->buffer);
-		return $str;
 	}
 
 	public function put(string $str){
@@ -191,30 +178,30 @@ class BinaryStream{
 
 
 	/**
-	 * @return int
+	 * @return int|string
 	 */
-	public function getLong() : int{
+	public function getLong(){
 		return Binary::readLong($this->get(8));
 	}
 
 	/**
-	 * @param int $v
+	 * @param int|string $v
 	 */
-	public function putLong(int $v){
+	public function putLong($v){
 		$this->buffer .= Binary::writeLong($v);
 	}
 
 	/**
-	 * @return int
+	 * @return int|string
 	 */
-	public function getLLong() : int{
+	public function getLLong(){
 		return Binary::readLLong($this->get(8));
 	}
 
 	/**
-	 * @param int $v
+	 * @param int|string $v
 	 */
-	public function putLLong(int $v){
+	public function putLLong($v){
 		$this->buffer .= Binary::writeLLong($v);
 	}
 
@@ -337,33 +324,33 @@ class BinaryStream{
 
 	/**
 	 * Reads a 64-bit variable-length integer from the buffer and returns it.
-	 * @return int
+	 * @return int|string int, or the string representation of an int64 on 32-bit platforms
 	 */
-	public function getUnsignedVarLong() : int{
+	public function getUnsignedVarLong(){
 		return Binary::readUnsignedVarLong($this->buffer, $this->offset);
 	}
 
 	/**
 	 * Writes a 64-bit variable-length integer to the end of the buffer.
-	 * @param int $v
+	 * @param int|string $v int, or the string representation of an int64 on 32-bit platforms
 	 */
-	public function putUnsignedVarLong(int $v){
+	public function putUnsignedVarLong($v){
 		$this->buffer .= Binary::writeUnsignedVarLong($v);
 	}
 
 	/**
 	 * Reads a 64-bit zigzag-encoded variable-length integer from the buffer and returns it.
-	 * @return int
+	 * @return int|string int, or the string representation of an int64 on 32-bit platforms
 	 */
-	public function getVarLong() : int{
+	public function getVarLong(){
 		return Binary::readVarLong($this->buffer, $this->offset);
 	}
 
 	/**
 	 * Writes a 64-bit zigzag-encoded variable-length integer to the end of the buffer.
-	 * @param int
+	 * @param int|string $v int, or the string representation of an int64 on 32-bit platforms
 	 */
-	public function putVarLong(int $v){
+	public function putVarLong($v){
 		$this->buffer .= Binary::writeVarLong($v);
 	}
 
