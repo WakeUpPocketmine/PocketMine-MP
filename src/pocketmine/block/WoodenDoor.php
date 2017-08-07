@@ -23,15 +23,22 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-class LitRedstoneTorch extends RedstoneTorch{
+use pocketmine\item\Item;
+use pocketmine\item\Tool;
 
-	protected $id = self::REDSTONE_TORCH;
+class WoodenDoor extends Door{
 
-	public function __construct($meta = 0){
-		$this->meta = $meta;
+	public function getHardness(){
+		return 3;
 	}
 
-	public function getName(){
-		return "Lit Redstone Torch";
+	public function getToolType(){
+		return Tool::TYPE_AXE;
+	}
+
+	public function getDrops(Item $item){
+		return [
+			[$this->getItemId(), 0, 1],
+		];
 	}
 }

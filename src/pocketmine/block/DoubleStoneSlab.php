@@ -26,9 +26,9 @@ namespace pocketmine\block;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 
-class DoubleWoodSlab extends Solid{
+class DoubleStoneSlab extends Solid{
 
-	protected $id = self::DOUBLE_WOOD_SLAB;
+	protected $id = self::DOUBLE_STONE_SLAB;
 
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -39,27 +39,31 @@ class DoubleWoodSlab extends Solid{
 	}
 
 	public function getToolType(){
-		return Tool::TYPE_AXE;
+		return Tool::TYPE_PICKAXE;
 	}
 
 	public function getName(){
 		static $names = [
-			0 => "Oak",
-			1 => "Spruce",
-			2 => "Birch",
-			3 => "Jungle",
-			4 => "Acacia",
-			5 => "Dark Oak",
-			6 => "",
-			7 => ""
+			0 => "Stone",
+			1 => "Sandstone",
+			2 => "Wooden",
+			3 => "Cobblestone",
+			4 => "Brick",
+			5 => "Stone Brick",
+			6 => "Quartz",
+			7 => "Nether Brick",
 		];
-		return "Double " . $names[$this->meta & 0x07] . " Wooden Slab";
+		return "Double " . $names[$this->meta & 0x07] . " Slab";
 	}
 
 	public function getDrops(Item $item){
-		return [
-			[Item::WOOD_SLAB, $this->meta & 0x07, 2],
-		];
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+			return [
+				[Item::STONE_SLAB, $this->meta & 0x07, 2],
+			];
+		}else{
+			return [];
+		}
 	}
 
 }
