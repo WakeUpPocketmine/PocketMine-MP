@@ -24,6 +24,16 @@ settings:
  #If set to auto, it'll try to detect the number of cores (or use 2)
  async-workers: auto
 
+#Enabling these options may result in the server loading plugins that are incompatible, hence crashing the server or causing other issues
+ incompatible-plugins:
+  plugin-too-new:
+   #Load plugins whose major API version is too new
+   major: true
+   #Load plugins whose minor API version is too new
+   minor: true
+  #Load plugins whose major API version is too old
+  plugin-too-old: true
+
 memory:
  #Global soft memory limit in megabytes. Set to 0 to disable
  #This will trigger low-memory-triggers and fire an event to free memory when the usage goes over this
