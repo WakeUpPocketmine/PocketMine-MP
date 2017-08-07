@@ -6,9 +6,9 @@ __A highly customisable, open source server software for Minecraft: Pocket Editi
 
 ### Things that this software has:
 
--[x] Load plugins with different versions
--[ ] Support with BigBrother plugin
--[ ] More blocks
+- [x] Load plugins with different versions
+- [ ] Support with BigBrother plugin
+- [ ] More blocks
 
 ### Setup, help & support, FAQs
 Head over to the [documentation site](http://pmmp.readthedocs.org/).
