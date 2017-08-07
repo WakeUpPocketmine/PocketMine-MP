@@ -4,7 +4,7 @@ __A highly customisable, open source server software for Minecraft: Pocket Editi
 
 [![Build Status](https://travis-ci.org/pmmp/PocketMine-MP.svg?branch=master)](https://travis-ci.org/pmmp/PocketMine-MP)
 
-### Things that this software has:
+### This forked pmmp software offers:
 
 - [x] Load plugins with different versions
 - [ ] Support with BigBrother plugin
