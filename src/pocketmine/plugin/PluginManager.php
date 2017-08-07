@@ -33,6 +33,7 @@ use pocketmine\event\TimingsHandler;
 use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
 use pocketmine\Server;
+use pocketmine\utils\PluginException;
 
 /**
  * Manages all the plugins, Permissions and Permissibles
@@ -115,7 +116,7 @@ class PluginManager{
 	/**
 	 * @param string $loaderName A PluginLoader class name
 	 *
-	 * @return bool
+	 * @return boolean
 	 */
 	public function registerInterface($loaderName){
 		if(is_subclass_of($loaderName, PluginLoader::class)){
@@ -140,35 +141,23 @@ class PluginManager{
 	 * @param string         $path
 	 * @param PluginLoader[] $loaders
 	 *
-	 * @return Plugin|null
+	 * @return Plugin
 	 */
 	public function loadPlugin($path, $loaders = null){
 		foreach(($loaders === null ? $this->fileAssociations : $loaders) as $loader){
 			if(preg_match($loader->getPluginFilters(), basename($path)) > 0){
 				$description = $loader->getPluginDescription($path);
 				if($description instanceof PluginDescription){
-					try{
-						$description->checkRequiredExtensions();
-					}catch(PluginException $ex){
-						$this->server->getLogger()->error($ex->getMessage());
-						return null;
-					}
+					if(($plugin = $loader->loadPlugin($path)) instanceof Plugin){
+						$this->plugins[$plugin->getDescription()->getName()] = $plugin;
 
-					try{
-						if(($plugin = $loader->loadPlugin($path)) instanceof Plugin){
-							$this->plugins[$plugin->getDescription()->getName()] = $plugin;
+						$pluginCommands = $this->parseYamlCommands($plugin);
 
-							$pluginCommands = $this->parseYamlCommands($plugin);
-
-							if(count($pluginCommands) > 0){
-								$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
-							}
-
-							return $plugin;
+						if(count($pluginCommands) > 0){
+							$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
 						}
-					}catch(\Throwable $e){
-						$this->server->getLogger()->logException($e);
-						return null;
+
+						return $plugin;
 					}
 				}
 			}
@@ -222,39 +211,75 @@ class PluginManager{
 								continue;
 							}
 
-							$compatible = false;
+//							$compatible = false;
+							// compatibility 1=outdated plugin, 2=outdated server, 4=minor, 8=normal
+							$compatibility = 0;
 							//Check multiple dependencies
-							foreach($description->getCompatibleApis() as $version){
-								//Format: majorVersion.minorVersion.patch (3.0.0)
-								//    or: majorVersion.minorVersion.patch-devBuild (3.0.0-alpha1)
-								if($version !== $this->server->getApiVersion()){
-									$pluginApi = array_pad(explode("-", $version), 2, ""); //0 = version, 1 = suffix (optional)
-									$serverApi = array_pad(explode("-", $this->server->getApiVersion()), 2, "");
-
-									if(strtoupper($pluginApi[1]) !== strtoupper($serverApi[1])){ //Different release phase (alpha vs. beta) or phase build (alpha.1 vs alpha.2)
-										continue;
-									}
-
-									$pluginNumbers = array_map("intval", explode(".", $pluginApi[0]));
-									$serverNumbers = array_map("intval", explode(".", $serverApi[0]));
-
-									if($pluginNumbers[0] !== $serverNumbers[0]){ //Completely different API version
-										continue;
-									}
-
-									if($pluginNumbers[1] > $serverNumbers[1]){ //If the plugin requires new API features, being backwards compatible
-										continue;
-									}
+							foreach($description->getCompatibleApis() as $versionString){
+								//Format: majorVersion.minorVersion.patch
+								$version = array_map("intval", explode(".", $versionString));
+								$apiVersion = array_map("intval", explode(".", $this->server->getApiVersion()));
+								//Completely different API version: too old
+								if($version[0] < $apiVersion[0]){
+									$compatibility |= 1;
+									continue;
+								}
+								//Completely different API version: too new
+								if($version[0] > $apiVersion[0]){
+									$compatibility |= 2;
+									continue;
+								}
+								//If the plugin requires new API features, being backwards compatible
+								if($version[1] > $apiVersion[1]){
+									$compatibility |= 4;
+									continue;
 								}
 
-								$compatible = true;
+								$compatibility |= 8;
 								break;
 							}
 
-							if($compatible === false){
-								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
-								continue;
+							if(($compatibility & 8) === 0){
+								$accept1 = $this->server->getProperty("settings.incompatible-plugins.plugin-too-old", false);
+								$accept2 = $this->server->getProperty("settings.incompatible-plugins.plugin-too-new.major", false);
+								$accept4 = $this->server->getProperty("settings.incompatible-plugins.plugin-too-new.minor", false);
+
+								if(!$accept1){
+									$compatibility &= ~1;
+								}
+								if(!$accept2){
+									$compatibility &= ~2;
+								}
+								if(!$accept4){
+									$compatibility &= ~4;
+								}
+
+								if($compatibility === 0){
+									if(($compatibility & 4) === 0){
+										$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError",
+											[$name, "%pocketmine.plugin.incompatibleAPI.minorTooNew"]));
+									}elseif(($compatibility & 2) === 0){
+										$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError",
+											[$name, "%pocketmine.plugin.incompatibleAPI.majortooNew"]));
+									}else{
+										$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError",
+											[$name, "%pocketmine.plugin.incompatibleAPI.majorTooOld"]));
+									}
+									continue;
+								}elseif($compatibility & 4){
+									$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.plugin.incompatibleAPIWarning.minorTooNew", [$name]));
+								}elseif($compatibility & 2){
+									$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.plugin.incompatibleAPIWarning.majorTooNew", [$name]));
+								}elseif($compatibility & 1){
+									$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.plugin.incompatibleAPIWarning.majorTooOld", [$name]));
+								}
 							}
+
+
+//							if($compatibility === false){
+//								$this->server->getLogger()->error($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.incompatibleAPI"]));
+//								continue;
+//							}
 
 							$plugins[$name] = $file;
 
@@ -393,7 +418,7 @@ class PluginManager{
 	}
 
 	/**
-	 * @param bool $op
+	 * @param boolean $op
 	 *
 	 * @return Permission[]
 	 */
@@ -434,7 +459,7 @@ class PluginManager{
 	}
 
 	/**
-	 * @param bool $op
+	 * @param boolean $op
 	 */
 	private function dirtyPermissibles($op){
 		foreach($this->getDefaultPermSubscriptions($op) as $p){
@@ -492,7 +517,7 @@ class PluginManager{
 	}
 
 	/**
-	 * @param bool        $op
+	 * @param boolean     $op
 	 * @param Permissible $permissible
 	 */
 	public function subscribeToDefaultPerms($op, Permissible $permissible){
@@ -504,7 +529,7 @@ class PluginManager{
 	}
 
 	/**
-	 * @param bool        $op
+	 * @param boolean     $op
 	 * @param Permissible $permissible
 	 */
 	public function unsubscribeFromDefaultPerms($op, Permissible $permissible){
@@ -516,7 +541,7 @@ class PluginManager{
 	}
 
 	/**
-	 * @param bool $op
+	 * @param boolean $op
 	 *
 	 * @return Permissible[]
 	 */
@@ -766,15 +791,8 @@ class PluginManager{
 		if($class->isAbstract()){
 			throw new PluginException($event . " is an abstract Event");
 		}
-
-		if(!$class->hasProperty("handlerList") or ($property = $class->getProperty("handlerList"))->getDeclaringClass()->getName() !== $event){
-			throw new PluginException($event . " does not have a valid handler list");
-		}
-		if(!$property->isStatic()){
-			throw new PluginException($event . " handlerList property is not static");
-		}
-		if(!$property->isPublic()){
-			throw new PluginException($event . " handlerList property is not public");
+		if($class->getProperty("handlerList")->getDeclaringClass()->getName() !== $event){
+			throw new PluginException($event . " does not have a handler list");
 		}
 
 		if(!$plugin->isEnabled()){
