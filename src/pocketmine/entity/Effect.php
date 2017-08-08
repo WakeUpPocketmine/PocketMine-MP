@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageEvent;
@@ -172,7 +174,10 @@ class Effect{
 	 *
 	 * @return $this
 	 */
-	public function setDuration($ticks){
+	public function setDuration(int $ticks){
+		if($ticks < 0 or $ticks > INT32_MAX){
+			throw new \InvalidArgumentException("Effect duration must be in range of 0 - " . INT32_MAX);
+		}
 		$this->duration = $ticks;
 		return $this;
 	}
@@ -246,7 +251,7 @@ class Effect{
 	 * @return $this
 	 */
 	public function setAmplifier(int $amplifier){
-		$this->amplifier = $amplifier & 0xff;
+		$this->amplifier = ($amplifier & 0xff);
 		return $this;
 	}
 

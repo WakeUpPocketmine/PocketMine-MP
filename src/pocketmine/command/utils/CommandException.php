@@ -19,8 +19,10 @@
  *
 */
 
-namespace pocketmine\level\format\io;
+declare(strict_types=1);
 
-class ChunkException extends \RuntimeException{
+namespace pocketmine\command\utils;
+
+class CommandException extends \RuntimeException{
 
 }

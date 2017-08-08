@@ -19,12 +19,16 @@
  *
 */
 
+declare(strict_types=1);
+
 /**
  * All the Tile classes and related classes
  */
 namespace pocketmine\tile;
 
+use pocketmine\block\Block;
 use pocketmine\event\Timings;
+use pocketmine\event\TimingsHandler;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -61,7 +65,7 @@ abstract class Tile extends Position{
 	protected $server;
 	protected $timings;
 
-	/** @var \pocketmine\event\TimingsHandler */
+	/** @var TimingsHandler */
 	public $tickTimer;
 
 	public static function init(){
@@ -80,7 +84,7 @@ abstract class Tile extends Position{
 	 * @param CompoundTag $nbt
 	 * @param             $args
 	 *
-	 * @return Tile
+	 * @return Tile|null
 	 */
 	public static function createTile($type, Level $level, CompoundTag $nbt, ...$args){
 		if(isset(self::$knownTiles[$type])){
@@ -96,7 +100,7 @@ abstract class Tile extends Position{
 	 *
 	 * @return bool
 	 */
-	public static function registerTile($className){
+	public static function registerTile($className) : bool{
 		$class = new \ReflectionClass($className);
 		if(is_a($className, Tile::class, true) and !$class->isAbstract()){
 			self::$knownTiles[$class->getShortName()] = $className;
@@ -112,7 +116,7 @@ abstract class Tile extends Position{
 	 *
 	 * @return string
 	 */
-	public function getSaveId(){
+	public function getSaveId() : string{
 		return self::$shortNames[static::class];
 	}
 
@@ -160,13 +164,16 @@ abstract class Tile extends Position{
 	}
 
 	/**
-	 * @return \pocketmine\block\Block
+	 * @return Block
 	 */
-	public function getBlock(){
+	public function getBlock() : Block{
 		return $this->level->getBlock($this);
 	}
 
-	public function onUpdate(){
+	/**
+	 * @return bool
+	 */
+	public function onUpdate() : bool{
 		return false;
 	}
 

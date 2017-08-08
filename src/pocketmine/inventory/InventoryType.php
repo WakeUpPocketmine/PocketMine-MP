@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\inventory;
 
 use pocketmine\network\mcpe\protocol\types\WindowTypes;
@@ -49,7 +51,7 @@ class InventoryType{
 	/**
 	 * @param $index
 	 *
-	 * @return InventoryType
+	 * @return InventoryType|null
 	 */
 	public static function get($index){
 		return static::$default[$index] ?? null;
@@ -89,21 +91,21 @@ class InventoryType{
 	/**
 	 * @return int
 	 */
-	public function getDefaultSize(){
+	public function getDefaultSize() : int{
 		return $this->size;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getDefaultTitle(){
+	public function getDefaultTitle() : string{
 		return $this->title;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getNetworkType(){
+	public function getNetworkType() : int{
 		return $this->typeId;
 	}
 }

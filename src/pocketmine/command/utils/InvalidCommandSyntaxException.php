@@ -19,12 +19,10 @@
  *
 */
 
-namespace pocketmine\item;
+declare(strict_types=1);
 
-class Quartz extends Item{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::QUARTZ, $meta, $count, "Quartz");
-	}
+namespace pocketmine\command\utils;
+
+class InvalidCommandSyntaxException extends CommandException{
 
 }
-

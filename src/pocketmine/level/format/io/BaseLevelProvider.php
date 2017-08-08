@@ -19,11 +19,12 @@
  *
 */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace pocketmine\level\format\io;
 
 use pocketmine\level\format\Chunk;
+use pocketmine\level\format\ChunkException;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\Level;
 use pocketmine\level\LevelException;
@@ -59,7 +60,7 @@ abstract class BaseLevelProvider implements LevelProvider{
 		}
 
 		if(!isset($this->levelData->generatorName)){
-			$this->levelData->generatorName = new StringTag("generatorName", Generator::getGenerator("DEFAULT"));
+			$this->levelData->generatorName = new StringTag("generatorName", (string) Generator::getGenerator("DEFAULT"));
 		}
 
 		if(!isset($this->levelData->generatorOptions)){
@@ -75,7 +76,7 @@ abstract class BaseLevelProvider implements LevelProvider{
 		return $this->level->getServer();
 	}
 
-	public function getLevel(){
+	public function getLevel() : Level{
 		return $this->level;
 	}
 
@@ -123,7 +124,7 @@ abstract class BaseLevelProvider implements LevelProvider{
 	public function saveLevelData(){
 		$nbt = new NBT(NBT::BIG_ENDIAN);
 		$nbt->setData(new CompoundTag("", [
-			"Data" => $this->levelData
+			$this->levelData
 		]));
 		$buffer = $nbt->writeCompressed();
 		file_put_contents($this->getPath() . "level.dat", $buffer);

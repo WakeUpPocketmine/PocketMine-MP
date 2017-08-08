@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -48,7 +50,7 @@ class LoginPacket extends DataPacket{
 		return true;
 	}
 
-	public function decode(){
+	public function decodePayload(){
 		$this->protocol = $this->getInt();
 
 		if($this->protocol !== ProtocolInfo::CURRENT_PROTOCOL){
@@ -87,13 +89,12 @@ class LoginPacket extends DataPacket{
 		}
 	}
 
-	public function encode(){
+	public function encodePayload(){
 		//TODO
 	}
 
 	public function decodeToken($token){
-		$tokens = explode(".", $token);
-		list($headB64, $payloadB64, $sigB64) = $tokens;
+		list($headB64, $payloadB64, $sigB64) = explode(".", $token);
 
 		return json_decode(base64_decode($payloadB64), true);
 	}

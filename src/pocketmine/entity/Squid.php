@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageByEntityEvent;
@@ -29,7 +31,7 @@ use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\Player;
 
-class Squid extends WaterAnimal implements Ageable{
+class Squid extends WaterAnimal{
 	const NETWORK_ID = 17;
 
 	public $width = 0.95;
@@ -87,8 +89,6 @@ class Squid extends WaterAnimal implements Ageable{
 				$this->swimDirection = null;
 			}
 		}
-
-		$this->lastUpdate = $currentTick;
 
 		$this->timings->startTiming();
 
@@ -164,7 +164,7 @@ class Squid extends WaterAnimal implements Ageable{
 		parent::spawnTo($player);
 	}
 
-	public function getDrops(){
+	public function getDrops() : array{
 		return [
 			ItemItem::get(ItemItem::DYE, 0, mt_rand(1, 3))
 		];

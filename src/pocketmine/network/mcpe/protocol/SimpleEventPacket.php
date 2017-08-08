@@ -19,16 +19,28 @@
  *
 */
 
-namespace pocketmine\level;
+declare(strict_types=1);
 
+namespace pocketmine\network\mcpe\protocol;
 
-class SkyLightUpdate extends LightUpdate{
+#include <rules/DataPacket.h>
 
-	public function getLight(int $x, int $y, int $z) : int{
-		return $this->level->getBlockSkyLightAt($x, $y, $z);
+use pocketmine\network\mcpe\NetworkSession;
+
+class SimpleEventPacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::SIMPLE_EVENT_PACKET;
+
+	public $unknownShort1;
+
+	public function decodePayload(){
+		$this->unknownShort1 = $this->getLShort();
 	}
 
-	public function setLight(int $x, int $y, int $z, int $level){
-		$this->level->setBlockSkyLightAt($x, $y, $z, $level);
+	public function encodePayload(){
+		$this->putLShort($this->unknownShort1);
+	}
+
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleSimpleEvent($this);
 	}
 }
