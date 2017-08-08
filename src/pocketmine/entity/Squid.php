@@ -19,17 +19,17 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
-use pocketmine\Player;
 
-class Squid extends WaterAnimal implements Ageable{
+class Squid extends WaterAnimal{
 	const NETWORK_ID = 17;
 
 	public $width = 0.95;
@@ -51,8 +51,8 @@ class Squid extends WaterAnimal implements Ageable{
 		return "Squid";
 	}
 
-	public function attack($damage, EntityDamageEvent $source){
-		parent::attack($damage, $source);
+	public function attack(EntityDamageEvent $source){
+		parent::attack($source);
 		if($source->isCancelled()){
 			return;
 		}
@@ -77,7 +77,7 @@ class Squid extends WaterAnimal implements Ageable{
 
 
 	public function onUpdate($currentTick){
-		if($this->closed !== false){
+		if($this->closed){
 			return false;
 		}
 
@@ -87,8 +87,6 @@ class Squid extends WaterAnimal implements Ageable{
 				$this->swimDirection = null;
 			}
 		}
-
-		$this->lastUpdate = $currentTick;
 
 		$this->timings->startTiming();
 
@@ -145,26 +143,7 @@ class Squid extends WaterAnimal implements Ageable{
 		return $hasUpdate or !$this->onGround or abs($this->motionX) > 0.00001 or abs($this->motionY) > 0.00001 or abs($this->motionZ) > 0.00001;
 	}
 
-
-	public function spawnTo(Player $player){
-		$pk = new AddEntityPacket();
-		$pk->entityRuntimeId = $this->getId();
-		$pk->type = Squid::NETWORK_ID;
-		$pk->x = $this->x;
-		$pk->y = $this->y;
-		$pk->z = $this->z;
-		$pk->speedX = $this->motionX;
-		$pk->speedY = $this->motionY;
-		$pk->speedZ = $this->motionZ;
-		$pk->yaw = $this->yaw;
-		$pk->pitch = $this->pitch;
-		$pk->metadata = $this->dataProperties;
-		$player->dataPacket($pk);
-
-		parent::spawnTo($player);
-	}
-
-	public function getDrops(){
+	public function getDrops() : array{
 		return [
 			ItemItem::get(ItemItem::DYE, 0, mt_rand(1, 3))
 		];

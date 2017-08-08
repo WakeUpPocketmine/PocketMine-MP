@@ -19,35 +19,42 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
 class IronDoor extends Door{
 
-	protected $id = self::IRON_DOOR_BLOCK;
+	protected $id = Block::IRON_DOOR_BLOCK;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Iron Door Block";
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getHardness(){
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
+	}
+
+	public function getHardness() : float{
 		return 5;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+	public function getDrops(Item $item) : array{
+		if($this->canBeBrokenWith($item)){
 			return [
-				[Item::IRON_DOOR, 0, 1],
+				Item::get(Item::IRON_DOOR, 0, 1)
 			];
 		}else{
 			return [];

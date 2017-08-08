@@ -19,22 +19,16 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\level\Level;
 
-class StillWater extends Water{
+class StillWater extends FlowingWater{
 
-	protected $id = self::STILL_WATER;
+	protected $id = Block::STILL_WATER;
 
-	public function onUpdate($type){
-		if($type !== Level::BLOCK_UPDATE_SCHEDULED){
-			return parent::onUpdate($type);
-		}
-		return false;
-	}
-
-	public function getName(){
+	public function getName() : string{
 		return "Still Water";
 	}
 }

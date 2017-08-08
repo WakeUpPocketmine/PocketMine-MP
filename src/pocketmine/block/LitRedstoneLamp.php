@@ -19,17 +19,15 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 class LitRedstoneLamp extends RedstoneLamp{
 
-	protected $id = self::LIT_REDSTONE_LAMP;
+	protected $id = Block::LIT_REDSTONE_LAMP;
 
-	public function __construct($meta = 0){
-		$this->meta = $meta;
-	}
-
-	public function getName(){
+	public function getName() : string{
 		return "Lit Redstone Lamp";
 	}
 }

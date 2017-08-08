@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -42,13 +44,18 @@ class LoginPacket extends DataPacket{
 	public $skinId;
 	public $skin = "";
 
+	/** @var array (the "chain" index contains one or more JWTs) */
+	public $chainData = [];
+	/** @var string */
+	public $clientDataJwt;
+	/** @var array decoded payload of the clientData JWT */
 	public $clientData = [];
 
 	public function canBeSentBeforeLogin() : bool{
 		return true;
 	}
 
-	public function decode(){
+	public function decodePayload(){
 		$this->protocol = $this->getInt();
 
 		if($this->protocol !== ProtocolInfo::CURRENT_PROTOCOL){
@@ -60,8 +67,8 @@ class LoginPacket extends DataPacket{
 
 		$this->setBuffer($this->getString(), 0);
 
-		$chainData = json_decode($this->get($this->getLInt()));
-		foreach($chainData->{"chain"} as $chain){
+		$this->chainData = json_decode($this->get($this->getLInt()), true);
+		foreach($this->chainData["chain"] as $chain){
 			$webtoken = $this->decodeToken($chain);
 			if(isset($webtoken["extraData"])){
 				if(isset($webtoken["extraData"]["displayName"])){
@@ -76,7 +83,8 @@ class LoginPacket extends DataPacket{
 			}
 		}
 
-		$this->clientData = $this->decodeToken($this->get($this->getLInt()));
+		$this->clientDataJwt = $this->get($this->getLInt());
+		$this->clientData = $this->decodeToken($this->clientDataJwt);
 
 		$this->clientId = $this->clientData["ClientRandomId"] ?? null;
 		$this->serverAddress = $this->clientData["ServerAddress"] ?? null;
@@ -87,13 +95,12 @@ class LoginPacket extends DataPacket{
 		}
 	}
 
-	public function encode(){
+	public function encodePayload(){
 		//TODO
 	}
 
 	public function decodeToken($token){
-		$tokens = explode(".", $token);
-		list($headB64, $payloadB64, $sigB64) = $tokens;
+		list($headB64, $payloadB64, $sigB64) = explode(".", $token);
 
 		return json_decode(base64_decode($payloadB64), true);
 	}

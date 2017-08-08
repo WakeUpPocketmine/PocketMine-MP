@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
@@ -27,7 +29,7 @@ use pocketmine\block\Block;
  * Class used for Items that can be Blocks
  */
 class ItemBlock extends Item{
-	public function __construct(Block $block, $meta = 0, int $count = 1){
+	public function __construct(Block $block, int $meta = 0, int $count = 1){
 		$this->block = $block;
 		parent::__construct($block->getId(), $block->getDamage(), $count, $block->getName());
 	}

@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageEvent;
@@ -34,8 +36,11 @@ use pocketmine\Player;
 class Item extends Entity{
 	const NETWORK_ID = 64;
 
-	protected $owner = null;
-	protected $thrower = null;
+	/** @var string */
+	protected $owner = "";
+	/** @var string */
+	protected $thrower = "";
+	/** @var int */
 	protected $pickupDelay = 0;
 	/** @var ItemItem */
 	protected $item;
@@ -54,7 +59,7 @@ class Item extends Entity{
 		parent::initEntity();
 
 		$this->setMaxHealth(5);
-		$this->setHealth($this->namedtag["Health"]);
+		$this->setHealth((float) $this->namedtag["Health"]);
 		if(isset($this->namedtag->Age)){
 			$this->age = $this->namedtag["Age"];
 		}
@@ -82,14 +87,14 @@ class Item extends Entity{
 		$this->server->getPluginManager()->callEvent(new ItemSpawnEvent($this));
 	}
 
-	public function attack($damage, EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source){
 		if(
 			$source->getCause() === EntityDamageEvent::CAUSE_VOID or
 			$source->getCause() === EntityDamageEvent::CAUSE_FIRE_TICK or
 			$source->getCause() === EntityDamageEvent::CAUSE_ENTITY_EXPLOSION or
 			$source->getCause() === EntityDamageEvent::CAUSE_BLOCK_EXPLOSION
 		){
-			parent::attack($damage, $source);
+			parent::attack($source);
 		}
 	}
 
@@ -162,7 +167,7 @@ class Item extends Entity{
 	public function saveNBT(){
 		parent::saveNBT();
 		$this->namedtag->Item = $this->item->nbtSerialize(-1, "Item");
-		$this->namedtag->Health = new ShortTag("Health", $this->getHealth());
+		$this->namedtag->Health = new ShortTag("Health", (int) $this->getHealth());
 		$this->namedtag->Age = new ShortTag("Age", $this->age);
 		$this->namedtag->PickupDelay = new ShortTag("PickupDelay", $this->pickupDelay);
 		if($this->owner !== null){
@@ -226,7 +231,7 @@ class Item extends Entity{
 		$this->thrower = $thrower;
 	}
 
-	public function spawnTo(Player $player){
+	protected function sendSpawnPacket(Player $player){
 		$pk = new AddItemEntityPacket();
 		$pk->entityRuntimeId = $this->getId();
 		$pk->x = $this->x;
@@ -238,7 +243,5 @@ class Item extends Entity{
 		$pk->item = $this->getItem();
 		$pk->metadata = $this->dataProperties;
 		$player->dataPacket($pk);
-
-		parent::spawnTo($player);
 	}
 }

@@ -19,12 +19,12 @@
  *
 */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace pocketmine\level\format\io\region;
 
 use pocketmine\level\format\Chunk;
-use pocketmine\level\format\io\ChunkException;
+use pocketmine\level\format\ChunkException;
 use pocketmine\utils\Binary;
 use pocketmine\utils\MainLogger;
 
@@ -292,7 +292,7 @@ class RegionLoader{
 			$index = $data[$i + 1];
 			$offset = $index >> 8;
 			if($offset !== 0){
-				fseek($this->filePointer, ($offset << 12));
+				fseek($this->filePointer, $offset << 12);
 				if(fgetc($this->filePointer) === false){ //Try and read from the location
 					throw new CorruptedRegionException("Region file location offset points to invalid location");
 				}elseif(isset($usedOffsets[$offset])){

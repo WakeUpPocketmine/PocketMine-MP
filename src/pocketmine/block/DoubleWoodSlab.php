@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -26,21 +28,25 @@ use pocketmine\item\Tool;
 
 class DoubleWoodSlab extends Solid{
 
-	protected $id = self::DOUBLE_WOOD_SLAB;
+	protected $id = Block::DOUBLE_WOODEN_SLAB;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2;
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_AXE;
 	}
 
-	public function getName(){
+	public function getVariantBitmask() : int{
+		return 0x07;
+	}
+
+	public function getName() : string{
 		static $names = [
 			0 => "Oak",
 			1 => "Spruce",
@@ -51,12 +57,12 @@ class DoubleWoodSlab extends Solid{
 			6 => "",
 			7 => ""
 		];
-		return "Double " . $names[$this->meta & 0x07] . " Wooden Slab";
+		return "Double " . $names[$this->meta & 0x07] . " Slab";
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		return [
-			[Item::WOOD_SLAB, $this->meta & 0x07, 2],
+			Item::get(Item::WOODEN_SLAB, $this->meta & 0x07, 2)
 		];
 	}
 

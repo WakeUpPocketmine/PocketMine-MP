@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +14,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\entity;
 
@@ -42,7 +44,7 @@ class EntityTeleportEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return Position
 	 */
-	public function getFrom(){
+	public function getFrom() : Position{
 		return $this->from;
 	}
 
@@ -56,7 +58,7 @@ class EntityTeleportEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return Position
 	 */
-	public function getTo(){
+	public function getTo() : Position{
 		return $this->to;
 	}
 

@@ -19,17 +19,21 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
+
+use pocketmine\item\Tool;
 
 class WoodenPressurePlate extends StonePressurePlate{
 
-	protected $id = self::WOODEN_PRESSURE_PLATE;
+	protected $id = Block::WOODEN_PRESSURE_PLATE;
 
-	public function __construct($meta = 0){
-		$this->meta = $meta;
+	public function getName() : string{
+		return "Wooden Pressure Plate";
 	}
 
-	public function getName(){
-		return "Wooden Pressure Plate";
+	public function getToolType() : int{
+		return Tool::TYPE_AXE;
 	}
 }

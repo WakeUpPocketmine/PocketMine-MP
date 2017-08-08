@@ -19,44 +19,46 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Torch extends Flowable{
 
-	protected $id = self::TORCH;
+	protected $id = Block::TORCH;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getLightLevel(){
+	public function getLightLevel() : int{
 		return 14;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Torch";
 	}
 
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$below = $this->getSide(0);
 			$side = $this->getDamage();
 			$faces = [
+				0 => 0,
 				1 => 4,
 				2 => 5,
 				3 => 2,
 				4 => 3,
-				5 => 0,
-				6 => 0,
-				0 => 0,
+				5 => 0
 			];
 
-			if($this->getSide($faces[$side])->isTransparent() === true and !($side === 0 and ($below->getId() === self::FENCE or $below->getId() === self::COBBLE_WALL))){
+			if($this->getSide($faces[$side])->isTransparent() === true and !($side === Vector3::SIDE_DOWN and ($below instanceof Fence or $below instanceof CobblestoneWall))){
 				$this->getLevel()->useBreakOn($this);
 
 				return Level::BLOCK_UPDATE_NORMAL;
@@ -66,8 +68,8 @@ class Torch extends Flowable{
 		return false;
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		$below = $this->getSide(0);
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+		$below = $this->getSide(Vector3::SIDE_DOWN);
 
 		if($target->isTransparent() === false and $face !== 0){
 			$faces = [
@@ -81,7 +83,7 @@ class Torch extends Flowable{
 			$this->getLevel()->setBlock($block, $this, true, true);
 
 			return true;
-		}elseif($below->isTransparent() === false or $below->getId() === self::FENCE or $below->getId() === self::COBBLE_WALL){
+		}elseif($below->isTransparent() === false or $below instanceof Fence or $below instanceof CobblestoneWall){
 			$this->meta = 0;
 			$this->getLevel()->setBlock($block, $this, true, true);
 
@@ -91,9 +93,7 @@ class Torch extends Flowable{
 		return false;
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[$this->id, 0, 1],
-		];
+	public function getVariantBitmask() : int{
+		return 0;
 	}
 }

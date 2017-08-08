@@ -19,13 +19,15 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\event\entity;
 
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\event\Cancellable;
 
-class EntityEffectEvent extends EntityEvent implements Cancellable{
+abstract class EntityEffectEvent extends EntityEvent implements Cancellable{
 
 	/** @var Effect */
 	private $effect;

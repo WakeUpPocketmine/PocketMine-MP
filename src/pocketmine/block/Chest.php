@@ -19,11 +19,14 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
@@ -35,25 +38,21 @@ use pocketmine\tile\Tile;
 
 class Chest extends Transparent{
 
-	protected $id = self::CHEST;
+	protected $id = Block::CHEST;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function canBeActivated(){
-		return true;
-	}
-
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2.5;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Chest";
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_AXE;
 	}
 
@@ -68,7 +67,7 @@ class Chest extends Transparent{
 		);
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		$faces = [
 			0 => 4,
 			1 => 2,
@@ -125,19 +124,19 @@ class Chest extends Transparent{
 		return true;
 	}
 
-	public function onBreak(Item $item){
+	public function onBreak(Item $item) : bool{
 		$t = $this->getLevel()->getTile($this);
 		if($t instanceof TileChest){
 			$t->unpair();
 		}
-		$this->getLevel()->setBlock($this, new Air(), true, true);
+		$this->getLevel()->setBlock($this, Block::get(Block::AIR), true, true);
 
 		return true;
 	}
 
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
-			$top = $this->getSide(1);
+			$top = $this->getSide(Vector3::SIDE_UP);
 			if($top->isTransparent() !== true){
 				return true;
 			}
@@ -170,9 +169,7 @@ class Chest extends Transparent{
 		return true;
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[$this->id, 0, 1],
-		];
+	public function getVariantBitmask() : int{
+		return 0;
 	}
 }

@@ -19,10 +19,13 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\inventory\EnchantInventory;
 use pocketmine\item\Item;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
@@ -32,13 +35,13 @@ use pocketmine\tile\Tile;
 
 class EnchantingTable extends Transparent{
 
-	protected $id = self::ENCHANTING_TABLE;
+	protected $id = Block::ENCHANTING_TABLE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		$this->getLevel()->setBlock($block, $this, true, true);
 		$nbt = new CompoundTag("", [
 			new StringTag("id", Tile::ENCHANT_TABLE),
@@ -62,27 +65,27 @@ class EnchantingTable extends Transparent{
 		return true;
 	}
 
-	public function canBeActivated(){
-		return true;
-	}
-
-	public function getHardness(){
+	public function getHardness() : float{
 		return 5;
 	}
 
-	public function getResistance(){
+	public function getBlastResistance() : float{
 		return 6000;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Enchanting Table";
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function onActivate(Item $item, Player $player = null){
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
+	}
+
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
 			//TODO lock
 
@@ -90,15 +93,5 @@ class EnchantingTable extends Transparent{
 		}
 
 		return true;
-	}
-
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
-			return [
-				[$this->id, 0, 1],
-			];
-		}else{
-			return [];
-		}
 	}
 }

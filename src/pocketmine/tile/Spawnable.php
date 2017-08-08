@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\tile;
 
 use pocketmine\level\Level;
@@ -75,7 +77,7 @@ abstract class Spawnable extends Tile{
 	/**
 	 * @return CompoundTag
 	 */
-	abstract public function getSpawnCompound();
+	abstract public function getSpawnCompound() : CompoundTag;
 
 	/**
 	 * Called when a player updates a block entity's NBT data

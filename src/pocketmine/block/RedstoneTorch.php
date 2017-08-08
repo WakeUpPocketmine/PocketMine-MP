@@ -19,21 +19,15 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 class RedstoneTorch extends Torch{
 
-	protected $id = self::REDSTONE_TORCH;
+	protected $id = Block::UNLIT_REDSTONE_TORCH;
 
-	public function __construct($meta = 0){
-		$this->meta = $meta;
-	}
-
-	public function getName(){
+	public function getName() : string{
 		return "Redstone Torch";
-	}
-
-	public function getLightLevel(){
-		return 7;
 	}
 }

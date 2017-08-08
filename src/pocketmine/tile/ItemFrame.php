@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\tile;
 
 use pocketmine\item\Item;
@@ -82,7 +84,7 @@ class ItemFrame extends Spawnable{
 		$this->onChanged();
 	}
 
-	public function getSpawnCompound(){
+	public function getSpawnCompound() : CompoundTag{
 		$tag = new CompoundTag("", [
 			new StringTag("id", Tile::ITEM_FRAME),
 			new IntTag("x", (int) $this->x),

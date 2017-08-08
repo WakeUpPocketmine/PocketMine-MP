@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
@@ -31,19 +33,19 @@ abstract class Liquid extends Transparent{
 	/** @var Vector3 */
 	private $temporalVector = null;
 
-	public function hasEntityCollision(){
+	public function hasEntityCollision() : bool{
 		return true;
 	}
 
-	public function isBreakable(Item $item){
+	public function isBreakable(Item $item) : bool{
 		return false;
 	}
 
-	public function canBeReplaced(){
+	public function canBeReplaced(Block $with = null) : bool{
 		return true;
 	}
 
-	public function isSolid(){
+	public function isSolid() : bool{
 		return false;
 	}
 
@@ -177,16 +179,16 @@ abstract class Liquid extends Transparent{
 	}
 
 	public function tickRate(){
-		if($this instanceof Water){
+		if($this instanceof FlowingWater){
 			return 5;
-		}elseif($this instanceof Lava){
+		}elseif($this instanceof FlowingLava){
 			return 30;
 		}
 
 		return 0;
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$this->checkForHarden();
 			$this->getLevel()->scheduleDelayedBlockUpdate($this, $this->tickRate());
@@ -196,7 +198,7 @@ abstract class Liquid extends Transparent{
 			}
 
 			$decay = $this->getFlowDecay($this);
-			$multiplier = $this instanceof Lava ? 2 : 1;
+			$multiplier = $this instanceof FlowingLava ? 2 : 1;
 
 			$flag = true;
 
@@ -214,7 +216,7 @@ abstract class Liquid extends Transparent{
 					$k = -1;
 				}
 
-				if(($topFlowDecay = $this->getFlowDecay($this->level->getBlock($this->level->getBlock($this->temporalVector->setComponents($this->x, $this->y + 1, $this->z))))) >= 0){
+				if(($topFlowDecay = $this->getFlowDecay($this->level->getBlock($this->temporalVector->setComponents($this->x, $this->y + 1, $this->z)))) >= 0){
 					if($topFlowDecay >= 8){
 						$k = $topFlowDecay;
 					}else{
@@ -222,16 +224,16 @@ abstract class Liquid extends Transparent{
 					}
 				}
 
-				if($this->adjacentSources >= 2 and $this instanceof Water){
-					$bottomBlock = $this->level->getBlock($this->level->getBlock($this->temporalVector->setComponents($this->x, $this->y - 1, $this->z)));
+				if($this->adjacentSources >= 2 and $this instanceof FlowingWater){
+					$bottomBlock = $this->level->getBlock($this->temporalVector->setComponents($this->x, $this->y - 1, $this->z));
 					if($bottomBlock->isSolid()){
 						$k = 0;
-					}elseif($bottomBlock instanceof Water and $bottomBlock->getDamage() === 0){
+					}elseif($bottomBlock instanceof FlowingWater and $bottomBlock->getDamage() === 0){
 						$k = 0;
 					}
 				}
 
-				if($this instanceof Lava and $decay < 8 and $k < 8 and $k > 1 and mt_rand(0, 4) !== 0){
+				if($this instanceof FlowingLava and $decay < 8 and $k < 8 and $k > 1 and mt_rand(0, 4) !== 0){
 					$k = $decay;
 					$flag = false;
 				}
@@ -239,9 +241,9 @@ abstract class Liquid extends Transparent{
 				if($k !== $decay){
 					$decay = $k;
 					if($decay < 0){
-						$this->getLevel()->setBlock($this, new Air(), true);
+						$this->getLevel()->setBlock($this, Block::get(Block::AIR), true, true);
 					}else{
-						$this->getLevel()->setBlock($this, Block::get($this->id, $decay), true);
+						$this->getLevel()->setBlock($this, Block::get($this->id, $decay), true, true);
 						$this->getLevel()->scheduleDelayedBlockUpdate($this, $this->tickRate());
 					}
 				}elseif($flag){
@@ -254,19 +256,13 @@ abstract class Liquid extends Transparent{
 
 			$bottomBlock = $this->level->getBlock($this->temporalVector->setComponents($this->x, $this->y - 1, $this->z));
 
-			if($bottomBlock->canBeFlowedInto() or $bottomBlock instanceof Liquid){
-				if($this instanceof Lava and $bottomBlock instanceof Water){
-					$this->getLevel()->setBlock($bottomBlock, Block::get(Item::STONE), true);
-					return;
-				}
+			if($this instanceof FlowingLava and $bottomBlock instanceof FlowingWater){
+				$this->getLevel()->setBlock($bottomBlock, Block::get(Block::STONE), true, true);
 
-				if($decay >= 8){
-					$this->getLevel()->setBlock($bottomBlock, Block::get($this->id, $decay), true);
-					$this->getLevel()->scheduleDelayedBlockUpdate($bottomBlock, $this->tickRate());
-				}else{
-					$this->getLevel()->setBlock($bottomBlock, Block::get($this->id, $decay + 8), true);
-					$this->getLevel()->scheduleDelayedBlockUpdate($bottomBlock, $this->tickRate());
-				}
+			}elseif($bottomBlock->canBeFlowedInto() or ($bottomBlock instanceof Liquid and ($bottomBlock->getDamage() & 0x07) !== 0)){
+				$this->getLevel()->setBlock($bottomBlock, Block::get($this->id, $decay | 0x08), true, false);
+				$this->getLevel()->scheduleDelayedBlockUpdate($bottomBlock, $this->tickRate());
+
 			}elseif($decay >= 0 and ($decay === 0 or !$bottomBlock->canBeFlowedInto())){
 				$flags = $this->getOptimalFlowDirections();
 
@@ -309,7 +305,7 @@ abstract class Liquid extends Transparent{
 				$this->getLevel()->useBreakOn($block);
 			}
 
-			$this->getLevel()->setBlock($block, Block::get($this->getId(), $newFlowDecay), true);
+			$this->getLevel()->setBlock($block, Block::get($this->getId(), $newFlowDecay), true, false);
 			$this->getLevel()->scheduleDelayedBlockUpdate($block, $this->tickRate());
 		}
 	}
@@ -362,7 +358,7 @@ abstract class Liquid extends Transparent{
 		return $cost;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 100;
 	}
 
@@ -430,17 +426,17 @@ abstract class Liquid extends Transparent{
 	}
 
 	private function checkForHarden(){
-		if($this instanceof Lava){
+		if($this instanceof FlowingLava){
 			$colliding = false;
 			for($side = 0; $side <= 5 and !$colliding; ++$side){
-				$colliding = $this->getSide($side) instanceof Water;
+				$colliding = $this->getSide($side) instanceof FlowingWater;
 			}
 
 			if($colliding){
 				if($this->getDamage() === 0){
-					$this->getLevel()->setBlock($this, Block::get(Item::OBSIDIAN), true);
+					$this->getLevel()->setBlock($this, Block::get(Block::OBSIDIAN), true, true);
 				}elseif($this->getDamage() <= 4){
-					$this->getLevel()->setBlock($this, Block::get(Item::COBBLESTONE), true);
+					$this->getLevel()->setBlock($this, Block::get(Block::COBBLESTONE), true, true);
 				}
 			}
 		}
@@ -450,7 +446,7 @@ abstract class Liquid extends Transparent{
 		return null;
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		return [];
 	}
 }

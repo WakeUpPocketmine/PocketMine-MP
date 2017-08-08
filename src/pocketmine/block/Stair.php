@@ -19,14 +19,15 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\Player;
 
-abstract class Stair extends Transparent{
+class Stair extends Transparent{
 
 	/*
 	public function collidesWithBB(AxisAlignedBB $bb, &$list = []){
@@ -127,7 +128,7 @@ abstract class Stair extends Transparent{
 		}
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		$faces = [
 			0 => 0,
 			1 => 2,
@@ -143,13 +144,7 @@ abstract class Stair extends Transparent{
 		return true;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
-			return [
-				[$this->getId(), 0, 1],
-			];
-		}else{
-			return [];
-		}
+	public function getVariantBitmask() : int{
+		return 0;
 	}
 }

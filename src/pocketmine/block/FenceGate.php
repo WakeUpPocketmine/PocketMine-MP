@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -29,28 +31,17 @@ use pocketmine\Player;
 
 class FenceGate extends Transparent{
 
-	protected $id = self::FENCE_GATE;
-
-	public function __construct($meta = 0){
-		$this->meta = $meta;
-	}
-
-	public function getName(){
-		return "Oak Fence Gate";
-	}
-
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2;
 	}
 
-	public function canBeActivated(){
-		return true;
-	}
-
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_AXE;
 	}
 
+	public function getVariantBitmask() : int{
+		return 0;
+	}
 
 	protected function recalculateBoundingBox(){
 
@@ -80,20 +71,14 @@ class FenceGate extends Transparent{
 		}
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		$this->meta = ($player instanceof Player ? ($player->getDirection() - 1) & 0x03 : 0);
 		$this->getLevel()->setBlock($block, $this, true, true);
 
 		return true;
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[$this->id, 0, 1],
-		];
-	}
-
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		$this->meta = (($this->meta ^ 0x04) & ~0x02);
 
 		if($player !== null){

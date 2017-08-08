@@ -19,13 +19,20 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
+use pocketmine\block\Block;
+use pocketmine\entity\projectile\ProjectileSource;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\inventory\InventoryHolder;
 use pocketmine\inventory\PlayerInventory;
+use pocketmine\item\Consumable;
+use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\FoodSource;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\level\Level;
 use pocketmine\nbt\NBT;
@@ -62,15 +69,17 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	public $eyeHeight = 1.62;
 
 	protected $skinId;
-	protected $skin = null;
+	protected $skin = "";
 
 	protected $foodTickTimer = 0;
 
 	protected $totalXp = 0;
 	protected $xpSeed;
 
+	protected $baseOffset = 1.62;
+
 	public function __construct(Level $level, CompoundTag $nbt){
-		if($this->skin === null and (!isset($nbt->Skin) or !isset($nbt->Skin->Data) or !Player::isValidSkin($nbt->Skin->Data->getValue()))){
+		if($this->skin === "" and (!isset($nbt->Skin) or !isset($nbt->Skin->Data) or !Player::isValidSkin($nbt->Skin->Data->getValue()))){
 			throw new \InvalidStateException((new \ReflectionClass($this))->getShortName() . " must have a valid skin set");
 		}
 
@@ -95,8 +104,12 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	/**
 	 * @return string
 	 */
-	public function getRawUniqueId(){
+	public function getRawUniqueId() : string{
 		return $this->rawUUID;
+	}
+
+	public function canBeNamed() : bool{
+		return false;
 	}
 
 	/**
@@ -137,13 +150,16 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		$attr = $this->attributeMap->getAttribute(Attribute::HUNGER);
 		$old = $attr->getValue();
 		$attr->setValue($new);
+
+		$reset = false;
 		// ranges: 18-20 (regen), 7-17 (none), 1-6 (no sprint), 0 (health depletion)
 		foreach([17, 6, 0] as $bound){
 			if(($old > $bound) !== ($new > $bound)){
 				$reset = true;
+				break;
 			}
 		}
-		if(isset($reset)){
+		if($reset){
 			$this->foodTickTimer = 0;
 		}
 
@@ -232,6 +248,25 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		return $ev->getAmount();
 	}
 
+	/**
+	 * @param Consumable $consumable
+	 *
+	 * @return mixed|Block|Consumable|ItemItem
+	 */
+	public function consume(Consumable $consumable){
+		if(($result = parent::consume($consumable)) !== $consumable){
+			if($consumable instanceof FoodSource){
+				if($consumable->requiresHunger() and !($this->getFood() < $this->getMaxFood())){
+					return $consumable;
+				}
+				$this->addFood($consumable->getFoodRestore());
+				$this->addSaturation($consumable->getSaturationRestore());
+			}
+		}
+
+		return $result;
+	}
+
 	public function getXpLevel() : int{
 		return (int) $this->attributeMap->getAttribute(Attribute::EXPERIENCE_LEVEL)->getValue();
 	}
@@ -248,7 +283,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		$this->attributeMap->getAttribute(Attribute::EXPERIENCE)->setValue($progress);
 	}
 
-	public function getTotalXp() : float{
+	public function getTotalXp() : int{
 		return $this->totalXp;
 	}
 
@@ -274,6 +309,22 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		return $this->inventory;
 	}
 
+	/**
+	 * Returns whether this entity is currently using its held item.
+	 * @return bool
+	 */
+	public function isUsingItem() : bool{
+		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_USINGITEM);
+	}
+
+	/**
+	 * Sets whether this entity is currently using its held item.
+	 * @param bool $value
+	 */
+	public function setUsingItem(bool $value = true){
+		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_USINGITEM, $value);
+	}
+
 	protected function initEntity(){
 
 		$this->setDataFlag(self::DATA_PLAYER_FLAGS, self::DATA_PLAYER_FLAG_SLEEP, false, self::DATA_TYPE_BYTE);
@@ -291,7 +342,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 				$this->setSkin($this->namedtag->Skin["Data"], $this->namedtag->Skin["Name"]);
 			}
 
-			$this->uuid = UUID::fromData($this->getId(), $this->getSkinData(), $this->getNameTag());
+			$this->uuid = UUID::fromData((string) $this->getId(), $this->getSkinData(), $this->getNameTag());
 		}
 
 		if(isset($this->namedtag->Inventory) and $this->namedtag->Inventory instanceof ListTag){
@@ -315,21 +366,21 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		parent::initEntity();
 
 		if(!isset($this->namedtag->foodLevel) or !($this->namedtag->foodLevel instanceof IntTag)){
-			$this->namedtag->foodLevel = new IntTag("foodLevel", $this->getFood());
+			$this->namedtag->foodLevel = new IntTag("foodLevel", (int) $this->getFood());
 		}else{
-			$this->setFood($this->namedtag["foodLevel"]);
+			$this->setFood((float) $this->namedtag["foodLevel"]);
 		}
 
-		if(!isset($this->namedtag->foodExhaustionLevel) or !($this->namedtag->foodExhaustionLevel instanceof IntTag)){
+		if(!isset($this->namedtag->foodExhaustionLevel) or !($this->namedtag->foodExhaustionLevel instanceof FloatTag)){
 			$this->namedtag->foodExhaustionLevel = new FloatTag("foodExhaustionLevel", $this->getExhaustion());
 		}else{
-			$this->setExhaustion($this->namedtag["foodExhaustionLevel"]);
+			$this->setExhaustion((float) $this->namedtag["foodExhaustionLevel"]);
 		}
 
-		if(!isset($this->namedtag->foodSaturationLevel) or !($this->namedtag->foodSaturationLevel instanceof IntTag)){
+		if(!isset($this->namedtag->foodSaturationLevel) or !($this->namedtag->foodSaturationLevel instanceof FloatTag)){
 			$this->namedtag->foodSaturationLevel = new FloatTag("foodSaturationLevel", $this->getSaturation());
 		}else{
-			$this->setSaturation($this->namedtag["foodSaturationLevel"]);
+			$this->setSaturation((float) $this->namedtag["foodSaturationLevel"]);
 		}
 
 		if(!isset($this->namedtag->foodTickTimer) or !($this->namedtag->foodTickTimer instanceof IntTag)){
@@ -341,7 +392,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		if(!isset($this->namedtag->XpLevel) or !($this->namedtag->XpLevel instanceof IntTag)){
 			$this->namedtag->XpLevel = new IntTag("XpLevel", $this->getXpLevel());
 		}else{
-			$this->setXpLevel($this->namedtag["XpLevel"]);
+			$this->setXpLevel((int) $this->namedtag["XpLevel"]);
 		}
 
 		if(!isset($this->namedtag->XpP) or !($this->namedtag->XpP instanceof FloatTag)){
@@ -355,7 +406,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		}
 
 		if(!isset($this->namedtag->XpSeed) or !($this->namedtag->XpSeed instanceof IntTag)){
-			$this->namedtag->XpSeed = new IntTag("XpSeed", $this->xpSeed ?? ($this->xpSeed = mt_rand(PHP_INT_MIN, PHP_INT_MAX)));
+			$this->namedtag->XpSeed = new IntTag("XpSeed", $this->xpSeed ?? ($this->xpSeed = mt_rand(-0x80000000, 0x7fffffff)));
 		}else{
 			$this->xpSeed = $this->namedtag["XpSeed"];
 		}
@@ -395,19 +446,19 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 					$this->addFood(1.0);
 				}
 				if($this->foodTickTimer % 20 === 0 and $health < $this->getMaxHealth()){
-					$this->heal(1, new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
+					$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
 				}
 			}
 
 			if($this->foodTickTimer === 0){
 				if($food >= 18){
 					if($health < $this->getMaxHealth()){
-						$this->heal(1, new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
+						$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
 						$this->exhaust(3.0, PlayerExhaustEvent::CAUSE_HEALTH_REGEN);
 					}
 				}elseif($food <= 0){
 					if(($difficulty === 1 and $health > 10) or ($difficulty === 2 and $health > 1) or $difficulty === 3){
-						$this->attack(1, new EntityDamageEvent($this, EntityDamageEvent::CAUSE_STARVATION, 1));
+						$this->attack(new EntityDamageEvent($this, EntityDamageEvent::CAUSE_STARVATION, 1));
 					}
 				}
 			}
@@ -420,18 +471,26 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		}
 	}
 
+	protected function doAirSupplyTick(int $tickDiff){
+		//TODO: allow this to apply to other mobs
+		if(($ench = $this->inventory->getHelmet()->getEnchantment(Enchantment::RESPIRATION)) === null or
+			lcg_value() <= (1 / ($ench->getLevel() + 1))){
+			parent::doAirSupplyTick($tickDiff);
+		}
+	}
+
 	public function getName(){
 		return $this->getNameTag();
 	}
 
-	public function getDrops(){
+	public function getDrops() : array{
 		return $this->inventory !== null ? array_values($this->inventory->getContents()) : [];
 	}
 
 	public function saveNBT(){
 		parent::saveNBT();
 
-		$this->namedtag->foodLevel = new IntTag("foodLevel", $this->getFood());
+		$this->namedtag->foodLevel = new IntTag("foodLevel", (int) $this->getFood());
 		$this->namedtag->foodExhaustionLevel = new FloatTag("foodExhaustionLevel", $this->getExhaustion());
 		$this->namedtag->foodSaturationLevel = new FloatTag("foodSaturationLevel", $this->getSaturation());
 		$this->namedtag->foodTickTimer = new IntTag("foodTickTimer", $this->foodTickTimer);
@@ -457,7 +516,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 					new ShortTag("Damage", 0),
 					new ByteTag("Slot", $slot),
 					new ByteTag("TrueSlot", -1),
-					new ShortTag("id", 0),
+					new ShortTag("id", 0)
 				]);
 			}
 
@@ -483,45 +542,47 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 
 		if(strlen($this->getSkinData()) > 0){
 			$this->namedtag->Skin = new CompoundTag("Skin", [
-				"Data" => new StringTag("Data", $this->getSkinData()),
-				"Name" => new StringTag("Name", $this->getSkinId())
+				new StringTag("Data", $this->getSkinData()),
+				new StringTag("Name", $this->getSkinId())
 			]);
 		}
 	}
 
+	protected function sendSpawnPacket(Player $player){
+		if(!Player::isValidSkin($this->skin)){
+			throw new \InvalidStateException((new \ReflectionClass($this))->getShortName() . " must have a valid skin set");
+		}
+
+		if(!($this instanceof Player)){
+			$this->server->updatePlayerListData($this->getUniqueId(), $this->getId(), $this->getName(), $this->skinId, $this->skin, [$player]);
+		}
+
+		$pk = new AddPlayerPacket();
+		$pk->uuid = $this->getUniqueId();
+		$pk->username = $this->getName();
+		$pk->entityRuntimeId = $this->getId();
+		$pk->x = $this->x;
+		$pk->y = $this->y;
+		$pk->z = $this->z;
+		$pk->speedX = $this->motionX;
+		$pk->speedY = $this->motionY;
+		$pk->speedZ = $this->motionZ;
+		$pk->yaw = $this->yaw;
+		$pk->pitch = $this->pitch;
+		$pk->item = $this->getInventory()->getItemInHand();
+		$pk->metadata = $this->dataProperties;
+		$player->dataPacket($pk);
+
+		$this->inventory->sendArmorContents($player);
+
+		if(!($this instanceof Player)){
+			$this->server->removePlayerListData($this->getUniqueId(), [$player]);
+		}
+	}
+
 	public function spawnTo(Player $player){
-		if($player !== $this and !isset($this->hasSpawned[$player->getLoaderId()])){
-			$this->hasSpawned[$player->getLoaderId()] = $player;
-
-			if(!Player::isValidSkin($this->skin)){
-				throw new \InvalidStateException((new \ReflectionClass($this))->getShortName() . " must have a valid skin set");
-			}
-
-			if(!($this instanceof Player)){
-				$this->server->updatePlayerListData($this->getUniqueId(), $this->getId(), $this->getName(), $this->skinId, $this->skin, [$player]);
-			}
-
-			$pk = new AddPlayerPacket();
-			$pk->uuid = $this->getUniqueId();
-			$pk->username = $this->getName();
-			$pk->entityRuntimeId = $this->getId();
-			$pk->x = $this->x;
-			$pk->y = $this->y;
-			$pk->z = $this->z;
-			$pk->speedX = $this->motionX;
-			$pk->speedY = $this->motionY;
-			$pk->speedZ = $this->motionZ;
-			$pk->yaw = $this->yaw;
-			$pk->pitch = $this->pitch;
-			$pk->item = $this->getInventory()->getItemInHand();
-			$pk->metadata = $this->dataProperties;
-			$player->dataPacket($pk);
-
-			$this->inventory->sendArmorContents($player);
-
-			if(!($this instanceof Player)){
-				$this->server->removePlayerListData($this->getUniqueId(), [$player]);
-			}
+		if($player !== $this){
+			parent::spawnTo($player);
 		}
 	}
 

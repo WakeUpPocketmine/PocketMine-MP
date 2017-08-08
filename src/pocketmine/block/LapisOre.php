@@ -19,35 +19,46 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
 class LapisOre extends Solid{
 
-	protected $id = self::LAPIS_ORE;
+	protected $id = Block::LAPIS_ORE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 3;
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getName(){
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_STONE;
+	}
+
+	public function getVariantBitmask() : int{
+		return 0;
+	}
+
+	public function getName() : string{
 		return "Lapis Lazuli Ore";
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_STONE){
+	public function getDrops(Item $item) : array{
+		if($this->canBeBrokenWith($item)){
 			return [
-				[Item::DYE, 4, mt_rand(4, 8)],
+				Item::get(Item::DYE, 4, mt_rand(4, 8))
 			];
 		}else{
 			return [];

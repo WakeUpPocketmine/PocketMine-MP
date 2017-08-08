@@ -19,10 +19,15 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
+use pocketmine\math\Vector3;
+use pocketmine\Player;
 
 class Quartz extends Solid{
 
@@ -31,17 +36,17 @@ class Quartz extends Solid{
 	const QUARTZ_PILLAR = 2;
 	const QUARTZ_PILLAR2 = 3;
 
-	protected $id = self::QUARTZ_BLOCK;
+	protected $id = Block::QUARTZ_BLOCK;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.8;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		static $names = [
 			self::QUARTZ_NORMAL => "Quartz Block",
 			self::QUARTZ_CHISELED => "Chiseled Quartz Block",
@@ -51,17 +56,31 @@ class Quartz extends Solid{
 		return $names[$this->meta & 0x03];
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
-			return [
-				[Item::QUARTZ_BLOCK, $this->meta & 0x03, 1],
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
+	}
+
+	public function getVariantBitmask() : int{
+		return 0x03;
+	}
+
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+		$this->meta &= 0x03;
+
+		if($this->meta !== 0){
+			$faces = [
+				Vector3::SIDE_DOWN => 0,
+				Vector3::SIDE_WEST => 0x04,
+				Vector3::SIDE_NORTH => 0x08
 			];
-		}else{
-			return [];
+
+			$this->meta = ($this->meta & 0x03) | $faces[$face & ~0x01];
 		}
+
+		return $block->getLevel()->setBlock($block, $this, true, true);
 	}
 }

@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\tile;
 
 use pocketmine\level\Level;
@@ -50,11 +52,11 @@ class Skull extends Spawnable{
 		$this->onChanged();
 	}
 
-	public function getType(){
-		return $this->namedtag["SkullType"];
+	public function getType() : int{
+		return (int) $this->namedtag["SkullType"];
 	}
 
-	public function getSpawnCompound(){
+	public function getSpawnCompound() : CompoundTag{
 		return new CompoundTag("", [
 			new StringTag("id", Tile::SKULL),
 			$this->namedtag->SkullType,

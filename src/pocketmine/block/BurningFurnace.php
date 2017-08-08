@@ -19,9 +19,12 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
+use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
@@ -34,33 +37,37 @@ use pocketmine\tile\Tile;
 
 class BurningFurnace extends Solid{
 
-	protected $id = self::BURNING_FURNACE;
+	protected $id = Block::BURNING_FURNACE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Burning Furnace";
 	}
 
-	public function canBeActivated(){
-		return true;
-	}
-
-	public function getHardness(){
+	public function getHardness() : float{
 		return 3.5;
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getLightLevel(){
+	public function getRequiredHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
+	}
+
+	public function getVariantBitmask() : int{
+		return 0;
+	}
+
+	public function getLightLevel() : int{
 		return 13;
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		$faces = [
 			0 => 4,
 			1 => 2,
@@ -93,13 +100,7 @@ class BurningFurnace extends Solid{
 		return true;
 	}
 
-	public function onBreak(Item $item){
-		$this->getLevel()->setBlock($this, new Air(), true, true);
-
-		return true;
-	}
-
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
 			$furnace = $this->getLevel()->getTile($this);
 			if(!($furnace instanceof TileFurnace)){
@@ -124,14 +125,5 @@ class BurningFurnace extends Solid{
 		}
 
 		return true;
-	}
-
-	public function getDrops(Item $item){
-		$drops = [];
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
-			$drops[] = [Item::FURNACE, 0, 1];
-		}
-
-		return $drops;
 	}
 }

@@ -2,11 +2,11 @@
 
 /*
  *
- *  ____			_		_   __  __ _				  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___	  |  \/  |  _ \
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
  * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
  * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|	 |_|  |_|_|
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,6 +18,8 @@
  *
  *
 */
+
+declare(strict_types=1);
 
 namespace pocketmine\block;
 
@@ -33,19 +35,15 @@ use pocketmine\tile\Tile;
 class ItemFrame extends Flowable{
 	protected $id = Block::ITEM_FRAME_BLOCK;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Item Frame";
 	}
 
-	public function canBeActivated(){
-		return true;
-	}
-
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		$tile = $this->level->getTile($this);
 		if(!($tile instanceof TileItemFrame)){
 			$nbt = new CompoundTag("", [
@@ -61,33 +59,14 @@ class ItemFrame extends Flowable{
 
 		if($tile->hasItem()){
 			$tile->setItemRotation(($tile->getItemRotation() + 1) % 8);
-		}else{
-			if($item->getCount() > 0){
-				$frameItem = clone $item;
-				$frameItem->setCount(1);
-				$item->setCount($item->getCount() - 1);
-				$tile->setItem($frameItem);
-				if($player instanceof Player and $player->isSurvival()){
-					$player->getInventory()->setItemInHand($item->getCount() <= 0 ? Item::get(Item::AIR) : $item);
-				}
-			}
+		}elseif($item->getCount() > 0){
+			$tile->setItem($item->pop());
 		}
 
 		return true;
 	}
 
-	public function onBreak(Item $item){
-		$tile = $this->level->getTile($this);
-		if($tile instanceof TileItemFrame){
-			//TODO: add events
-			if(lcg_value() <= $tile->getItemDropChance() and $tile->getItem()->getId() !== Item::AIR){
-				$this->level->dropItem($tile->getBlock(), $tile->getItem());
-			}
-		}
-		return parent::onBreak($item);
-	}
-
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$sides = [
 				0 => 4,
@@ -103,7 +82,7 @@ class ItemFrame extends Flowable{
 		return false;
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
 		if($face === 0 or $face === 1){
 			return false;
 		}
@@ -139,10 +118,19 @@ class ItemFrame extends Flowable{
 
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[Item::ITEM_FRAME, 0, 1]
+	public function getDrops(Item $item) : array{
+		$drops = [
+			Item::get(Item::ITEM_FRAME, 0, 1)
 		];
+
+		$tile = $this->level->getTile($this);
+		if($tile instanceof TileItemFrame){
+			if(lcg_value() <= $tile->getItemDropChance() and $tile->hasItem()){
+				$drops[] = $tile->getItem();
+			}
+		}
+
+		return $drops;
 	}
 
 }

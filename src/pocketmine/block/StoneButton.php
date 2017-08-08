@@ -19,21 +19,41 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
+
+use pocketmine\item\Item;
+use pocketmine\item\Tool;
+use pocketmine\Player;
 
 class StoneButton extends Flowable{
 
-	protected $id = self::STONE_BUTTON;
+	protected $id = Block::STONE_BUTTON;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Stone Button";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.5;
+	}
+
+	public function getToolType() : int{
+		return Tool::TYPE_PICKAXE;
+	}
+
+	public function getVariantBitmask() : int{
+		return 0;
+	}
+
+	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+		//TODO: check target block
+		$this->meta = $face;
+		return $block->getLevel()->setBlock($block, $this, true, true);
 	}
 }
