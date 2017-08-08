@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\utils;
 
 use LogLevel;
@@ -46,6 +44,7 @@ class MainLogger extends \AttachableThreadedLogger{
 		if(static::$logger instanceof MainLogger){
 			throw new \RuntimeException("MainLogger has been already created");
 		}
+		static::$logger = $this;
 		touch($logFile);
 		$this->logFile = $logFile;
 		$this->logDebug = (bool) $logDebug;
@@ -56,20 +55,8 @@ class MainLogger extends \AttachableThreadedLogger{
 	/**
 	 * @return MainLogger
 	 */
-	public static function getLogger() : MainLogger{
+	public static function getLogger(){
 		return static::$logger;
-	}
-
-	/**
-	 * Assigns the MainLogger instance to the {@link MainLogger#logger} static property.
-	 *
-	 * WARNING: Because static properties are thread-local, this MUST be called from the body of every Thread if you
-	 * want the logger to be accessible via {@link MainLogger#getLogger}.
-	 */
-	public function registerStatic(){
-		if(static::$logger === null){
-			static::$logger = $this;
-		}
 	}
 
 	public function emergency($message){
@@ -139,7 +126,7 @@ class MainLogger extends \AttachableThreadedLogger{
 			E_STRICT => "E_STRICT",
 			E_RECOVERABLE_ERROR => "E_RECOVERABLE_ERROR",
 			E_DEPRECATED => "E_DEPRECATED",
-			E_USER_DEPRECATED => "E_USER_DEPRECATED"
+			E_USER_DEPRECATED => "E_USER_DEPRECATED",
 		];
 		if($errno === 0){
 			$type = LogLevel::CRITICAL;

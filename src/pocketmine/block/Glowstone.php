@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -28,31 +26,31 @@ use pocketmine\item\Tool;
 
 class Glowstone extends Transparent{
 
-	protected $id = Block::GLOWSTONE;
+	protected $id = self::GLOWSTONE_BLOCK;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Glowstone";
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0.3;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getLightLevel() : int{
+	public function getLightLevel(){
 		return 15;
 	}
 
-	public function getDrops(Item $item) : array{
+	public function getDrops(Item $item){
 		return [
-			Item::get(Item::GLOWSTONE_DUST, 0, mt_rand(2, 4))
+			[Item::GLOWSTONE_DUST, 0, mt_rand(2, 4)],
 		];
 	}
 }

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -35,13 +33,14 @@ class SetEntityLinkPacket extends DataPacket{
 	public $to;
 	public $type;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->from = $this->getEntityUniqueId();
 		$this->to = $this->getEntityUniqueId();
 		$this->type = $this->getByte();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putEntityUniqueId($this->from);
 		$this->putEntityUniqueId($this->to);
 		$this->putByte($this->type);

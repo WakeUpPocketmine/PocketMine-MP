@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -52,7 +50,7 @@ class AdventureSettingsPacket extends DataPacket{
 	public $flags = 0;
 	public $userPermission;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->flags = $this->getUnsignedVarInt();
 		$this->userPermission = $this->getUnsignedVarInt();
 
@@ -69,7 +67,9 @@ class AdventureSettingsPacket extends DataPacket{
 		$this->muted          = (bool) ($this->flags & (1 << 10));
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
+
 		$this->flags |= ((int) $this->worldImmutable);
 		$this->flags |= ((int) $this->noPvp)        << 1;
 		$this->flags |= ((int) $this->noPvm)        << 2;

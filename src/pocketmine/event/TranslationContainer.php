@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\event;
 
 class TranslationContainer extends TextContainer{
@@ -32,7 +30,7 @@ class TranslationContainer extends TextContainer{
 	 * @param string   $text
 	 * @param string[] $params
 	 */
-	public function __construct(string $text, array $params = []){
+	public function __construct($text, array $params = []){
 		parent::__construct($text);
 
 		$this->setParameters($params);
@@ -41,29 +39,29 @@ class TranslationContainer extends TextContainer{
 	/**
 	 * @return string[]
 	 */
-	public function getParameters() : array{
+	public function getParameters(){
 		return $this->params;
 	}
 
 	/**
 	 * @param int $i
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	public function getParameter(int $i){
-		return $this->params[$i] ?? null;
+	public function getParameter($i){
+		return isset($this->params[$i]) ? $this->params[$i] : null;
 	}
 
 	/**
 	 * @param int    $i
 	 * @param string $str
 	 */
-	public function setParameter(int $i, string $str){
+	public function setParameter($i, $str){
 		if($i < 0 or $i > count($this->params)){ //Intended, allow to set the last
 			throw new \InvalidArgumentException("Invalid index $i, have " . count($this->params));
 		}
 
-		$this->params[$i] = $str;
+		$this->params[(int) $i] = $str;
 	}
 
 	/**

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -45,7 +43,7 @@ class TextPacket extends DataPacket{
 	public $message;
 	public $parameters = [];
 
-	public function decodePayload(){
+	public function decode(){
 		$this->type = $this->getByte();
 		switch($this->type){
 			case self::TYPE_POPUP:
@@ -69,7 +67,8 @@ class TextPacket extends DataPacket{
 		}
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putByte($this->type);
 		switch($this->type){
 			case self::TYPE_POPUP:

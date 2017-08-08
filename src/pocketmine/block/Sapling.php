@@ -19,14 +19,11 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\generator\object\Tree;
 use pocketmine\level\Level;
-use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\Random;
 
@@ -38,13 +35,17 @@ class Sapling extends Flowable{
 	const ACACIA = 4;
 	const DARK_OAK = 5;
 
-	protected $id = Block::SAPLING;
+	protected $id = self::SAPLING;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function canBeActivated(){
+		return true;
+	}
+
+	public function getName(){
 		static $names = [
 			0 => "Oak Sapling",
 			1 => "Spruce Sapling",
@@ -52,17 +53,16 @@ class Sapling extends Flowable{
 			3 => "Jungle Sapling",
 			4 => "Acacia Sapling",
 			5 => "Dark Oak Sapling",
+			6 => "",
+			7 => "",
 		];
-		return $names[$this->meta & 0x07] ?? "Unknown";
+		return $names[$this->meta & 0x07];
 	}
 
-	public function ticksRandomly() : bool{
-		return true;
-	}
 
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
-		$down = $this->getSide(Vector3::SIDE_DOWN);
-		if($down->getId() === Block::GRASS or $down->getId() === Block::DIRT or $down->getId() === Block::FARMLAND){
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+		$down = $this->getSide(0);
+		if($down->getId() === self::GRASS or $down->getId() === self::DIRT or $down->getId() === self::FARMLAND){
 			$this->getLevel()->setBlock($block, $this, true, true);
 
 			return true;
@@ -71,7 +71,7 @@ class Sapling extends Flowable{
 		return false;
 	}
 
-	public function onActivate(Item $item, Player $player = null) : bool{
+	public function onActivate(Item $item, Player $player = null){
 		if($item->getId() === Item::DYE and $item->getDamage() === 0x0F){ //Bonemeal
 			//TODO: change log type
 			Tree::growTree($this->getLevel(), $this->x, $this->y, $this->z, new Random(mt_rand()), $this->meta & 0x07);
@@ -85,9 +85,9 @@ class Sapling extends Flowable{
 		return false;
 	}
 
-	public function onUpdate(int $type){
+	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(Vector3::SIDE_DOWN)->isTransparent() === true){
+			if($this->getSide(0)->isTransparent() === true){
 				$this->getLevel()->useBreakOn($this);
 
 				return Level::BLOCK_UPDATE_NORMAL;
@@ -110,7 +110,9 @@ class Sapling extends Flowable{
 		return false;
 	}
 
-	public function getVariantBitmask() : int{
-		return 0x07;
+	public function getDrops(Item $item){
+		return [
+			[$this->id, $this->meta & 0x07, 1],
+		];
 	}
 }

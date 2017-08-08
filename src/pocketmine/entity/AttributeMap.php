@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\entity;
 
 class AttributeMap implements \ArrayAccess{
@@ -43,7 +41,7 @@ class AttributeMap implements \ArrayAccess{
 	/**
 	 * @return Attribute[]
 	 */
-	public function getAll() : array{
+	public function getAll(): array{
 		return $this->attributes;
 	}
 

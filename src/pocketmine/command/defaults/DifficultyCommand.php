@@ -19,13 +19,10 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\network\mcpe\protocol\SetDifficultyPacket;
 use pocketmine\Server;
@@ -41,13 +38,15 @@ class DifficultyCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.difficulty");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
 
 		if(count($args) !== 1){
-			throw new InvalidCommandSyntaxException();
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+			return false;
 		}
 
 		$difficulty = Server::getDifficultyFromString($args[0]);
@@ -65,7 +64,9 @@ class DifficultyCommand extends VanillaCommand{
 
 			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.difficulty.success", [$difficulty]));
 		}else{
-			throw new InvalidCommandSyntaxException();
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+			return false;
 		}
 
 		return true;

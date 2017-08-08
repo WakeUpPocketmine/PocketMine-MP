@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\tile;
 
 use pocketmine\event\block\SignChangeEvent;
@@ -64,33 +62,6 @@ class Sign extends Spawnable{
 
 		return true;
 	}
-	
-	/**
-	 * @param int    $index 0-3
-	 * @param string $line
-	 * @param bool   $update
-	 */
-	public function setLine(int $index, string $line, bool $update = true){
-		if($index < 0 or $index > 3){
-			throw new \InvalidArgumentException("Index must be in the range 0-3!");
-		}
-		$this->namedtag["Text" . ($index + 1)] = $line;
-		if($update){
-			$this->onChanged();
-		}
-	}
-	
-	/**
-	 * @param int $index 0-3
-	 *
-	 * @return string
-	 */
-	public function getLine(int $index) : string{
-		if($index < 0 or $index > 3){
-			throw new \InvalidArgumentException("Index must be in the range 0-3!");
-		}
-		return (string) $this->namedtag["Text" . ($index + 1)];
-	}
 
 	public function getText(){
 		return [
@@ -101,7 +72,7 @@ class Sign extends Spawnable{
 		];
 	}
 
-	public function getSpawnCompound() : CompoundTag{
+	public function getSpawnCompound(){
 		return new CompoundTag("", [
 			new StringTag("id", Tile::SIGN),
 			$this->namedtag->Text1,

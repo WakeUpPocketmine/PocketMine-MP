@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -37,8 +35,8 @@ class UpdateBlockPacket extends DataPacket{
 	const FLAG_NOGRAPHIC = 0b0100;
 	const FLAG_PRIORITY  = 0b1000;
 
-	const FLAG_ALL = self::FLAG_NEIGHBORS | self::FLAG_NETWORK;
-	const FLAG_ALL_PRIORITY = self::FLAG_ALL | self::FLAG_PRIORITY;
+	const FLAG_ALL = (self::FLAG_NEIGHBORS | self::FLAG_NETWORK);
+	const FLAG_ALL_PRIORITY = (self::FLAG_ALL | self::FLAG_PRIORITY);
 
 	public $x;
 	public $z;
@@ -47,7 +45,7 @@ class UpdateBlockPacket extends DataPacket{
 	public $blockData;
 	public $flags;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->getBlockPosition($this->x, $this->y, $this->z);
 		$this->blockId = $this->getUnsignedVarInt();
 		$aux = $this->getUnsignedVarInt();
@@ -55,7 +53,8 @@ class UpdateBlockPacket extends DataPacket{
 		$this->flags = $aux >> 4;
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putBlockPosition($this->x, $this->y, $this->z);
 		$this->putUnsignedVarInt($this->blockId);
 		$this->putUnsignedVarInt(($this->flags << 4) | $this->blockData);

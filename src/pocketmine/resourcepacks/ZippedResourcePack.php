@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\resourcepacks;
 
@@ -34,7 +32,7 @@ class ZippedResourcePack implements ResourcePack{
 	 * @param \stdClass $manifest
 	 * @return bool
 	 */
-	public static function verifyManifest(\stdClass $manifest) : bool{
+	public static function verifyManifest(\stdClass $manifest){
 		if(!isset($manifest->format_version) or !isset($manifest->header) or !isset($manifest->modules)){
 			return false;
 		}
@@ -76,11 +74,7 @@ class ZippedResourcePack implements ResourcePack{
 		}
 
 		if(($manifestData = $archive->getFromName("manifest.json")) === false){
-			if($archive->locateName("pack_manifest.json") !== false){
-				throw new \InvalidStateException("Could not load resource pack from $zipPath: unsupported old pack format");
-			}else{
-				throw new \InvalidStateException("Could not load resource pack from $zipPath: manifest.json not found in the archive root");
-			}
+			throw new \InvalidStateException("Could not load resource pack from $zipPath: manifest.json not found");
 		}
 
 		$archive->close();

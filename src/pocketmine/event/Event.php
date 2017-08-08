@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * Event related classes
  */
@@ -36,16 +34,14 @@ abstract class Event{
 	 * Not doing so will deny the proper event initialization
 	 */
 
-	/** @var string|null */
 	protected $eventName = null;
-	/** @var bool */
 	private $isCancelled = false;
 
 	/**
 	 * @return string
 	 */
-	final public function getEventName() : string{
-		return $this->eventName ?? get_class($this);
+	final public function getEventName(){
+		return $this->eventName === null ? get_class($this) : $this->eventName;
 	}
 
 	/**
@@ -53,7 +49,7 @@ abstract class Event{
 	 *
 	 * @throws \BadMethodCallException
 	 */
-	public function isCancelled() : bool{
+	public function isCancelled(){
 		if(!($this instanceof Cancellable)){
 			throw new \BadMethodCallException("Event is not Cancellable");
 		}
@@ -67,19 +63,19 @@ abstract class Event{
 	 *
 	 * @throws \BadMethodCallException
 	 */
-	public function setCancelled(bool $value = true){
+	public function setCancelled($value = true){
 		if(!($this instanceof Cancellable)){
 			throw new \BadMethodCallException("Event is not Cancellable");
 		}
 
 		/** @var Event $this */
-		$this->isCancelled = $value;
+		$this->isCancelled = (bool) $value;
 	}
 
 	/**
 	 * @return HandlerList
 	 */
-	public function getHandlers() : HandlerList{
+	public function getHandlers(){
 		if(static::$handlerList === null){
 			static::$handlerList = new HandlerList();
 		}

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -41,7 +39,7 @@ class ResourcePackStackPacket extends DataPacket{
 	/** @var ResourcePack[] */
 	public $resourcePackStack = [];
 
-	public function decodePayload(){
+	public function decode(){
 		/*$this->mustAccept = $this->getBool();
 		$behaviorPackCount = $this->getUnsignedVarInt();
 		while($behaviorPackCount-- > 0){
@@ -58,7 +56,8 @@ class ResourcePackStackPacket extends DataPacket{
 		}*/
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putBool($this->mustAccept);
 
 		$this->putUnsignedVarInt(count($this->behaviorPackStack));

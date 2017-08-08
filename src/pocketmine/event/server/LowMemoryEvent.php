@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\server;
 
@@ -33,20 +31,16 @@ use pocketmine\utils\Utils;
 class LowMemoryEvent extends ServerEvent{
 	public static $handlerList = null;
 
-	/** @var int */
 	private $memory;
-	/** @var int */
 	private $memoryLimit;
-	/** @var int */
 	private $triggerCount;
-	/** @var bool */
 	private $global;
 
-	public function __construct(int $memory, int $memoryLimit, bool $isGlobal = false, int $triggerCount = 0){
+	public function __construct($memory, $memoryLimit, $isGlobal = false, $triggerCount = 0){
 		$this->memory = $memory;
 		$this->memoryLimit = $memoryLimit;
-		$this->global = $isGlobal;
-		$this->triggerCount = $triggerCount;
+		$this->global = (bool) $isGlobal;
+		$this->triggerCount = (int) $triggerCount;
 	}
 
 	/**
@@ -54,7 +48,7 @@ class LowMemoryEvent extends ServerEvent{
 	 *
 	 * @return int
 	 */
-	public function getMemory() : int{
+	public function getMemory(){
 		return $this->memory;
 	}
 
@@ -63,8 +57,8 @@ class LowMemoryEvent extends ServerEvent{
 	 *
 	 * @return int
 	 */
-	public function getMemoryLimit() : int{
-		return $this->memoryLimit;
+	public function getMemoryLimit(){
+		return $this->memory;
 	}
 
 	/**
@@ -72,14 +66,14 @@ class LowMemoryEvent extends ServerEvent{
 	 *
 	 * @return int
 	 */
-	public function getTriggerCount() : int{
+	public function getTriggerCount(){
 		return $this->triggerCount;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isGlobal() : bool{
+	public function isGlobal(){
 		return $this->global;
 	}
 
@@ -88,7 +82,7 @@ class LowMemoryEvent extends ServerEvent{
 	 *
 	 * @return int
 	 */
-	public function getMemoryFreed() : int{
+	public function getMemoryFreed(){
 		return $this->getMemory() - ($this->isGlobal() ? Utils::getMemoryUsage(true)[1] : Utils::getMemoryUsage(true)[0]);
 	}
 

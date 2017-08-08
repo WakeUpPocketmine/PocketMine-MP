@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -33,12 +31,13 @@ class AvailableCommandsPacket extends DataPacket{
 	public $commands; //JSON-encoded command data
 	public $unknown = "";
 
-	public function decodePayload(){
+	public function decode(){
 		$this->commands = $this->getString();
 		$this->unknown = $this->getString();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putString($this->commands);
 		$this->putString($this->unknown);
 	}

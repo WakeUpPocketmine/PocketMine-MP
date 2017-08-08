@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -34,11 +32,12 @@ class MapInfoRequestPacket extends DataPacket{
 
 	public $mapId;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->mapId = $this->getEntityUniqueId();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putEntityUniqueId($this->mapId);
 	}
 

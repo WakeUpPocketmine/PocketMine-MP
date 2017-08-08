@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\player;
 
@@ -39,15 +37,12 @@ class PlayerAchievementAwardedEvent extends PlayerEvent implements Cancellable{
 	 * @param Player $player
 	 * @param string $achievementId
 	 */
-	public function __construct(Player $player, string $achievementId){
+	public function __construct(Player $player, $achievementId){
 		$this->player = $player;
 		$this->achievement = $achievementId;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getAchievement() : string{
+	public function getAchievement(){
 		return $this->achievement;
 	}
 }

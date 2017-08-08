@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level\particle;
 
 use pocketmine\entity\Entity;
@@ -68,7 +66,7 @@ class FloatingTextParticle extends Particle{
 		$p = [];
 
 		if($this->entityId === null){
-			$this->entityId = Entity::$entityCount++;
+			$this->entityId = (int) bcadd("1095216660480", mt_rand(0, 0x7fffffff)); //No conflict with other things
 		}else{
 			$pk0 = new RemoveEntityPacket();
 			$pk0->entityUniqueId = $this->entityId;
@@ -96,7 +94,7 @@ class FloatingTextParticle extends Particle{
 			);
 			$pk->metadata = [
 				Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-				Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $this->title . ($this->text !== "" ? "\n" . $this->text : "")]
+				Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $this->title . ($this->text !== "" ? "\n" . $this->text : "")],
 			];
 
 			$p[] = $pk;

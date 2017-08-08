@@ -19,21 +19,17 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
-
-use pocketmine\item\Tool;
 
 class WoodenButton extends StoneButton{
 
-	protected $id = Block::WOODEN_BUTTON;
+	protected $id = self::WOODEN_BUTTON;
 
-	public function getName() : string{
-		return "Wooden Button";
+	public function __construct($meta = 0){
+		$this->meta = $meta;
 	}
 
-	public function getToolType() : int{
-		return Tool::TYPE_AXE;
+	public function getName(){
+		return "Wooden Button";
 	}
 }

@@ -19,13 +19,10 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\utils\TextFormat;
 
@@ -40,13 +37,14 @@ class WhitelistCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.whitelist.reload;pocketmine.command.whitelist.enable;pocketmine.command.whitelist.disable;pocketmine.command.whitelist.list;pocketmine.command.whitelist.add;pocketmine.command.whitelist.remove");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
 
 		if(count($args) === 0 or count($args) > 2){
-			throw new InvalidCommandSyntaxException();
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+			return true;
 		}
 
 		if(count($args) === 1){
@@ -70,12 +68,14 @@ class WhitelistCommand extends VanillaCommand{
 
 					return true;
 				case "list":
-					$entries = $sender->getServer()->getWhitelisted()->getAll(true);
-					$result = implode($entries, ", ");
-					$count = count($entries);
-
+					$result = "";
+					$count = 0;
+					foreach($sender->getServer()->getWhitelisted()->getAll(true) as $player){
+						$result .= $player . ", ";
+						++$count;
+					}
 					$sender->sendMessage(new TranslationContainer("commands.whitelist.list", [$count, $count]));
-					$sender->sendMessage($result);
+					$sender->sendMessage(substr($result, 0, -2));
 
 					return true;
 

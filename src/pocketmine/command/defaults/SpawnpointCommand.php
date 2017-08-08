@@ -19,15 +19,11 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
-use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
@@ -43,7 +39,7 @@ class SpawnpointCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.spawnpoint");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
@@ -72,8 +68,8 @@ class SpawnpointCommand extends VanillaCommand{
 		if(count($args) === 4){
 			if($level !== null){
 				$pos = $sender instanceof Player ? $sender->getPosition() : $level->getSpawnLocation();
-				$x = $this->getRelativeDouble($pos->x, $sender, $args[1]);
-				$y = $this->getRelativeDouble($pos->y, $sender, $args[2], 0, Level::Y_MAX);
+				$x = (int) $this->getRelativeDouble($pos->x, $sender, $args[1]);
+				$y = $this->getRelativeDouble($pos->y, $sender, $args[2], 0, 128);
 				$z = $this->getRelativeDouble($pos->z, $sender, $args[3]);
 				$target->setSpawn(new Position($x, $y, $z, $level));
 
@@ -95,6 +91,8 @@ class SpawnpointCommand extends VanillaCommand{
 			}
 		}
 
-		throw new InvalidCommandSyntaxException();
+		$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+		return true;
 	}
 }

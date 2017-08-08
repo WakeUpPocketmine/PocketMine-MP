@@ -19,20 +19,18 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 
 class Furnace extends BurningFurnace{
 
-	protected $id = Block::FURNACE;
+	protected $id = self::FURNACE;
 
-	public function getName() : string{
+	public function getName(){
 		return "Furnace";
 	}
 
-	public function getLightLevel() : int{
+	public function getLightLevel(){
 		return 0;
 	}
 }

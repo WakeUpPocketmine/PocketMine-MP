@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
@@ -38,7 +36,7 @@ class DumpMemoryCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.dumpmemory");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
@@ -52,7 +50,7 @@ class DumpMemoryCommand extends VanillaCommand{
 
 		++self::$executions;
 
-		$sender->getServer()->getMemoryManager()->dumpServerMemory($args[1] ?? ($sender->getServer()->getDataPath() . "/memoryDump_$token"), 48, 80);
+		$sender->getServer()->getMemoryManager()->dumpServerMemory(isset($args[1]) ? $args[1] : $sender->getServer()->getDataPath() . "/memoryDump_$token", 48, 80);
 		return true;
 	}
 }

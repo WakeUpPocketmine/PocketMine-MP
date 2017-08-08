@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\lang;
 
 use pocketmine\event\TextContainer;
@@ -37,7 +35,7 @@ class BaseLang{
 		}
 
 		if(is_dir($path)){
-			$allFiles = scandir($path, SCANDIR_SORT_NONE);
+			$allFiles = scandir($path);
 
 			if($allFiles !== false){
 				$files = array_filter($allFiles, function($filename){
@@ -61,15 +59,12 @@ class BaseLang{
 		return [];
 	}
 
-	/** @var string */
 	protected $langName;
 
-	/** @var string[] */
 	protected $lang = [];
-	/** @var string[] */
 	protected $fallbackLang = [];
 
-	public function __construct(string $lang, string $path = null, string $fallback = self::FALLBACK_LANGUAGE){
+	public function __construct($lang, $path = null, $fallback = self::FALLBACK_LANGUAGE){
 
 		$this->langName = strtolower($lang);
 
@@ -85,15 +80,15 @@ class BaseLang{
 		}
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return $this->get("language.name");
 	}
 
-	public function getLang() : string{
+	public function getLang(){
 		return $this->langName;
 	}
 
-	protected static function loadLang(string $path, array &$d){
+	protected static function loadLang($path, array &$d){
 		if(file_exists($path)){
 			$d = parse_ini_file($path, false, INI_SCANNER_RAW);
 			return true;
@@ -109,7 +104,7 @@ class BaseLang{
 	 *
 	 * @return string
 	 */
-	public function translateString(string $str, array $params = [], string $onlyPrefix = null) : string{
+	public function translateString($str, array $params = [], $onlyPrefix = null){
 		$baseText = $this->get($str);
 		$baseText = $this->parseTranslation(($baseText !== null and ($onlyPrefix === null or strpos($str, $onlyPrefix) === 0)) ? $baseText : $str, $onlyPrefix);
 
@@ -123,7 +118,7 @@ class BaseLang{
 	public function translate(TextContainer $c){
 		if($c instanceof TranslationContainer){
 			$baseText = $this->internalGet($c->getText());
-			$baseText = $this->parseTranslation($baseText ?? $c->getText());
+			$baseText = $this->parseTranslation($baseText !== null ? $baseText : $c->getText());
 
 			foreach($c->getParameters() as $i => $p){
 				$baseText = str_replace("{%$i}", $this->parseTranslation($p), $baseText);
@@ -135,12 +130,7 @@ class BaseLang{
 		return $baseText;
 	}
 
-	/**
-	 * @param string $id
-	 *
-	 * @return string|null
-	 */
-	public function internalGet(string $id){
+	public function internalGet($id){
 		if(isset($this->lang[$id])){
 			return $this->lang[$id];
 		}elseif(isset($this->fallbackLang[$id])){
@@ -150,12 +140,7 @@ class BaseLang{
 		return null;
 	}
 
-	/**
-	 * @param string $id
-	 *
-	 * @return string
-	 */
-	public function get(string $id) : string{
+	public function get($id){
 		if(isset($this->lang[$id])){
 			return $this->lang[$id];
 		}elseif(isset($this->fallbackLang[$id])){
@@ -165,13 +150,7 @@ class BaseLang{
 		return $id;
 	}
 
-	/**
-	 * @param string      $text
-	 * @param string|null $onlyPrefix
-	 *
-	 * @return string
-	 */
-	protected function parseTranslation(string $text, string $onlyPrefix = null) : string{
+	protected function parseTranslation($text, $onlyPrefix = null){
 		$newString = "";
 
 		$replaceString = null;

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * Events related Plugin enable / disable events
  */
@@ -42,7 +40,7 @@ abstract class PluginEvent extends Event{
 	/**
 	 * @return Plugin
 	 */
-	public function getPlugin() : Plugin{
+	public function getPlugin(){
 		return $this->plugin;
 	}
 }

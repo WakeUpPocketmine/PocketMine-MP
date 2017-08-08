@@ -19,15 +19,15 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ExplosionPrimeEvent;
 use pocketmine\level\Explosion;
 use pocketmine\nbt\tag\ByteTag;
+use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\Player;
 
 class PrimedTNT extends Entity implements Explosive{
 	const NETWORK_ID = 65;
@@ -46,9 +46,9 @@ class PrimedTNT extends Entity implements Explosive{
 	public $canCollide = false;
 
 
-	public function attack(EntityDamageEvent $source){
+	public function attack($damage, EntityDamageEvent $source){
 		if($source->getCause() === EntityDamageEvent::CAUSE_VOID){
-			parent::attack($source);
+			parent::attack($damage, $source);
 		}
 	}
 
@@ -141,5 +141,21 @@ class PrimedTNT extends Entity implements Explosive{
 			}
 			$explosion->explodeB();
 		}
+	}
+
+	public function spawnTo(Player $player){
+		$pk = new AddEntityPacket();
+		$pk->type = PrimedTNT::NETWORK_ID;
+		$pk->entityRuntimeId = $this->getId();
+		$pk->x = $this->x;
+		$pk->y = $this->y;
+		$pk->z = $this->z;
+		$pk->speedX = $this->motionX;
+		$pk->speedY = $this->motionY;
+		$pk->speedZ = $this->motionZ;
+		$pk->metadata = $this->dataProperties;
+		$player->dataPacket($pk);
+
+		parent::spawnTo($player);
 	}
 }

@@ -19,16 +19,12 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * All the Tile classes and related classes
  */
 namespace pocketmine\tile;
 
-use pocketmine\block\Block;
 use pocketmine\event\Timings;
-use pocketmine\event\TimingsHandler;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -47,7 +43,6 @@ abstract class Tile extends Position{
 	const MOB_SPAWNER = "MobSpawner";
 	const SIGN = "Sign";
 	const SKULL = "Skull";
-	const BED = "Bed";
 
 	public static $tileCount = 1;
 
@@ -66,11 +61,10 @@ abstract class Tile extends Position{
 	protected $server;
 	protected $timings;
 
-	/** @var TimingsHandler */
+	/** @var \pocketmine\event\TimingsHandler */
 	public $tickTimer;
 
 	public static function init(){
-		self::registerTile(Bed::class);
 		self::registerTile(Chest::class);
 		self::registerTile(EnchantTable::class);
 		self::registerTile(FlowerPot::class);
@@ -86,7 +80,7 @@ abstract class Tile extends Position{
 	 * @param CompoundTag $nbt
 	 * @param             $args
 	 *
-	 * @return Tile|null
+	 * @return Tile
 	 */
 	public static function createTile($type, Level $level, CompoundTag $nbt, ...$args){
 		if(isset(self::$knownTiles[$type])){
@@ -102,7 +96,7 @@ abstract class Tile extends Position{
 	 *
 	 * @return bool
 	 */
-	public static function registerTile($className) : bool{
+	public static function registerTile($className){
 		$class = new \ReflectionClass($className);
 		if(is_a($className, Tile::class, true) and !$class->isAbstract()){
 			self::$knownTiles[$class->getShortName()] = $className;
@@ -115,9 +109,10 @@ abstract class Tile extends Position{
 
 	/**
 	 * Returns the short save name
+	 *
 	 * @return string
 	 */
-	public function getSaveId() : string{
+	public function getSaveId(){
 		return self::$shortNames[static::class];
 	}
 
@@ -165,16 +160,13 @@ abstract class Tile extends Position{
 	}
 
 	/**
-	 * @return Block
+	 * @return \pocketmine\block\Block
 	 */
-	public function getBlock() : Block{
+	public function getBlock(){
 		return $this->level->getBlock($this);
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function onUpdate() : bool{
+	public function onUpdate(){
 		return false;
 	}
 

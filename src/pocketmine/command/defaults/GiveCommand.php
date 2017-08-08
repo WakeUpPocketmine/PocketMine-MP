@@ -19,13 +19,10 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\nbt\JsonNBTParser;
@@ -44,13 +41,15 @@ class GiveCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.give");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
 
 		if(count($args) < 2){
-			throw new InvalidCommandSyntaxException();
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+			return true;
 		}
 
 		$player = $sender->getServer()->getPlayer($args[0]);

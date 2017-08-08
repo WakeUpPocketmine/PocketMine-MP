@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -32,18 +30,20 @@ class Wood extends Solid{
 	const SPRUCE = 1;
 	const BIRCH = 2;
 	const JUNGLE = 3;
+	//const ACACIA = 4;
+	//const DARK_OAK = 5;
 
-	protected $id = Block::WOOD;
+	protected $id = self::WOOD;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 2;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		static $names = [
 			self::OAK => "Oak Wood",
 			self::SPRUCE => "Spruce Wood",
@@ -53,7 +53,7 @@ class Wood extends Solid{
 		return $names[$this->meta & 0x03];
 	}
 
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		$faces = [
 			0 => 0,
 			1 => 0,
@@ -69,11 +69,13 @@ class Wood extends Solid{
 		return true;
 	}
 
-	public function getVariantBitmask() : int{
-		return 0x03;
+	public function getDrops(Item $item){
+		return [
+			[$this->id, $this->meta & 0x03, 1],
+		];
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_AXE;
 	}
 }

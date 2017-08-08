@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -29,17 +27,17 @@ use pocketmine\math\AxisAlignedBB;
 
 class GrassPath extends Transparent{
 
-	protected $id = Block::GRASS_PATH;
+	protected $id = self::GRASS_PATH;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Grass Path";
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_SHOVEL;
 	}
 
@@ -49,22 +47,18 @@ class GrassPath extends Transparent{
 			$this->y,
 			$this->z,
 			$this->x + 1,
-			$this->y + 1, //TODO: this should be 0.9375, but MCPE currently treats them as a full block (https://bugs.mojang.com/browse/MCPE-12109)
+			$this->y + 0.9375,
 			$this->z + 1
 		);
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0.6;
 	}
 
-	public function getDrops(Item $item) : array{
+	public function getDrops(Item $item){
 		return [
-			Item::get(Item::DIRT, 0, 1)
+			[Item::DIRT, 0, 1],
 		];
-	}
-
-	public function canBeTilled() : bool{
-		return true;
 	}
 }

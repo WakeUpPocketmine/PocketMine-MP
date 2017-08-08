@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -34,11 +32,12 @@ class RiderJumpPacket extends DataPacket{
 
 	public $unknown;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->unknown = $this->getVarInt();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putVarInt($this->unknown);
 	}
 

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -38,12 +36,13 @@ class ShowCreditsPacket extends DataPacket{
 	public $playerEid;
 	public $status;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->playerEid = $this->getEntityRuntimeId();
 		$this->status = $this->getVarInt();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putEntityRuntimeId($this->playerEid);
 		$this->putVarInt($this->status);
 	}

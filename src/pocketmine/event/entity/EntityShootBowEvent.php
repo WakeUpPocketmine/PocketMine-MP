@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,18 +14,16 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\entity;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
-use pocketmine\entity\projectile\Projectile;
+use pocketmine\entity\Projectile;
 use pocketmine\event\Cancellable;
 use pocketmine\item\Item;
 
@@ -45,7 +43,7 @@ class EntityShootBowEvent extends EntityEvent implements Cancellable{
 	 * @param Projectile $projectile
 	 * @param float      $force
 	 */
-	public function __construct(Living $shooter, Item $bow, Projectile $projectile, float $force){
+	public function __construct(Living $shooter, Item $bow, Projectile $projectile, $force){
 		$this->entity = $shooter;
 		$this->bow = $bow;
 		$this->projectile = $projectile;
@@ -62,7 +60,7 @@ class EntityShootBowEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return Item
 	 */
-	public function getBow() : Item{
+	public function getBow(){
 		return $this->bow;
 	}
 
@@ -89,14 +87,14 @@ class EntityShootBowEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return float
 	 */
-	public function getForce() : float{
+	public function getForce(){
 		return $this->force;
 	}
 
 	/**
 	 * @param float $force
 	 */
-	public function setForce(float $force){
+	public function setForce($force){
 		$this->force = $force;
 	}
 

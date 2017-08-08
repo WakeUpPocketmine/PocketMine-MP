@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -40,13 +38,14 @@ class SetSpawnPositionPacket extends DataPacket{
 	public $z;
 	public $spawnForced;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->spawnType = $this->getVarInt();
 		$this->getBlockPosition($this->x, $this->y, $this->z);
 		$this->spawnForced = $this->getBool();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putVarInt($this->spawnType);
 		$this->putBlockPosition($this->x, $this->y, $this->z);
 		$this->putBool($this->spawnForced);

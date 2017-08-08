@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\utils;
 
 use pocketmine\Thread;
@@ -44,7 +42,7 @@ class ServerKiller extends Thread{
 		}
 	}
 
-	public function getThreadName() : string{
+	public function getThreadName(){
 		return "Server Killer";
 	}
 }

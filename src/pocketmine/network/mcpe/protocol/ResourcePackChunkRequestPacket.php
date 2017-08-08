@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -35,12 +33,13 @@ class ResourcePackChunkRequestPacket extends DataPacket{
 	public $packId;
 	public $chunkIndex;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->packId = $this->getString();
 		$this->chunkIndex = $this->getLInt();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putString($this->packId);
 		$this->putLInt($this->chunkIndex);
 	}

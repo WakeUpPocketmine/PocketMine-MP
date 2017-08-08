@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine;
 
 use pocketmine\event\TranslationContainer;
@@ -41,82 +39,76 @@ abstract class Achievement{
 		"mineWood" => [
 			"name" => "Getting Wood",
 			"requires" => [ //"openInventory",
-			]
+			],
 		],
 		"buildWorkBench" => [
 			"name" => "Benchmarking",
 			"requires" => [
-				"mineWood"
-			]
+				"mineWood",
+			],
 		],
 		"buildPickaxe" => [
 			"name" => "Time to Mine!",
 			"requires" => [
-				"buildWorkBench"
-			]
+				"buildWorkBench",
+			],
 		],
 		"buildFurnace" => [
 			"name" => "Hot Topic",
 			"requires" => [
-				"buildPickaxe"
-			]
+				"buildPickaxe",
+			],
 		],
 		"acquireIron" => [
 			"name" => "Acquire hardware",
 			"requires" => [
-				"buildFurnace"
-			]
+				"buildFurnace",
+			],
 		],
 		"buildHoe" => [
 			"name" => "Time to Farm!",
 			"requires" => [
-				"buildWorkBench"
-			]
+				"buildWorkBench",
+			],
 		],
 		"makeBread" => [
 			"name" => "Bake Bread",
 			"requires" => [
-				"buildHoe"
-			]
+				"buildHoe",
+			],
 		],
 		"bakeCake" => [
 			"name" => "The Lie",
 			"requires" => [
-				"buildHoe"
-			]
+				"buildHoe",
+			],
 		],
 		"buildBetterPickaxe" => [
 			"name" => "Getting an Upgrade",
 			"requires" => [
-				"buildPickaxe"
-			]
+				"buildPickaxe",
+			],
 		],
 		"buildSword" => [
 			"name" => "Time to Strike!",
 			"requires" => [
-				"buildWorkBench"
-			]
+				"buildWorkBench",
+			],
 		],
 		"diamonds" => [
 			"name" => "DIAMONDS!",
 			"requires" => [
-				"acquireIron"
-			]
-		]
+				"acquireIron",
+			],
+		],
 
 	];
 
 
-	/**
-	 * @param Player $player
-	 * @param string $achievementId
-	 *
-	 * @return bool
-	 */
-	public static function broadcast(Player $player, string $achievementId) : bool{
+	public static function broadcast(Player $player, $achievementId){
 		if(isset(Achievement::$list[$achievementId])){
 			$translation = new TranslationContainer("chat.type.achievement", [$player->getDisplayName(), TextFormat::GREEN . Achievement::$list[$achievementId]["name"] . TextFormat::RESET]);
-			if(Server::getInstance()->getConfigBoolean("announce-player-achievements", true) === true){
+			if(Server::getInstance()->getConfigString("announce-player-achievements", true) === true){
 				Server::getInstance()->broadcastMessage($translation);
 			}else{
 				$player->sendMessage($translation);
@@ -128,18 +120,11 @@ abstract class Achievement{
 		return false;
 	}
 
-	/**
-	 * @param string $achievementId
-	 * @param string $achievementName
-	 * @param array  $requires
-	 *
-	 * @return bool
-	 */
-	public static function add(string $achievementId, string $achievementName, array $requires = []) : bool{
+	public static function add($achievementId, $achievementName, array $requires = []){
 		if(!isset(Achievement::$list[$achievementId])){
 			Achievement::$list[$achievementId] = [
 				"name" => $achievementName,
-				"requires" => $requires
+				"requires" => $requires,
 			];
 
 			return true;

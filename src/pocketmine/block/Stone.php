@@ -19,12 +19,9 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
 class Stone extends Solid{
@@ -36,25 +33,21 @@ class Stone extends Solid{
 	const ANDESITE = 5;
 	const POLISHED_ANDESITE = 6;
 
-	protected $id = Block::STONE;
+	protected $id = self::STONE;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 1.5;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getRequiredHarvestLevel() : int{
-		return TieredTool::TIER_WOODEN;
-	}
-
-	public function getName() : string{
+	public function getName(){
 		static $names = [
 			self::NORMAL => "Stone",
 			self::GRANITE => "Granite",
@@ -68,13 +61,13 @@ class Stone extends Solid{
 		return $names[$this->meta & 0x07];
 	}
 
-	public function getDrops(Item $item) : array{
-		if($this->getDamage() === 0 and $this->canBeBrokenWith($item)){
+	public function getDrops(Item $item){
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
 			return [
-				Item::get(Item::COBBLESTONE, $this->getDamage(), 1)
+				[$this->getDamage() === 0 ? Item::COBBLESTONE : Item::STONE, $this->getDamage(), 1],
 			];
 		}else{
-			return parent::getDrops($item);
+			return [];
 		}
 	}
 

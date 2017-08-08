@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\inventory;
 
 use pocketmine\event\inventory\InventoryTransactionEvent;
@@ -32,7 +30,6 @@ use pocketmine\Server;
  * This TransactionGroup only allows doing Transaction between one / two inventories
  */
 class SimpleTransactionGroup implements TransactionGroup{
-	/** @var float */
 	private $creationTime;
 	protected $hasExecuted = false;
 	/** @var Player */
@@ -55,25 +52,19 @@ class SimpleTransactionGroup implements TransactionGroup{
 	/**
 	 * @return Player
 	 */
-	public function getSource() : Player{
+	public function getSource(){
 		return $this->source;
 	}
 
-	public function getCreationTime() : float{
+	public function getCreationTime(){
 		return $this->creationTime;
 	}
 
-	/**
-	 * @return Inventory[]
-	 */
-	public function getInventories() : array{
+	public function getInventories(){
 		return $this->inventories;
 	}
 
-	/**
-	 * @return Transaction[]
-	 */
-	public function getTransactions() : array{
+	public function getTransactions(){
 		return $this->transactions;
 	}
 
@@ -100,7 +91,7 @@ class SimpleTransactionGroup implements TransactionGroup{
 	 *
 	 * @return bool
 	 */
-	protected function matchItems(array &$needItems, array &$haveItems) : bool{
+	protected function matchItems(array &$needItems, array &$haveItems){
 		foreach($this->transactions as $key => $ts){
 			if($ts->getTargetItem()->getId() !== Item::AIR){
 				$needItems[] = $ts->getTargetItem();
@@ -135,7 +126,7 @@ class SimpleTransactionGroup implements TransactionGroup{
 		return true;
 	}
 
-	public function canExecute() : bool{
+	public function canExecute(){
 		$haveItems = [];
 		$needItems = [];
 
@@ -156,10 +147,7 @@ class SimpleTransactionGroup implements TransactionGroup{
 		return false;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function execute() : bool{
+	public function execute(){
 		if($this->hasExecuted() or !$this->canExecute()){
 			return false;
 		}
@@ -185,7 +173,7 @@ class SimpleTransactionGroup implements TransactionGroup{
 		return true;
 	}
 
-	public function hasExecuted() : bool{
+	public function hasExecuted(){
 		return $this->hasExecuted;
 	}
 }

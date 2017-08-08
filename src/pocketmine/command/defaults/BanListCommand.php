@@ -19,14 +19,10 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
-use pocketmine\permission\BanEntry;
 
 class BanListCommand extends VanillaCommand{
 
@@ -39,7 +35,7 @@ class BanListCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.ban.list");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
@@ -51,17 +47,20 @@ class BanListCommand extends VanillaCommand{
 			}elseif($args[0] === "players"){
 				$list = $sender->getServer()->getNameBans();
 			}else{
-				throw new InvalidCommandSyntaxException();
+				$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+				return false;
 			}
 		}else{
 			$list = $sender->getServer()->getNameBans();
 			$args[0] = "players";
 		}
 
+		$message = "";
 		$list = $list->getEntries();
-		$message = implode(", ", array_map(function(BanEntry $entry){
-			return $entry->getName();
-		}, $list));
+		foreach($list as $entry){
+			$message .= $entry->getName() . ", ";
+		}
 
 		if($args[0] === "ips"){
 			$sender->sendMessage(new TranslationContainer("commands.banlist.ips", [count($list)]));
@@ -69,7 +68,7 @@ class BanListCommand extends VanillaCommand{
 			$sender->sendMessage(new TranslationContainer("commands.banlist.players", [count($list)]));
 		}
 
-		$sender->sendMessage($message);
+		$sender->sendMessage(substr($message, 0, -2));
 
 		return true;
 	}

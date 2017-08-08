@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -35,12 +33,13 @@ class StopSoundPacket extends DataPacket{
 	public $soundName;
 	public $stopAll;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->soundName = $this->getString();
 		$this->stopAll = $this->getBool();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putString($this->soundName);
 		$this->putBool($this->stopAll);
 	}

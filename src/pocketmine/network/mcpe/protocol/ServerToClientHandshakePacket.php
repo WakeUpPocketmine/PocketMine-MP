@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -38,12 +36,13 @@ class ServerToClientHandshakePacket extends DataPacket{
 		return true;
 	}
 
-	public function decodePayload(){
+	public function decode(){
 		$this->publicKey = $this->getString();
 		$this->serverToken = $this->getString();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putString($this->publicKey);
 		$this->putString($this->serverToken);
 	}

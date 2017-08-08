@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\tile;
 
 use pocketmine\inventory\ChestInventory;
@@ -84,7 +82,7 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 	/**
 	 * @return int
 	 */
-	public function getSize() : int{
+	public function getSize(){
 		return 27;
 	}
 
@@ -93,9 +91,9 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 	 *
 	 * @return int
 	 */
-	protected function getSlotIndex(int $index){
+	protected function getSlotIndex($index){
 		foreach($this->namedtag->Items as $i => $slot){
-			if((int) $slot["Slot"] === $index){
+			if((int) $slot["Slot"] === (int) $index){
 				return (int) $i;
 			}
 		}
@@ -110,7 +108,7 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 	 *
 	 * @return Item
 	 */
-	public function getItem(int $index) : Item{
+	public function getItem($index){
 		$i = $this->getSlotIndex($index);
 		if($i < 0){
 			return Item::get(Item::AIR, 0, 0);
@@ -124,8 +122,10 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 	 *
 	 * @param int  $index
 	 * @param Item $item
+	 *
+	 * @return bool
 	 */
-	public function setItem(int $index, Item $item){
+	public function setItem($index, Item $item){
 		$i = $this->getSlotIndex($index);
 
 		$d = $item->nbtSerialize($index);
@@ -144,6 +144,8 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 		}else{
 			$this->namedtag->Items[$i] = $d;
 		}
+
+		return true;
 	}
 
 	/**
@@ -186,24 +188,15 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 		}
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
+	public function getName(){
 		return isset($this->namedtag->CustomName) ? $this->namedtag->CustomName->getValue() : "Chest";
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function hasName() : bool{
+	public function hasName(){
 		return isset($this->namedtag->CustomName);
 	}
 
-	/**
-	 * @param string $str
-	 */
-	public function setName(string $str){
+	public function setName($str){
 		if($str === ""){
 			unset($this->namedtag->CustomName);
 			return;
@@ -221,7 +214,7 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 	}
 
 	/**
-	 * @return Chest|null
+	 * @return Chest
 	 */
 	public function getPair(){
 		if($this->isPaired()){
@@ -276,7 +269,7 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 		return true;
 	}
 
-	public function getSpawnCompound() : CompoundTag{
+	public function getSpawnCompound(){
 		if($this->isPaired()){
 			$c = new CompoundTag("", [
 				new StringTag("id", Tile::CHEST),

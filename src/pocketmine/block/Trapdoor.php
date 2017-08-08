@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -38,18 +36,22 @@ class Trapdoor extends Transparent{
 	const MASK_SIDE_EAST = 0;
 	const MASK_SIDE_WEST = 1;
 
-	protected $id = Block::TRAPDOOR;
+	protected $id = self::TRAPDOOR;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Wooden Trapdoor";
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 3;
+	}
+
+	public function canBeActivated(){
+		return true;
 	}
 
 	protected function recalculateBoundingBox(){
@@ -123,7 +125,7 @@ class Trapdoor extends Transparent{
 		return $bb;
 	}
 
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		$directions = [
 			0 => 1,
 			1 => 3,
@@ -140,18 +142,20 @@ class Trapdoor extends Transparent{
 		return true;
 	}
 
-	public function onActivate(Item $item, Player $player = null) : bool{
+	public function getDrops(Item $item){
+		return [
+			[$this->id, 0, 1],
+		];
+	}
+
+	public function onActivate(Item $item, Player $player = null){
 		$this->meta ^= self::MASK_OPENED;
 		$this->getLevel()->setBlock($this, $this, true);
 		$this->level->addSound(new DoorSound($this));
 		return true;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_AXE;
-	}
-
-	public function getVariantBitmask() : int{
-		return 0;
 	}
 }

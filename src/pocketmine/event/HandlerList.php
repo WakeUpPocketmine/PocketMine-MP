@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\event;
 
 use pocketmine\plugin\Plugin;
@@ -152,7 +150,7 @@ class HandlerList{
 	 *
 	 * @return RegisteredListener[]
 	 */
-	public function getRegisteredListeners($plugin = null) : array{
+	public function getRegisteredListeners($plugin = null){
 		if($plugin !== null){
 			$listeners = [];
 			foreach($this->getRegisteredListeners(null) as $hash => $listener){
@@ -174,7 +172,7 @@ class HandlerList{
 	/**
 	 * @return HandlerList[]
 	 */
-	public static function getHandlerLists() : array{
+	public static function getHandlerLists(){
 		return self::$allLists;
 	}
 

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\event\entity;
 
 use pocketmine\entity\Effect;
@@ -81,7 +79,7 @@ class EntityEatEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return Effect[]
 	 */
-	public function getAdditionalEffects() : array{
+	public function getAdditionalEffects(){
 		return $this->additionalEffects;
 	}
 

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network;
 
 use pocketmine\network\mcpe\protocol\BatchPacket;
@@ -33,14 +31,10 @@ class CompressBatchedTask extends AsyncTask{
 	public $data;
 	public $targets;
 
-	/**
-	 * @param BatchPacket $batch
-	 * @param string[]    $targets
-	 */
-	public function __construct(BatchPacket $batch, array $targets){
+	public function __construct(BatchPacket $batch, array $targets, $level = 7){
 		$this->data = $batch->payload;
 		$this->targets = serialize($targets);
-		$this->level = $batch->getCompressionLevel();
+		$this->level = $level;
 	}
 
 	public function onRun(){
@@ -48,7 +42,7 @@ class CompressBatchedTask extends AsyncTask{
 		$batch->payload = $this->data;
 		$this->data = null;
 
-		$batch->setCompressionLevel($this->level);
+		$batch->compress($this->level);
 		$batch->encode();
 
 		$this->setResult($batch->buffer, false);
@@ -57,6 +51,7 @@ class CompressBatchedTask extends AsyncTask{
 	public function onCompletion(Server $server){
 		$pk = new BatchPacket($this->getResult());
 		$pk->isEncoded = true;
+		$pk->compressed = true;
 		$server->broadcastPacketsCallback($pk, unserialize($this->targets));
 	}
 }

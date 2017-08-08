@@ -19,25 +19,34 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
+use pocketmine\block\Fire;
 use pocketmine\block\Solid;
-use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\level\Level;
 use pocketmine\Player;
 
 class FlintSteel extends Tool{
+	public function __construct($meta = 0, $count = 1){
+		parent::__construct(self::FLINT_STEEL, $meta, $count, "Flint and Steel");
+	}
 
-	public function onClickBlock(Player $player, Block $block, Block $blockClicked, int $face, float $fx, float $fy, float $fz) : bool{
-		if(($block->getId() === Block::AIR or $block->getId() === Block::FIRE) and ($blockClicked instanceof Solid)){
-			//MCPE deals damage to flint and steel if used on an existing fire.
-			$player->getLevel()->setBlock($block, Block::get(Block::FIRE), true);
-			$player->getLevel()->broadcastLevelSoundEvent($block->add(0.5, 0.5, 0.5), LevelSoundEventPacket::SOUND_IGNITE);
-			$this->applyDamage(1);
+	public function canBeActivated(){
+		return true;
+	}
 
-			//TODO: nether portals
+	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
+		if($block->getId() === self::AIR and ($target instanceof Solid)){
+			$level->setBlock($block, new Fire(), true);
+			if(($player->gamemode & 0x01) === 0 and $this->useOn($block)){
+				if($this->getDamage() >= $this->getMaxDurability()){
+					$player->getInventory()->setItemInHand(new Item(Item::AIR, 0, 0));
+				}else{
+					$this->meta++;
+					$player->getInventory()->setItemInHand($this);
+				}
+			}
 
 			return true;
 		}

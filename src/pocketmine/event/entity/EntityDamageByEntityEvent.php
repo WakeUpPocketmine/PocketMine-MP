@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\entity;
 
@@ -37,13 +35,13 @@ class EntityDamageByEntityEvent extends EntityDamageEvent{
 	private $knockBack;
 
 	/**
-	 * @param Entity        $damager
-	 * @param Entity        $entity
-	 * @param int           $cause
-	 * @param float|float[] $damage
-	 * @param float         $knockBack
+	 * @param Entity    $damager
+	 * @param Entity    $entity
+	 * @param int       $cause
+	 * @param int|int[] $damage
+	 * @param float     $knockBack
 	 */
-	public function __construct(Entity $damager, Entity $entity, int $cause, $damage, float $knockBack = 0.4){
+	public function __construct(Entity $damager, Entity $entity, $cause, $damage, $knockBack = 0.4){
 		$this->damagerEid = $damager->getId();
 		$this->knockBack = $knockBack;
 		parent::__construct($entity, $cause, $damage);
@@ -72,14 +70,14 @@ class EntityDamageByEntityEvent extends EntityDamageEvent{
 	/**
 	 * @return float
 	 */
-	public function getKnockBack() : float{
+	public function getKnockBack(){
 		return $this->knockBack;
 	}
 
 	/**
 	 * @param float $knockBack
 	 */
-	public function setKnockBack(float $knockBack){
+	public function setKnockBack($knockBack){
 		$this->knockBack = $knockBack;
 	}
 }

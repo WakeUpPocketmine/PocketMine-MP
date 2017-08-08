@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\entity;
 
@@ -35,9 +33,7 @@ class EntityRegainHealthEvent extends EntityEvent implements Cancellable{
 	const CAUSE_CUSTOM = 3;
 	const CAUSE_SATURATION = 4;
 
-	/** @var float */
 	private $amount;
-	/** @var int */
 	private $reason;
 
 
@@ -46,27 +42,27 @@ class EntityRegainHealthEvent extends EntityEvent implements Cancellable{
 	 * @param float  $amount
 	 * @param int    $regainReason
 	 */
-	public function __construct(Entity $entity, float $amount, int $regainReason){
+	public function __construct(Entity $entity, $amount, $regainReason){
 		$this->entity = $entity;
 		$this->amount = $amount;
-		$this->reason = $regainReason;
+		$this->reason = (int) $regainReason;
 	}
 
 	/**
 	 * @return float
 	 */
-	public function getAmount() : float{
+	public function getAmount(){
 		return $this->amount;
 	}
 
 	/**
 	 * @param float $amount
 	 */
-	public function setAmount(float $amount){
+	public function setAmount($amount){
 		$this->amount = $amount;
 	}
 
-	public function getRegainReason() : int{
+	public function getRegainReason(){
 		return $this->reason;
 	}
 

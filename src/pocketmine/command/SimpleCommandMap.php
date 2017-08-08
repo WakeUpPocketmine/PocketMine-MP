@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command;
 
 use pocketmine\command\defaults\BanCommand;
@@ -64,7 +62,6 @@ use pocketmine\command\defaults\TransferServerCommand;
 use pocketmine\command\defaults\VanillaCommand;
 use pocketmine\command\defaults\VersionCommand;
 use pocketmine\command\defaults\WhitelistCommand;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
@@ -131,20 +128,13 @@ class SimpleCommandMap implements CommandMap{
 	}
 
 
-	public function registerAll(string $fallbackPrefix, array $commands){
+	public function registerAll($fallbackPrefix, array $commands){
 		foreach($commands as $command){
 			$this->register($fallbackPrefix, $command);
 		}
 	}
 
-	/**
-	 * @param string      $fallbackPrefix
-	 * @param Command     $command
-	 * @param string|null $label
-	 *
-	 * @return bool
-	 */
-	public function register(string $fallbackPrefix, Command $command, string $label = null) : bool{
+	public function register($fallbackPrefix, Command $command, $label = null){
 		if($label === null){
 			$label = $command->getName();
 		}
@@ -170,15 +160,7 @@ class SimpleCommandMap implements CommandMap{
 		return $registered;
 	}
 
-	/**
-	 * @param Command $command
-	 * @param bool $isAlias
-	 * @param string $fallbackPrefix
-	 * @param string $label
-	 *
-	 * @return bool
-	 */
-	private function registerAlias(Command $command, bool $isAlias, string $fallbackPrefix, string $label) : bool{
+	private function registerAlias(Command $command, $isAlias, $fallbackPrefix, $label){
 		$this->knownCommands[$fallbackPrefix . ":" . $label] = $command;
 		if(($command instanceof VanillaCommand or $isAlias) and isset($this->knownCommands[$label])){
 			return false;
@@ -222,7 +204,7 @@ class SimpleCommandMap implements CommandMap{
 		return null;
 	}
 
-	public function dispatch(CommandSender $sender, string $commandLine) : bool{
+	public function dispatch(CommandSender $sender, $commandLine){
 		$args = explode(" ", $commandLine);
 		$sentCommandLabel = "";
 		$target = $this->matchCommand($sentCommandLabel, $args);
@@ -232,17 +214,13 @@ class SimpleCommandMap implements CommandMap{
 		}
 
 		$target->timings->startTiming();
-
 		try{
 			$target->execute($sender, $sentCommandLabel, $args);
-		}catch(InvalidCommandSyntaxException $e){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$target->getUsage()]));
 		}catch(\Throwable $e){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.exception"));
 			$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.command.exception", [$commandLine, (string) $target, $e->getMessage()]));
 			$sender->getServer()->getLogger()->logException($e);
 		}
-
 		$target->timings->stopTiming();
 
 		return true;
@@ -256,14 +234,14 @@ class SimpleCommandMap implements CommandMap{
 		$this->setDefaultCommands();
 	}
 
-	public function getCommand(string $name){
+	public function getCommand($name){
 		return $this->knownCommands[$name] ?? null;
 	}
 
 	/**
 	 * @return Command[]
 	 */
-	public function getCommands() : array{
+	public function getCommands(){
 		return $this->knownCommands;
 	}
 

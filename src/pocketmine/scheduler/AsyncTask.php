@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\scheduler;
 
 use pocketmine\Collectable;
@@ -46,7 +44,7 @@ abstract class AsyncTask extends Collectable{
 	private $result = null;
 	private $serialized = false;
 	private $cancelRun = false;
-	/** @var int|null */
+	/** @var int */
 	private $taskId = null;
 
 	private $crashed = false;
@@ -89,7 +87,7 @@ abstract class AsyncTask extends Collectable{
 		$this->setGarbage();
 	}
 
-	public function isCrashed() : bool{
+	public function isCrashed(){
 		return $this->crashed;
 	}
 
@@ -104,14 +102,14 @@ abstract class AsyncTask extends Collectable{
 		$this->cancelRun = true;
 	}
 
-	public function hasCancelledRun() : bool{
+	public function hasCancelledRun(){
 		return $this->cancelRun === true;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function hasResult() : bool{
+	public function hasResult(){
 		return $this->result !== null;
 	}
 
@@ -119,18 +117,15 @@ abstract class AsyncTask extends Collectable{
 	 * @param mixed $result
 	 * @param bool  $serialize
 	 */
-	public function setResult($result, bool $serialize = true){
+	public function setResult($result, $serialize = true){
 		$this->result = $serialize ? serialize($result) : $result;
 		$this->serialized = $serialize;
 	}
 
-	public function setTaskId(int $taskId){
+	public function setTaskId($taskId){
 		$this->taskId = $taskId;
 	}
 
-	/**
-	 * @return int|null
-	 */
 	public function getTaskId(){
 		return $this->taskId;
 	}
@@ -142,7 +137,7 @@ abstract class AsyncTask extends Collectable{
 	 * @param string $identifier
 	 * @return mixed
 	 */
-	public function getFromThreadStore(string $identifier){
+	public function getFromThreadStore($identifier){
 		global $store;
 		return ($this->isGarbage() or !isset($store[$identifier])) ? null : $store[$identifier];
 	}
@@ -154,7 +149,7 @@ abstract class AsyncTask extends Collectable{
 	 * @param string $identifier
 	 * @param mixed  $value
 	 */
-	public function saveToThreadStore(string $identifier, $value){
+	public function saveToThreadStore($identifier, $value){
 		global $store;
 		if(!$this->isGarbage()){
 			$store[$identifier] = $value;

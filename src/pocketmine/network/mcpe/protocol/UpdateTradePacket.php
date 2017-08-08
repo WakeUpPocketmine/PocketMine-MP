@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -44,7 +42,7 @@ class UpdateTradePacket extends DataPacket{
 	public $displayName;
 	public $offers;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->windowId = $this->getByte();
 		$this->windowType = $this->getByte();
 		$this->varint1 = $this->getVarInt();
@@ -53,10 +51,11 @@ class UpdateTradePacket extends DataPacket{
 		$this->traderEid = $this->getEntityUniqueId();
 		$this->playerEid = $this->getEntityUniqueId();
 		$this->displayName = $this->getString();
-		$this->offers = $this->getRemaining();
+		$this->offers = $this->get(true);
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putByte($this->windowId);
 		$this->putByte($this->windowType);
 		$this->putVarInt($this->varint1);

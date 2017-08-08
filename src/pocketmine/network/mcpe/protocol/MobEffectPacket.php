@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -42,7 +40,7 @@ class MobEffectPacket extends DataPacket{
 	public $particles = true;
 	public $duration = 0;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
 		$this->eventId = $this->getByte();
 		$this->effectId = $this->getVarInt();
@@ -51,7 +49,8 @@ class MobEffectPacket extends DataPacket{
 		$this->duration = $this->getVarInt();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		$this->putByte($this->eventId);
 		$this->putVarInt($this->effectId);

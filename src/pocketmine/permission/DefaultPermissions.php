@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\permission;
 
 use pocketmine\Server;
@@ -34,7 +32,7 @@ abstract class DefaultPermissions{
 	 *
 	 * @return Permission
 	 */
-	public static function registerPermission(Permission $perm, Permission $parent = null) : Permission{
+	public static function registerPermission(Permission $perm, Permission $parent = null){
 		if($parent instanceof Permission){
 			$parent->getChildren()[$perm->getName()] = true;
 

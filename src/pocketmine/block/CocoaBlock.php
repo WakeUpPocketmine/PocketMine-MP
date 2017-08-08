@@ -19,27 +19,17 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
-
-use pocketmine\item\Tool;
 
 class CocoaBlock extends Solid{
 
-	protected $id = Block::COCOA;
+	protected $id = self::COCOA_BLOCK;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Cocoa Block";
 	}
-
-	public function getToolType() : int{
-		return Tool::TYPE_AXE;
-	}
-
-	//TODO
 }

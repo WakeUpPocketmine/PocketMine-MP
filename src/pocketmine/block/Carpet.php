@@ -19,33 +19,30 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
-use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Carpet extends Flowable{
 
-	protected $id = Block::CARPET;
+	protected $id = self::CARPET;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0.1;
 	}
 
-	public function isSolid() : bool{
+	public function isSolid(){
 		return true;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		static $names = [
 			0 => "White Carpet",
 			1 => "Orange Carpet",
@@ -79,9 +76,9 @@ class Carpet extends Flowable{
 		);
 	}
 
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
-		$down = $this->getSide(Vector3::SIDE_DOWN);
-		if($down->getId() !== Block::AIR){
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+		$down = $this->getSide(0);
+		if($down->getId() !== self::AIR){
 			$this->getLevel()->setBlock($block, $this, true, true);
 
 			return true;
@@ -90,9 +87,9 @@ class Carpet extends Flowable{
 		return false;
 	}
 
-	public function onUpdate(int $type){
+	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(Vector3::SIDE_DOWN)->getId() === Block::AIR){
+			if($this->getSide(0)->getId() === self::AIR){
 				$this->getLevel()->useBreakOn($this);
 
 				return Level::BLOCK_UPDATE_NORMAL;

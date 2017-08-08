@@ -34,15 +34,9 @@ else
 fi
 
 cp -r tests/plugins/PocketMine-TesterPlugin ./plugins
-echo -e "stop\n" | "$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2
+"$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2
 
-output=$(grep '\[TesterPlugin\]' server.log)
-if [ "$output" == "" ]; then
-	echo TesterPlugin failed to run tests, check the logs
-	exit 1
-fi
-
-result=$(echo "$output" | grep 'Finished' | grep -v 'PASS')
+result=$(grep 'TesterPlugin' server.log | grep 'Finished' | grep -v 'PASS')
 if [ "$result" != "" ]; then
    echo "$result"
    echo Some tests did not complete successfully, changing build status to failed

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * UPnP port forwarding support. Only for Windows
  */
@@ -29,15 +27,14 @@ namespace pocketmine\network\upnp;
 use pocketmine\utils\Utils;
 
 abstract class UPnP{
-
-	public static function PortForward(int $port) : bool{
+	public static function PortForward($port){
 		if(Utils::$online === false){
 			return false;
 		}
 		if(Utils::getOS() != "win" or !class_exists("COM")){
 			return false;
 		}
-
+		$port = (int) $port;
 		$myLocalIP = gethostbyname(trim(`hostname`));
 		try{
 			/** @noinspection PhpUndefinedClassInspection */
@@ -55,14 +52,14 @@ abstract class UPnP{
 		return true;
 	}
 
-	public static function RemovePortForward(int $port) : bool{
+	public static function RemovePortForward($port){
 		if(Utils::$online === false){
 			return false;
 		}
 		if(Utils::getOS() != "win" or !class_exists("COM")){
 			return false;
 		}
-
+		$port = (int) $port;
 		try{
 			/** @noinspection PhpUndefinedClassInspection */
 			$com = new \COM("HNetCfg.NATUPnP") or false;

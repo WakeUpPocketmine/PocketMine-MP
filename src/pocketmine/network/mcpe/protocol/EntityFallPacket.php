@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -35,13 +33,14 @@ class EntityFallPacket extends DataPacket{
 	public $fallDistance;
 	public $bool1;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
 		$this->fallDistance = $this->getLFloat();
 		$this->bool1 = $this->getBool();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		$this->putLFloat($this->fallDistance);
 		$this->putBool($this->bool1);

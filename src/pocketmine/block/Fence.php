@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Tool;
@@ -35,25 +33,22 @@ class Fence extends Transparent{
 	const FENCE_ACACIA = 4;
 	const FENCE_DARKOAK = 5;
 
-	protected $id = Block::FENCE;
+	protected $id = self::FENCE;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 2;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_AXE;
 	}
 
-	public function getVariantBitmask() : int{
-		return 0x07;
-	}
 
-	public function getName() : string{
+	public function getName(){
 		static $names = [
 			self::FENCE_OAK => "Oak Fence",
 			self::FENCE_SPRUCE => "Spruce Fence",

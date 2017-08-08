@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
@@ -32,7 +30,6 @@ class ShapedRecipe implements Recipe{
 	/** @var Item */
 	private $output;
 
-	/** @var UUID|null */
 	private $id = null;
 
 	/** @var string[] */
@@ -50,7 +47,7 @@ class ShapedRecipe implements Recipe{
 	 *
 	 * @throws \Exception
 	 */
-	public function __construct(Item $result, int $height, int $width){
+	public function __construct(Item $result, $height, $width){
 		for($h = 0; $h < $height; $h++){
 			if($width === 0 or $width > 3){
 				throw new \InvalidStateException("Crafting rows should be 1, 2, 3 wide, not $width");
@@ -61,24 +58,18 @@ class ShapedRecipe implements Recipe{
 		$this->output = clone $result;
 	}
 
-	public function getWidth() : int{
+	public function getWidth(){
 		return count($this->ingredients[0]);
 	}
 
-	public function getHeight() : int{
+	public function getHeight(){
 		return count($this->ingredients);
 	}
 
-	/**
-	 * @return Item
-	 */
-	public function getResult() : Item{
+	public function getResult(){
 		return $this->output;
 	}
 
-	/**
-	 * @return UUID|null
-	 */
 	public function getId(){
 		return $this->id;
 	}
@@ -91,14 +82,7 @@ class ShapedRecipe implements Recipe{
 		$this->id = $id;
 	}
 
-	/**
-	 * @param int $x
-	 * @param int $y
-	 * @param Item $item
-	 *
-	 * @return $this
-	 */
-	public function addIngredient(int $x, int $y, Item $item){
+	public function addIngredient($x, $y, Item $item){
 		$this->ingredients[$y][$x] = clone $item;
 		return $this;
 	}
@@ -110,7 +94,7 @@ class ShapedRecipe implements Recipe{
 	 * @return $this
 	 * @throws \Exception
 	 */
-	public function setIngredient(string $key, Item $item){
+	public function setIngredient($key, Item $item){
 		if(!array_key_exists($key, $this->shape)){
 			throw new \Exception("Symbol does not appear in the shape: " . $key);
 		}
@@ -120,11 +104,7 @@ class ShapedRecipe implements Recipe{
 		return $this;
 	}
 
-	/**
-	 * @param string $key
-	 * @param Item $item
-	 */
-	protected function fixRecipe(string $key, Item $item){
+	protected function fixRecipe($key, $item){
 		foreach($this->shapeItems[$key] as $entry){
 			$this->ingredients[$entry->y][$entry->x] = clone $item;
 		}
@@ -133,7 +113,7 @@ class ShapedRecipe implements Recipe{
 	/**
 	 * @return Item[][]
 	 */
-	public function getIngredientMap() : array{
+	public function getIngredientMap(){
 		$ingredients = [];
 		foreach($this->ingredients as $y => $row){
 			$ingredients[$y] = [];
@@ -150,19 +130,18 @@ class ShapedRecipe implements Recipe{
 	}
 
 	/**
-	 * @param int $x
-	 * @param int $y
-	 *
-	 * @return Item
+	 * @param $x
+	 * @param $y
+	 * @return null|Item
 	 */
-	public function getIngredient(int $x, int $y) : Item{
-		return $this->ingredients[$y][$x] ?? Item::get(Item::AIR);
+	public function getIngredient($x, $y){
+		return isset($this->ingredients[$y][$x]) ? $this->ingredients[$y][$x] : Item::get(Item::AIR);
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getShape() : array{
+	public function getShape(){
 		return $this->shape;
 	}
 

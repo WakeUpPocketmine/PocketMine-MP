@@ -19,35 +19,17 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
-
-use pocketmine\item\Item;
-use pocketmine\level\Level;
-use pocketmine\math\Vector2;
-use pocketmine\math\Vector3;
-use pocketmine\Player;
 
 class TripwireHook extends Flowable{
 
-	protected $id = Block::TRIPWIRE_HOOK;
+	protected $id = self::TRIPWIRE_HOOK;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Tripwire Hook";
-	}
-
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
-		if($face !== Vector3::SIDE_DOWN and $face !== Vector3::SIDE_UP and !$target->isTransparent()){
-			$this->meta = Vector2::vec3SideToDirection($face);
-
-			return parent::place($item, $block, $target, $face, $fx, $fy, $fz, $player);
-		}
-
-		return false;
 	}
 }

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\resourcepacks;
 
 class ResourcePackInfoEntry{
@@ -28,7 +26,7 @@ class ResourcePackInfoEntry{
 	protected $version;
 	protected $packSize;
 
-	public function __construct(string $packId, string $version, int $packSize = 0){
+	public function __construct(string $packId, string $version, $packSize = 0){
 		$this->packId = $packId;
 		$this->version = $version;
 		$this->packSize = $packSize;
@@ -42,7 +40,7 @@ class ResourcePackInfoEntry{
 		return $this->version;
 	}
 
-	public function getPackSize() : int{
+	public function getPackSize(){
 		return $this->packSize;
 	}
 

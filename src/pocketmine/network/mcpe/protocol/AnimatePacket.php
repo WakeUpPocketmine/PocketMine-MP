@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -35,7 +33,7 @@ class AnimatePacket extends DataPacket{
 	public $entityRuntimeId;
 	public $float; //TODO (Boat rowing time?)
 
-	public function decodePayload(){
+	public function decode(){
 		$this->action = $this->getVarInt();
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
 		if($this->action & 0x80){
@@ -43,7 +41,8 @@ class AnimatePacket extends DataPacket{
 		}
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putVarInt($this->action);
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		if($this->action & 0x80){

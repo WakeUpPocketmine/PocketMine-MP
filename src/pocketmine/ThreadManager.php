@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine;
 
 class ThreadManager extends \Volatile{
@@ -60,7 +58,7 @@ class ThreadManager extends \Volatile{
 	/**
 	 * @return Worker[]|Thread[]
 	 */
-	public function getAll() : array{
+	public function getAll(){
 		$array = [];
 		foreach($this as $key => $thread){
 			$array[$key] = $thread;

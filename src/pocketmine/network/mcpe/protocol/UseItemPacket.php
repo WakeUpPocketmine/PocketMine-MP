@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -47,7 +45,7 @@ class UseItemPacket extends DataPacket{
 	/** @var Item */
 	public $item;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->getBlockPosition($this->x, $this->y, $this->z);
 		$this->blockId = $this->getUnsignedVarInt();
 		$this->face = $this->getVarInt();
@@ -57,7 +55,8 @@ class UseItemPacket extends DataPacket{
 		$this->item = $this->getSlot();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putUnsignedVarInt($this->blockId);
 		$this->putUnsignedVarInt($this->face);
 		$this->putVector3f($this->fx, $this->fy, $this->fz);

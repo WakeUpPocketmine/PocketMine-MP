@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -41,12 +39,13 @@ class InteractPacket extends DataPacket{
 	public $action;
 	public $target;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->action = $this->getByte();
 		$this->target = $this->getEntityRuntimeId();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putByte($this->action);
 		$this->putEntityRuntimeId($this->target);
 	}

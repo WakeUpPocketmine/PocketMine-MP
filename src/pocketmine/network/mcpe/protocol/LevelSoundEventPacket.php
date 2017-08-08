@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -148,7 +146,7 @@ class LevelSoundEventPacket extends DataPacket{
 	public $unknownBool = false;
 	public $disableRelativeVolume = false;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->sound = $this->getByte();
 		$this->getVector3f($this->x, $this->y, $this->z);
 		$this->extraData = $this->getVarInt();
@@ -157,7 +155,8 @@ class LevelSoundEventPacket extends DataPacket{
 		$this->disableRelativeVolume = $this->getBool();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putByte($this->sound);
 		$this->putVector3f($this->x, $this->y, $this->z);
 		$this->putVarInt($this->extraData);

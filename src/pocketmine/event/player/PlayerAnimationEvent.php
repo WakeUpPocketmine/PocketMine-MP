@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\player;
 
@@ -34,7 +32,6 @@ class PlayerAnimationEvent extends PlayerEvent implements Cancellable{
 
 	const ARM_SWING = 1;
 
-	/** @var int */
 	private $animationType;
 
 	/**
@@ -49,7 +46,7 @@ class PlayerAnimationEvent extends PlayerEvent implements Cancellable{
 	/**
 	 * @return int
 	 */
-	public function getAnimationType() : int{
+	public function getAnimationType(){
 		return $this->animationType;
 	}
 

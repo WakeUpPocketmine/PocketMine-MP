@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\plugin;
 
 use pocketmine\command\defaults\TimingsCommand;
@@ -107,7 +105,7 @@ class PluginManager{
 	 *
 	 * @return null|Plugin
 	 */
-	public function getPlugin(string $name){
+	public function getPlugin($name){
 		if(isset($this->plugins[$name])){
 			return $this->plugins[$name];
 		}
@@ -120,7 +118,7 @@ class PluginManager{
 	 *
 	 * @return boolean
 	 */
-	public function registerInterface(string $loaderName) : bool{
+	public function registerInterface($loaderName){
 		if(is_subclass_of($loaderName, PluginLoader::class)){
 			$loader = new $loaderName($this->server);
 		}else{
@@ -135,7 +133,7 @@ class PluginManager{
 	/**
 	 * @return Plugin[]
 	 */
-	public function getPlugins() : array{
+	public function getPlugins(){
 		return $this->plugins;
 	}
 
@@ -145,8 +143,8 @@ class PluginManager{
 	 *
 	 * @return Plugin
 	 */
-	public function loadPlugin(string $path, array $loaders = null){
-		foreach($loaders ?? $this->fileAssociations as $loader){
+	public function loadPlugin($path, $loaders = null){
+		foreach(($loaders === null ? $this->fileAssociations : $loaders) as $loader){
 			if(preg_match($loader->getPluginFilters(), basename($path)) > 0){
 				$description = $loader->getPluginDescription($path);
 				if($description instanceof PluginDescription){
@@ -174,7 +172,7 @@ class PluginManager{
 	 *
 	 * @return Plugin[]
 	 */
-	public function loadPlugins(string $directory, array $newLoaders = null){
+	public function loadPlugins($directory, $newLoaders = null){
 
 		if(is_dir($directory)){
 			$plugins = [];
@@ -384,7 +382,7 @@ class PluginManager{
 	 *
 	 * @return null|Permission
 	 */
-	public function getPermission(string $name){
+	public function getPermission($name){
 		if(isset($this->permissions[$name])){
 			return $this->permissions[$name];
 		}
@@ -397,7 +395,7 @@ class PluginManager{
 	 *
 	 * @return bool
 	 */
-	public function addPermission(Permission $permission) : bool{
+	public function addPermission(Permission $permission){
 		if(!isset($this->permissions[$permission->getName()])){
 			$this->permissions[$permission->getName()] = $permission;
 			$this->calculatePermissionDefault($permission);
@@ -424,7 +422,7 @@ class PluginManager{
 	 *
 	 * @return Permission[]
 	 */
-	public function getDefaultPermissions(bool $op) : array{
+	public function getDefaultPermissions($op){
 		if($op === true){
 			return $this->defaultPermsOp;
 		}else{
@@ -463,7 +461,7 @@ class PluginManager{
 	/**
 	 * @param boolean $op
 	 */
-	private function dirtyPermissibles(bool $op){
+	private function dirtyPermissibles($op){
 		foreach($this->getDefaultPermSubscriptions($op) as $p){
 			$p->recalculatePermissions();
 		}
@@ -473,7 +471,7 @@ class PluginManager{
 	 * @param string      $permission
 	 * @param Permissible $permissible
 	 */
-	public function subscribeToPermission(string $permission, Permissible $permissible){
+	public function subscribeToPermission($permission, Permissible $permissible){
 		if(!isset($this->permSubs[$permission])){
 			$this->permSubs[$permission] = [];
 		}
@@ -484,7 +482,7 @@ class PluginManager{
 	 * @param string      $permission
 	 * @param Permissible $permissible
 	 */
-	public function unsubscribeFromPermission(string $permission, Permissible $permissible){
+	public function unsubscribeFromPermission($permission, Permissible $permissible){
 		if(isset($this->permSubs[$permission])){
 			unset($this->permSubs[$permission][spl_object_hash($permissible)]);
 			if(count($this->permSubs[$permission]) === 0){
@@ -496,9 +494,9 @@ class PluginManager{
 	/**
 	 * @param string $permission
 	 *
-	 * @return array|Permissible[]
+	 * @return Permissible[]
 	 */
-	public function getPermissionSubscriptions(string $permission) : array{
+	public function getPermissionSubscriptions($permission){
 		if(isset($this->permSubs[$permission])){
 			return $this->permSubs[$permission];
 			$subs = [];
@@ -522,7 +520,7 @@ class PluginManager{
 	 * @param boolean     $op
 	 * @param Permissible $permissible
 	 */
-	public function subscribeToDefaultPerms(bool $op, Permissible $permissible){
+	public function subscribeToDefaultPerms($op, Permissible $permissible){
 		if($op === true){
 			$this->defSubsOp[spl_object_hash($permissible)] = $permissible;
 		}else{
@@ -534,7 +532,7 @@ class PluginManager{
 	 * @param boolean     $op
 	 * @param Permissible $permissible
 	 */
-	public function unsubscribeFromDefaultPerms(bool $op, Permissible $permissible){
+	public function unsubscribeFromDefaultPerms($op, Permissible $permissible){
 		if($op === true){
 			unset($this->defSubsOp[spl_object_hash($permissible)]);
 		}else{
@@ -547,7 +545,7 @@ class PluginManager{
 	 *
 	 * @return Permissible[]
 	 */
-	public function getDefaultPermSubscriptions(bool $op) : array{
+	public function getDefaultPermSubscriptions($op){
 		$subs = [];
 
 		if($op === true){
@@ -580,7 +578,7 @@ class PluginManager{
 	/**
 	 * @return Permission[]
 	 */
-	public function getPermissions() : array{
+	public function getPermissions(){
 		return $this->permissions;
 	}
 
@@ -589,7 +587,7 @@ class PluginManager{
 	 *
 	 * @return bool
 	 */
-	public function isPluginEnabled(Plugin $plugin) : bool{
+	public function isPluginEnabled(Plugin $plugin){
 		if($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])){
 			return $plugin->isEnabled();
 		}else{
@@ -619,7 +617,7 @@ class PluginManager{
 	 *
 	 * @return PluginCommand[]
 	 */
-	protected function parseYamlCommands(Plugin $plugin) : array{
+	protected function parseYamlCommands(Plugin $plugin){
 		$pluginCmds = [];
 
 		foreach($plugin->getDescription()->getCommands() as $key => $data){
@@ -651,13 +649,7 @@ class PluginManager{
 				}
 
 				if(isset($data["permission"])){
-					if(is_bool($data["permission"])){
-						$newCmd->setPermission($data["permission"] ? "true" : "false");
-					}elseif(is_string($data["permission"])){
-						$newCmd->setPermission($data["permission"]);
-					}else{
-						throw new \InvalidArgumentException("Permission must be a string or boolean, " . gettype($data["permission"] . " given"));
-					}
+					$newCmd->setPermission($data["permission"]);
 				}
 
 				if(isset($data["permission-message"])){
@@ -791,7 +783,7 @@ class PluginManager{
 	 *
 	 * @throws PluginException
 	 */
-	public function registerEvent(string $event, Listener $listener, int $priority, EventExecutor $executor, Plugin $plugin, bool $ignoreCancelled = false){
+	public function registerEvent($event, Listener $listener, $priority, EventExecutor $executor, Plugin $plugin, $ignoreCancelled = false){
 		if(!is_subclass_of($event, Event::class)){
 			throw new PluginException($event . " is not an Event");
 		}
@@ -817,7 +809,7 @@ class PluginManager{
 	 *
 	 * @return HandlerList
 	 */
-	private function getEventListeners(string $event) : HandlerList{
+	private function getEventListeners($event){
 		if($event::$handlerList === null){
 			$event::$handlerList = new HandlerList();
 		}
@@ -828,15 +820,15 @@ class PluginManager{
 	/**
 	 * @return bool
 	 */
-	public function useTimings() : bool{
+	public function useTimings(){
 		return self::$useTimings;
 	}
 
 	/**
 	 * @param bool $use
 	 */
-	public function setUseTimings(bool $use){
-		self::$useTimings = $use;
+	public function setUseTimings($use){
+		self::$useTimings = (bool) $use;
 	}
 
 }

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -38,10 +36,10 @@ class MoveEntityPacket extends DataPacket{
 	public $yaw;
 	public $headYaw;
 	public $pitch;
-	public $onGround = false;
-	public $teleported = false;
+	public $onGround;
+	public $teleported;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
 		$this->getVector3f($this->x, $this->y, $this->z);
 		$this->pitch = $this->getByteRotation();
@@ -51,7 +49,8 @@ class MoveEntityPacket extends DataPacket{
 		$this->teleported = $this->getBool();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		$this->putVector3f($this->x, $this->y, $this->z);
 		$this->putByteRotation($this->pitch);

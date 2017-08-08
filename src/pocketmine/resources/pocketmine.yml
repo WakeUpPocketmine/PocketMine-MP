@@ -168,8 +168,7 @@ auto-report:
  send-code: true
  send-settings: true
  send-phpinfo: false
- use-https: true
- host: crash.pmmp.io
+ host: crash.pocketmine.net
 
 anonymous-statistics:
  #Sends anonymous statistics for data aggregation, plugin usage tracking
@@ -181,11 +180,11 @@ auto-updater:
  on-update:
   warn-console: true
   warn-ops: true
- #Can be development, alpha, beta or stable.
+ #Can be development, beta or stable.
  preferred-channel: stable
  #If using a development version, it will suggest changing the channel
  suggest-channels: true
- host: update.pmmp.io
+ host: www.pocketmine.net
 
 timings:
  #Choose the host to use for viewing your timings results.

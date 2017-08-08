@@ -19,36 +19,27 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
 use pocketmine\item\Tool;
 
 class Podzol extends Solid{
 
-	protected $id = Block::PODZOL;
+	protected $id = self::PODZOL;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_SHOVEL;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Podzol";
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 2.5;
-	}
-
-	public function getDrops(Item $item) : array{
-		return [
-			Item::get(Item::DIRT, 0, 1)
-		];
 	}
 }

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -37,12 +35,13 @@ class BlockPickRequestPacket extends DataPacket{
 	public $tileZ;
 	public $hotbarSlot;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->getSignedBlockPosition($this->tileX, $this->tileY, $this->tileZ);
 		$this->hotbarSlot = $this->getByte();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putSignedBlockPosition($this->tileX, $this->tileY, $this->tileZ);
 		$this->putByte($this->hotbarSlot);
 	}

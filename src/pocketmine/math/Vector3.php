@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\math;
 
 class Vector3{
@@ -189,7 +187,7 @@ class Vector3{
 	}
 
 	public function distanceSquared(Vector3 $pos){
-		return (($this->x - $pos->x) ** 2) + (($this->y - $pos->y) ** 2) + (($this->z - $pos->z) ** 2);
+		return pow($this->x - $pos->x, 2) + pow($this->y - $pos->y, 2) + pow($this->z - $pos->z, 2);
 	}
 
 	public function maxPlainDistance($x = 0, $z = 0){
@@ -234,7 +232,7 @@ class Vector3{
 		);
 	}
 
-	public function equals(Vector3 $v) : bool{
+	public function equals(Vector3 $v){
 		return $this->x == $v->x and $this->y == $v->y and $this->z == $v->z;
 	}
 
@@ -245,7 +243,7 @@ class Vector3{
 	 * @param Vector3 $v
 	 * @param float   $x
 	 *
-	 * @return Vector3|null
+	 * @return Vector3
 	 */
 	public function getIntermediateWithXValue(Vector3 $v, $x){
 		$xDiff = $v->x - $this->x;
@@ -272,7 +270,7 @@ class Vector3{
 	 * @param Vector3 $v
 	 * @param float   $y
 	 *
-	 * @return Vector3|null
+	 * @return Vector3
 	 */
 	public function getIntermediateWithYValue(Vector3 $v, $y){
 		$xDiff = $v->x - $this->x;
@@ -299,7 +297,7 @@ class Vector3{
 	 * @param Vector3 $v
 	 * @param float   $z
 	 *
-	 * @return Vector3|null
+	 * @return Vector3
 	 */
 	public function getIntermediateWithZValue(Vector3 $v, $z){
 		$xDiff = $v->x - $this->x;

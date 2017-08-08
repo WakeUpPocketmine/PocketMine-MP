@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -39,7 +37,7 @@ class ResourcePacksInfoPacket extends DataPacket{
 	/** @var ResourcePack[] */
 	public $resourcePackEntries = [];
 
-	public function decodePayload(){
+	public function decode(){
 		/*$this->mustAccept = $this->getBool();
 		$behaviorPackCount = $this->getLShort();
 		while($behaviorPackCount-- > 0){
@@ -60,7 +58,8 @@ class ResourcePacksInfoPacket extends DataPacket{
 		}*/
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 
 		$this->putBool($this->mustAccept);
 		$this->putLShort(count($this->behaviorPackEntries));

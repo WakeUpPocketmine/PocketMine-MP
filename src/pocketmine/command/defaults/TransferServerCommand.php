@@ -19,14 +19,12 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\command\defaults;
 
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 
 class TransferServerCommand extends VanillaCommand{
@@ -40,9 +38,11 @@ class TransferServerCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.transferserver");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $commandLabel, array $args){
 		if(count($args) < 1){
-			throw new InvalidCommandSyntaxException();
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+			return false;
 		}elseif(!($sender instanceof Player)){
 			$sender->sendMessage("This command must be executed as a player");
 

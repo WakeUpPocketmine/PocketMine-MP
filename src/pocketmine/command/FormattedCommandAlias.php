@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command;
 
 use pocketmine\event\TranslationContainer;
@@ -34,12 +32,12 @@ class FormattedCommandAlias extends Command{
 	 * @param string   $alias
 	 * @param string[] $formatStrings
 	 */
-	public function __construct(string $alias, array $formatStrings){
+	public function __construct($alias, array $formatStrings){
 		parent::__construct($alias);
 		$this->formatStrings = $formatStrings;
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $commandLabel, array $args){
 
 		$commands = [];
 		$result = false;
@@ -71,8 +69,9 @@ class FormattedCommandAlias extends Command{
 	 * @param array  $args
 	 *
 	 * @return string
+	 * @throws \InvalidArgumentException
 	 */
-	private function buildCommand(string $formatString, array $args) : string{
+	private function buildCommand($formatString, array $args){
 		$index = strpos($formatString, '$');
 		while($index !== false){
 			$start = $index;
@@ -101,7 +100,7 @@ class FormattedCommandAlias extends Command{
 				throw new \InvalidArgumentException("Invalid replacement token");
 			}
 
-			$position = (int) substr($formatString, $argStart, $index);
+			$position = intval(substr($formatString, $argStart, $index));
 
 			if($position === 0){
 				throw new \InvalidArgumentException("Invalid replacement token");
@@ -124,7 +123,7 @@ class FormattedCommandAlias extends Command{
 
 			$replacement = "";
 			if($rest and $position < count($args)){
-				for($i = $position, $c = count($args); $i < $c; ++$i){
+				for($i = $position; $i < count($args); ++$i){
 					if($i !== $position){
 						$replacement .= " ";
 					}
@@ -152,7 +151,7 @@ class FormattedCommandAlias extends Command{
 	 *
 	 * @return bool
 	 */
-	private static function inRange(int $i, int $j, int $k) : bool{
+	private static function inRange($i, $j, $k){
 		return $i >= $j and $i <= $k;
 	}
 

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
@@ -32,25 +30,25 @@ use pocketmine\Player;
 
 class Ladder extends Transparent{
 
-	protected $id = Block::LADDER;
+	protected $id = self::LADDER;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Ladder";
 	}
 
-	public function hasEntityCollision() : bool{
+	public function hasEntityCollision(){
 		return true;
 	}
 
-	public function isSolid() : bool{
+	public function isSolid(){
 		return false;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0.4;
 	}
 
@@ -109,7 +107,7 @@ class Ladder extends Transparent{
 	}
 
 
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		if($target->isTransparent() === false){
 			$faces = [
 				2 => 2,
@@ -128,7 +126,7 @@ class Ladder extends Transparent{
 		return false;
 	}
 
-	public function onUpdate(int $type){
+	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$sides = [
 				2 => 3,
@@ -145,11 +143,13 @@ class Ladder extends Transparent{
 		return false;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_AXE;
 	}
 
-	public function getVariantBitmask() : int{
-		return 0;
+	public function getDrops(Item $item){
+		return [
+			[$this->id, 0, 1],
+		];
 	}
 }

@@ -19,35 +19,28 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
 use pocketmine\item\Tool;
 
 class PackedIce extends Solid{
 
-	protected $id = Block::PACKED_ICE;
+	protected $id = self::PACKED_ICE;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Packed Ice";
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0.5;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_PICKAXE;
-	}
-
-	public function getDrops(Item $item) : array{
-		return []; //TODO: silk touch
 	}
 
 }

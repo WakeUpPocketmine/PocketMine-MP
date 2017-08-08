@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\block;
 
@@ -33,7 +31,7 @@ use pocketmine\Player;
 class SignChangeEvent extends BlockEvent implements Cancellable{
 	public static $handlerList = null;
 
-	/** @var Player */
+	/** @var \pocketmine\Player */
 	private $player;
 	/** @var string[] */
 	private $lines = [];
@@ -52,14 +50,14 @@ class SignChangeEvent extends BlockEvent implements Cancellable{
 	/**
 	 * @return Player
 	 */
-	public function getPlayer() : Player{
+	public function getPlayer(){
 		return $this->player;
 	}
 
 	/**
 	 * @return string[]
 	 */
-	public function getLines() : array{
+	public function getLines(){
 		return $this->lines;
 	}
 
@@ -68,34 +66,15 @@ class SignChangeEvent extends BlockEvent implements Cancellable{
 	 *
 	 * @return string
 	 */
-	public function getLine(int $index) : string{
-		if($index < 0 or $index > 3){
-			throw new \InvalidArgumentException("Index must be in the range 0-3!");
-		}
-
+	public function getLine($index){
 		return $this->lines[$index];
-	}
-
-	/**
-	 * @param string[] $lines
-	 */
-	public function setLines(array $lines){
-		if(count($lines) !== 4){
-			throw new \InvalidArgumentException("Array size must be 4!");
-		}
-
-		$this->lines = $lines;
 	}
 
 	/**
 	 * @param int    $index 0-3
 	 * @param string $line
 	 */
-	public function setLine(int $index, string $line){
-		if($index < 0 or $index > 3){
-			throw new \InvalidArgumentException("Index must be in the range 0-3!");
-		}
-
+	public function setLine($index, $line){
 		$this->lines[$index] = $line;
 	}
 }

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -28,27 +26,27 @@ use pocketmine\item\Tool;
 
 class Clay extends Solid{
 
-	protected $id = Block::CLAY_BLOCK;
+	protected $id = self::CLAY_BLOCK;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0.6;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_SHOVEL;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Clay Block";
 	}
 
-	public function getDrops(Item $item) : array{
+	public function getDrops(Item $item){
 		return [
-			Item::get(Item::CLAY_BALL, 0, 4)
+			[Item::CLAY, 0, 4],
 		];
 	}
 }

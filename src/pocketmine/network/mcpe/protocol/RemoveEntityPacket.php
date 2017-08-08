@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -33,11 +31,12 @@ class RemoveEntityPacket extends DataPacket{
 
 	public $entityUniqueId;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->entityUniqueId = $this->getEntityUniqueId();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putEntityUniqueId($this->entityUniqueId);
 	}
 

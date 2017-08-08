@@ -19,14 +19,12 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 
 abstract class Transparent extends Block{
 
-	public function isTransparent() : bool{
+	public function isTransparent(){
 		return true;
 	}
 

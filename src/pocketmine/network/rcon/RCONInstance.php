@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\rcon;
 
 use pocketmine\Thread;
@@ -30,7 +28,6 @@ class RCONInstance extends Thread{
 	public $stop;
 	public $cmd;
 	public $response;
-	/** @var resource */
 	private $socket;
 	private $password;
 	private $maxClients;
@@ -40,18 +37,14 @@ class RCONInstance extends Thread{
 		return $this->waiting === true;
 	}
 
-	/**
-	 * @param resource $socket
-	 * @param string   $password
-	 * @param int      $maxClients
-	 */
-	public function __construct($socket, string $password, int $maxClients = 50){
+
+	public function __construct($socket, $password, $maxClients = 50){
 		$this->stop = false;
 		$this->cmd = "";
 		$this->response = "";
 		$this->socket = $socket;
 		$this->password = $password;
-		$this->maxClients = $maxClients;
+		$this->maxClients = (int) $maxClients;
 		for($n = 0; $n < $this->maxClients; ++$n){
 			$this->{"client" . $n} = null;
 			$this->{"status" . $n} = 0;
@@ -197,7 +190,7 @@ class RCONInstance extends Thread{
 		exit(0);
 	}
 
-	public function getThreadName() : string{
+	public function getThreadName(){
 		return "RCON";
 	}
 }

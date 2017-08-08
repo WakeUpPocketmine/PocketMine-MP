@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -40,14 +38,18 @@ class FlowerPot extends Flowable{
 	const STATE_EMPTY = 0;
 	const STATE_FULL = 1;
 
-	protected $id = Block::FLOWER_POT_BLOCK;
+	protected $id = self::FLOWER_POT_BLOCK;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Flower Pot Block";
+	}
+
+	public function canBeActivated(): bool{
+		return true;
 	}
 
 	protected function recalculateBoundingBox(){
@@ -61,7 +63,7 @@ class FlowerPot extends Flowable{
 		);
 	}
 
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		if($this->getSide(Vector3::SIDE_DOWN)->isTransparent()){
 			return false;
 		}
@@ -87,9 +89,9 @@ class FlowerPot extends Flowable{
 		return true;
 	}
 
-	public function onUpdate(int $type){
+	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(Vector3::SIDE_DOWN)->isTransparent() === true){
+			if($this->getSide(0)->isTransparent() === true){
 				$this->getLevel()->useBreakOn($this);
 
 				return Level::BLOCK_UPDATE_NORMAL;
@@ -99,7 +101,7 @@ class FlowerPot extends Flowable{
 		return false;
 	}
 
-	public function onActivate(Item $item, Player $player = null) : bool{
+	public function onActivate(Item $item, Player $player = null){
 		$pot = $this->getLevel()->getTile($this);
 		if(!($pot instanceof TileFlowerPot)){
 			return false;
@@ -110,20 +112,23 @@ class FlowerPot extends Flowable{
 
 		$this->setDamage(self::STATE_FULL); //specific damage value is unnecessary, it just needs to be non-zero to show an item.
 		$this->getLevel()->setBlock($this, $this, true, false);
-		$pot->setItem($item->pop());
+		$pot->setItem($item);
 
+		if($player instanceof Player){
+			if($player->isSurvival()){
+				$item->setCount($item->getCount() - 1);
+				$player->getInventory()->setItemInHand($item->getCount() > 0 ? $item : Item::get(Item::AIR));
+			}
+		}
 		return true;
 	}
 
-	public function getDrops(Item $item) : array{
-		$items = [
-			Item::get(Item::FLOWER_POT, 0, 1)
-		];
-
+	public function getDrops(Item $item){
+		$items = [[Item::FLOWER_POT, 0, 1]];
 		$tile = $this->getLevel()->getTile($this);
 		if($tile instanceof TileFlowerPot){
-			if(($potItem = $tile->getItem())->getId() !== Item::AIR){
-				$items[] = $potItem;
+			if(($item = $tile->getItem())->getId() !== Item::AIR){
+				$items[] = [$item->getId(), $item->getDamage(), 1];
 			}
 		}
 		return $items;

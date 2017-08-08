@@ -19,17 +19,15 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 class UnknownBlock extends Transparent{
 
-	public function isSolid() : bool{
+	public function isSolid(){
 		return false;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0;
 	}
 }

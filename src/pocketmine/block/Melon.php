@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -28,27 +26,27 @@ use pocketmine\item\Tool;
 
 class Melon extends Transparent{
 
-	protected $id = Block::MELON_BLOCK;
+	protected $id = self::MELON_BLOCK;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Melon Block";
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 1;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_AXE;
 	}
 
-	public function getDrops(Item $item) : array{
+	public function getDrops(Item $item){
 		return [
-			Item::get(Item::MELON_SLICE, 0, mt_rand(3, 7))
+			[Item::MELON_SLICE, 0, mt_rand(3, 7)],
 		];
 	}
 }

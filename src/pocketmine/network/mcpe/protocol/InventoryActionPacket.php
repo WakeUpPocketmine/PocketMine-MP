@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -38,14 +36,15 @@ class InventoryActionPacket extends DataPacket{
 	public $enchantmentId = 0;
 	public $enchantmentLevel = 0;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->actionId = $this->getUnsignedVarInt();
 		$this->item = $this->getSlot();
 		$this->enchantmentId = $this->getVarInt();
 		$this->enchantmentLevel = $this->getVarInt();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putUnsignedVarInt($this->actionId);
 		$this->putSlot($this->item);
 		$this->putVarInt($this->enchantmentId);

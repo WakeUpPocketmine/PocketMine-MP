@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -33,11 +31,12 @@ class ContainerClosePacket extends DataPacket{
 
 	public $windowid;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->windowid = $this->getByte();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putByte($this->windowid);
 	}
 

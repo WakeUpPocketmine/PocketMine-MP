@@ -19,34 +19,27 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
-use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
 class StainedClay extends Solid{
 
-	protected $id = Block::STAINED_HARDENED_CLAY;
+	protected $id = self::STAINED_CLAY;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 1.25;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getRequiredHarvestLevel() : int{
-		return TieredTool::TIER_WOODEN;
-	}
-
-	public function getName() : string{
+	public function getName(){
 		static $names = [
 			0 => "White Stained Clay",
 			1 => "Orange Stained Clay",

@@ -14,21 +14,16 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\block;
 
 use pocketmine\block\Block;
 use pocketmine\event\Cancellable;
 
-/**
- * Called when plants or crops grow.
- */
 class BlockGrowEvent extends BlockEvent implements Cancellable{
 	public static $handlerList = null;
 
@@ -43,7 +38,7 @@ class BlockGrowEvent extends BlockEvent implements Cancellable{
 	/**
 	 * @return Block
 	 */
-	public function getNewState() : Block{
+	public function getNewState(){
 		return $this->newState;
 	}
 

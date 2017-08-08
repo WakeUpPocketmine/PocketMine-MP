@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * Various Utilities used around the code
  */
@@ -36,7 +34,6 @@ class Utils{
 	public static $online = true;
 	public static $ip = false;
 	public static $os;
-	/** @var UUID|null */
 	private static $serverUniqueId = null;
 
 	/**
@@ -64,7 +61,7 @@ class Utils{
 	 *
 	 * @return UUID
 	 */
-	public static function getMachineUniqueId(string $extra = "") : UUID{
+	public static function getMachineUniqueId($extra = ""){
 		if(self::$serverUniqueId !== null and $extra === ""){
 			return self::$serverUniqueId;
 		}
@@ -127,51 +124,39 @@ class Utils{
 	 *
 	 * @param bool $force default false, force IP check even when cached
 	 *
-	 * @return string|bool
+	 * @return string
 	 */
-	public static function getIP(bool $force = false){
+
+	public static function getIP($force = false){
 		if(Utils::$online === false){
 			return false;
 		}elseif(Utils::$ip !== false and $force !== true){
 			return Utils::$ip;
 		}
-
-		do{
-			$ip = Utils::getURL("http://api.ipify.org/");
-			if($ip !== false){
-				Utils::$ip = $ip;
-				break;
-			}
-
-			$ip = Utils::getURL("http://checkip.dyndns.org/");
-			if($ip !== false and preg_match('#Current IP Address\: ([0-9a-fA-F\:\.]*)#', trim(strip_tags($ip)), $matches) > 0){
-				Utils::$ip = $matches[1];
-				break;
-			}
-
+		$ip = trim(strip_tags(Utils::getURL("http://checkip.dyndns.org/")));
+		if(preg_match('#Current IP Address\: ([0-9a-fA-F\:\.]*)#', $ip, $matches) > 0){
+			Utils::$ip = $matches[1];
+		}else{
 			$ip = Utils::getURL("http://www.checkip.org/");
-			if($ip !== false and preg_match('#">([0-9a-fA-F\:\.]*)</span>#', $ip, $matches) > 0){
+			if(preg_match('#">([0-9a-fA-F\:\.]*)</span>#', $ip, $matches) > 0){
 				Utils::$ip = $matches[1];
-				break;
+			}else{
+				$ip = Utils::getURL("http://checkmyip.org/");
+				if(preg_match('#Your IP address is ([0-9a-fA-F\:\.]*)#', $ip, $matches) > 0){
+					Utils::$ip = $matches[1];
+				}else{
+					$ip = trim(Utils::getURL("http://ifconfig.me/ip"));
+					if($ip != ""){
+						Utils::$ip = $ip;
+					}else{
+						return false;
+					}
+				}
 			}
-
-			$ip = Utils::getURL("http://checkmyip.org/");
-			if($ip !== false and preg_match('#Your IP address is ([0-9a-fA-F\:\.]*)#', $ip, $matches) > 0){
-				Utils::$ip = $matches[1];
-				break;
-			}
-
-			$ip = Utils::getURL("http://ifconfig.me/ip");
-			if($ip !== false and trim($ip) != ""){
-				Utils::$ip = trim($ip);
-				break;
-			}
-
-			return false;
-
-		}while(false);
+		}
 
 		return Utils::$ip;
+
 	}
 
 	/**
@@ -188,7 +173,7 @@ class Utils{
 	 *
 	 * @return string
 	 */
-	public static function getOS(bool $recalculate = false) : string{
+	public static function getOS($recalculate = false){
 		if(self::$os === null or $recalculate){
 			$uname = php_uname("s");
 			if(stripos($uname, "Darwin") !== false){
@@ -215,10 +200,8 @@ class Utils{
 		return self::$os;
 	}
 
-	/**
-	 * @return int[]
-	 */
-	public static function getRealMemoryUsage() : array{
+
+	public static function getRealMemoryUsage(){
 		$stack = 0;
 		$heap = 0;
 
@@ -238,12 +221,7 @@ class Utils{
 		return [$heap, $stack];
 	}
 
-	/**
-	 * @param bool $advanced
-	 *
-	 * @return int[]|int
-	 */
-	public static function getMemoryUsage(bool $advanced = false){
+	public static function getMemoryUsage($advanced = false){
 		$reserved = memory_get_usage();
 		$VmSize = null;
 		$VmRSS = null;
@@ -275,7 +253,7 @@ class Utils{
 		return [$reserved, $VmRSS, $VmSize];
 	}
 
-	public static function getThreadCount() : int{
+	public static function getThreadCount(){
 		if(Utils::getOS() === "linux" or Utils::getOS() === "android"){
 			if(preg_match("/Threads:[ \t]+([0-9]+)/", file_get_contents("/proc/self/status"), $matches) > 0){
 				return (int) $matches[1];
@@ -286,11 +264,7 @@ class Utils{
 		return count(ThreadManager::getInstance()->getAll()) + 3; //RakLib + MainLogger + Main Thread
 	}
 
-	/**
-	 * @param bool $recalculate
-	 * @return int
-	 */
-	public static function getCoreCount(bool $recalculate = false) : int{
+	public static function getCoreCount($recalculate = false){
 		static $processors = 0;
 
 		if($processors > 0 and !$recalculate){
@@ -317,6 +291,7 @@ class Utils{
 			case "bsd":
 			case "mac":
 				$processors = (int) `sysctl -n hw.ncpu`;
+				$processors = (int) `sysctl -n hw.ncpu`;
 				break;
 			case "win":
 				$processors = (int) getenv("NUMBER_OF_PROCESSORS");
@@ -332,7 +307,7 @@ class Utils{
 	 *
 	 * @return string
 	 */
-	public static function hexdump(string $bin) : string{
+	public static function hexdump($bin){
 		$output = "";
 		$bin = str_split($bin, 16);
 		foreach($bin as $counter => $line){
@@ -348,11 +323,11 @@ class Utils{
 	/**
 	 * Returns a string that can be printed, replaces non-printable characters
 	 *
-	 * @param mixed $str
+	 * @param $str
 	 *
 	 * @return string
 	 */
-	public static function printable($str) : string{
+	public static function printable($str){
 		if(!is_string($str)){
 			return gettype($str);
 		}
@@ -376,7 +351,7 @@ class Utils{
 	 * GETs an URL using cURL
 	 * NOTE: This is a blocking operation and can take a significant amount of time. It is inadvisable to use this method on the main thread.
 	 *
-	 * @param string  $page
+	 * @param         $page
 	 * @param int     $timeout default 10
 	 * @param array   $extraHeaders
 	 * @param string  &$err    Will be set to the output of curl_error(). Use this to retrieve errors that occured during the operation.
@@ -385,7 +360,7 @@ class Utils{
 	 *
 	 * @return bool|mixed false if an error occurred, mixed data if successful.
 	 */
-	public static function getURL(string $page, int $timeout = 10, array $extraHeaders = [], &$err = null, &$headers = null, &$httpCode = null){
+	public static function getURL($page, $timeout = 10, array $extraHeaders = [], &$err = null, &$headers = null, &$httpCode = null){
 		try{
 			list($ret, $headers, $httpCode) = self::simpleCurl($page, $timeout, $extraHeaders);
 			return $ret;
@@ -409,7 +384,7 @@ class Utils{
 	 *
 	 * @return bool|mixed false if an error occurred, mixed data if successful.
 	 */
-	public static function postURL(string $page, $args, int $timeout = 10, array $extraHeaders = [], &$err = null, &$headers = null, &$httpCode = null){
+	public static function postURL($page, $args, $timeout = 10, array $extraHeaders = [], &$err = null, &$headers = null, &$httpCode = null){
 		try{
 			list($ret, $headers, $httpCode) = self::simpleCurl($page, $timeout, $extraHeaders, [
 				CURLOPT_POST => 1,
@@ -472,9 +447,7 @@ class Utils{
 				$headerGroup = [];
 				foreach(explode("\r\n", $rawHeaderGroup) as $line){
 					$nameValue = explode(":", $line, 2);
-					if(isset($nameValue[1])){
-						$headerGroup[trim(strtolower($nameValue[0]))] = trim($nameValue[1]);
-					}
+					if(isset($nameValue[1])) $headerGroup[trim(strtolower($nameValue[0]))] = trim($nameValue[1]);
 				}
 				$headers[] = $headerGroup;
 			}
@@ -487,9 +460,9 @@ class Utils{
 		}
 	}
 
-	public static function javaStringHash(string $string) : int{
+	public static function javaStringHash($string){
 		$hash = 0;
-		for($i = 0, $len = strlen($string); $i < $len; $i++){
+		for($i = 0; $i < strlen($string); $i++){
 			$ord = ord($string{$i});
 			if($ord & 0x80){
 				$ord -= 0x100;
@@ -504,37 +477,5 @@ class Utils{
 			$hash &= 0xFFFFFFFF;
 		}
 		return $hash;
-	}
-
-
-	/**
-	 * @param string      $command Command to execute
-	 * @param string|null &$stdout Reference parameter to write stdout to
-	 * @param string|null &$stderr Reference parameter to write stderr to
-	 *
-	 * @return int process exit code
-	 */
-	public static function execute(string $command, string &$stdout = null, string &$stderr = null) : int{
-		$process = proc_open($command, [
-			["pipe", "r"],
-			["pipe", "w"],
-			["pipe", "w"]
-		], $pipes);
-
-		if($process === false){
-			$stderr = "Failed to open process";
-			$stdout = "";
-
-			return -1;
-		}
-
-		$stdout = stream_get_contents($pipes[1]);
-		$stderr = stream_get_contents($pipes[2]);
-
-		foreach($pipes as $p){
-			fclose($p);
-		}
-
-		return proc_close($process);
 	}
 }

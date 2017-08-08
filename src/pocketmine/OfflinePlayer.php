@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine;
 
 use pocketmine\metadata\Metadatable;
@@ -30,18 +28,15 @@ use pocketmine\plugin\Plugin;
 
 class OfflinePlayer implements IPlayer, Metadatable{
 
-	/** @var string */
 	private $name;
-	/** @var Server */
 	private $server;
-	/** @var CompoundTag|null */
 	private $namedtag;
 
 	/**
 	 * @param Server $server
 	 * @param string $name
 	 */
-	public function __construct(Server $server, string $name){
+	public function __construct(Server $server, $name){
 		$this->server = $server;
 		$this->name = $name;
 		if(file_exists($this->server->getDataPath() . "players/" . strtolower($this->getName()) . ".dat")){
@@ -51,7 +46,7 @@ class OfflinePlayer implements IPlayer, Metadatable{
 		}
 	}
 
-	public function isOnline() : bool{
+	public function isOnline(){
 		return $this->getPlayer() !== null;
 	}
 
@@ -63,11 +58,11 @@ class OfflinePlayer implements IPlayer, Metadatable{
 		return $this->server;
 	}
 
-	public function isOp() : bool{
+	public function isOp(){
 		return $this->server->isOp(strtolower($this->getName()));
 	}
 
-	public function setOp(bool $value){
+	public function setOp($value){
 		if($value === $this->isOp()){
 			return;
 		}
@@ -79,11 +74,11 @@ class OfflinePlayer implements IPlayer, Metadatable{
 		}
 	}
 
-	public function isBanned() : bool{
+	public function isBanned(){
 		return $this->server->getNameBans()->isBanned(strtolower($this->getName()));
 	}
 
-	public function setBanned(bool $value){
+	public function setBanned($value){
 		if($value === true){
 			$this->server->getNameBans()->addBan($this->getName(), null, null, null);
 		}else{
@@ -91,11 +86,11 @@ class OfflinePlayer implements IPlayer, Metadatable{
 		}
 	}
 
-	public function isWhitelisted() : bool{
+	public function isWhitelisted(){
 		return $this->server->isWhitelisted(strtolower($this->getName()));
 	}
 
-	public function setWhitelisted(bool $value){
+	public function setWhitelisted($value){
 		if($value === true){
 			$this->server->addWhitelist(strtolower($this->getName()));
 		}else{
@@ -115,7 +110,7 @@ class OfflinePlayer implements IPlayer, Metadatable{
 		return $this->namedtag instanceof CompoundTag ? $this->namedtag["lastPlayed"] : null;
 	}
 
-	public function hasPlayedBefore() : bool{
+	public function hasPlayedBefore(){
 		return $this->namedtag instanceof CompoundTag;
 	}
 

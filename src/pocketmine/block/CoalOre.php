@@ -19,42 +19,35 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
 class CoalOre extends Solid{
 
-	protected $id = Block::COAL_ORE;
+	protected $id = self::COAL_ORE;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 3;
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getRequiredHarvestLevel() : int{
-		return TieredTool::TIER_WOODEN;
-	}
-
-	public function getName() : string{
+	public function getName(){
 		return "Coal Ore";
 	}
 
-	public function getDrops(Item $item) : array{
-		if($this->canBeBrokenWith($item)){
+	public function getDrops(Item $item){
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
 			return [
-				Item::get(Item::COAL, 0, 1)
+				[Item::COAL, 0, 1],
 			];
 		}else{
 			return [];

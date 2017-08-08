@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,17 +14,13 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\server;
 
-use pocketmine\Player;
-use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\utils\Binary;
 
@@ -33,45 +29,28 @@ class QueryRegenerateEvent extends ServerEvent{
 
 	const GAME_ID = "MINECRAFTPE";
 
-	/** @var int */
 	private $timeout;
-	/** @var string */
 	private $serverName;
-	/** @var bool */
 	private $listPlugins;
-	/** @var Plugin[] */
+	/** @var \pocketmine\plugin\Plugin[] */
 	private $plugins;
-	/** @var Player[] */
+	/** @var \pocketmine\Player[] */
 	private $players;
 
-	/** @var string */
 	private $gametype;
-	/** @var string */
 	private $version;
-	/** @var string */
 	private $server_engine;
-	/** @var string */
 	private $map;
-	/** @var int */
 	private $numPlayers;
-	/** @var int */
 	private $maxPlayers;
-	/** @var string */
 	private $whitelist;
-	/** @var int */
 	private $port;
-	/** @var string */
 	private $ip;
 
-	/** @var array */
 	private $extraData = [];
 
 
-	/**
-	 * @param Server $server
-	 * @param int    $timeout
-	 */
-	public function __construct(Server $server, int $timeout = 5){
+	public function __construct(Server $server, $timeout = 5){
 		$this->timeout = $timeout;
 		$this->serverName = $server->getMotd();
 		$this->listPlugins = $server->getProperty("settings.query-plugins", true);
@@ -100,113 +79,80 @@ class QueryRegenerateEvent extends ServerEvent{
 	 *
 	 * @return int
 	 */
-	public function getTimeout() : int{
+	public function getTimeout(){
 		return $this->timeout;
 	}
 
-	/**
-	 * @param int $timeout
-	 */
-	public function setTimeout(int $timeout){
+	public function setTimeout($timeout){
 		$this->timeout = $timeout;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getServerName() : string{
+	public function getServerName(){
 		return $this->serverName;
 	}
 
-	/**
-	 * @param string $serverName
-	 */
-	public function setServerName(string $serverName){
+	public function setServerName($serverName){
 		$this->serverName = $serverName;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function canListPlugins() : bool{
+	public function canListPlugins(){
 		return $this->listPlugins;
 	}
 
-	/**
-	 * @param bool $value
-	 */
-	public function setListPlugins(bool $value){
-		$this->listPlugins = $value;
+	public function setListPlugins($value){
+		$this->listPlugins = (bool) $value;
 	}
 
 	/**
-	 * @return Plugin[]
+	 * @return \pocketmine\plugin\Plugin[]
 	 */
-	public function getPlugins() : array{
+	public function getPlugins(){
 		return $this->plugins;
 	}
 
 	/**
-	 * @param Plugin[] $plugins
+	 * @param \pocketmine\plugin\Plugin[] $plugins
 	 */
 	public function setPlugins(array $plugins){
 		$this->plugins = $plugins;
 	}
 
 	/**
-	 * @return Player[]
+	 * @return \pocketmine\Player[]
 	 */
-	public function getPlayerList() : array{
+	public function getPlayerList(){
 		return $this->players;
 	}
 
 	/**
-	 * @param Player[] $players
+	 * @param \pocketmine\Player[] $players
 	 */
 	public function setPlayerList(array $players){
 		$this->players = $players;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getPlayerCount() : int{
+	public function getPlayerCount(){
 		return $this->numPlayers;
 	}
 
-	/**
-	 * @param int $count
-	 */
-	public function setPlayerCount(int $count){
-		$this->numPlayers = $count;
+	public function setPlayerCount($count){
+		$this->numPlayers = (int) $count;
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getMaxPlayerCount() : int{
+	public function getMaxPlayerCount(){
 		return $this->maxPlayers;
 	}
 
-	/**
-	 * @param int $count
-	 */
-	public function setMaxPlayerCount(int $count){
-		$this->maxPlayers = $count;
+	public function setMaxPlayerCount($count){
+		$this->maxPlayers = (int) $count;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getWorld() : string{
+	public function getWorld(){
 		return $this->map;
 	}
 
-	/**
-	 * @param string $world
-	 */
-	public function setWorld(string $world){
-		$this->map = $world;
+	public function setWorld($world){
+		$this->map = (string) $world;
 	}
 
 	/**
@@ -214,21 +160,15 @@ class QueryRegenerateEvent extends ServerEvent{
 	 *
 	 * @return array
 	 */
-	public function getExtraData() : array{
+	public function getExtraData(){
 		return $this->extraData;
 	}
 
-	/**
-	 * @param array $extraData
-	 */
 	public function setExtraData(array $extraData){
 		$this->extraData = $extraData;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getLongQuery() : string{
+	public function getLongQuery(){
 		$query = "";
 
 		$plist = $this->server_engine;
@@ -274,10 +214,7 @@ class QueryRegenerateEvent extends ServerEvent{
 		return $query;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getShortQuery() : string{
+	public function getShortQuery(){
 		return $this->serverName . "\x00" . $this->gametype . "\x00" . $this->map . "\x00" . $this->numPlayers . "\x00" . $this->maxPlayers . "\x00" . Binary::writeLShort($this->port) . $this->ip . "\x00";
 	}
 

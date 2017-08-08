@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\event\block\BlockSpreadEvent;
@@ -32,35 +30,31 @@ use pocketmine\Server;
 
 class Mycelium extends Solid{
 
-	protected $id = Block::MYCELIUM;
+	protected $id = self::MYCELIUM;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Mycelium";
 	}
 
-	public function getToolType() : int{
+	public function getToolType(){
 		return Tool::TYPE_SHOVEL;
 	}
 
-	public function getHardness() : float{
+	public function getHardness(){
 		return 0.6;
 	}
 
-	public function getDrops(Item $item) : array{
+	public function getDrops(Item $item){
 		return [
-			Item::get(Item::DIRT, 0, 1)
+			[Item::DIRT, 0, 1],
 		];
 	}
 
-	public function ticksRandomly() : bool{
-		return true;
-	}
-
-	public function onUpdate(int $type){
+	public function onUpdate($type){
 		if($type === Level::BLOCK_UPDATE_RANDOM){
 			//TODO: light levels
 			$x = mt_rand($this->x - 1, $this->x + 1);
@@ -68,8 +62,8 @@ class Mycelium extends Solid{
 			$z = mt_rand($this->z - 1, $this->z + 1);
 			$block = $this->getLevel()->getBlock(new Vector3($x, $y, $z));
 			if($block->getId() === Block::DIRT){
-				if($block->getSide(Vector3::SIDE_UP) instanceof Transparent){
-					Server::getInstance()->getPluginManager()->callEvent($ev = new BlockSpreadEvent($block, $this, Block::get(Block::MYCELIUM)));
+				if($block->getSide(1) instanceof Transparent){
+					Server::getInstance()->getPluginManager()->callEvent($ev = new BlockSpreadEvent($block, $this, new Mycelium()));
 					if(!$ev->isCancelled()){
 						$this->getLevel()->setBlock($block, $ev->getNewState());
 					}

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -38,7 +36,7 @@ class ResourcePackDataInfoPacket extends DataPacket{
 	public $compressedPackSize;
 	public $sha256;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->packId = $this->getString();
 		$this->maxChunkSize = $this->getLInt();
 		$this->chunkCount = $this->getLInt();
@@ -46,7 +44,8 @@ class ResourcePackDataInfoPacket extends DataPacket{
 		$this->sha256 = $this->getString();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putString($this->packId);
 		$this->putLInt($this->maxChunkSize);
 		$this->putLInt($this->chunkCount);

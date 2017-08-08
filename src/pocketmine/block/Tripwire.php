@@ -19,31 +19,17 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
-
-use pocketmine\item\Item;
 
 class Tripwire extends Flowable{
 
-	protected $id = Block::TRIPWIRE;
+	protected $id = self::TRIPWIRE;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Tripwire";
-	}
-
-	public function getVariantBitmask() : int{
-		return 0;
-	}
-
-	public function getDrops(Item $item) : array{
-		return [
-			Item::get(Item::STRING, 0, 1)
-		];
 	}
 }

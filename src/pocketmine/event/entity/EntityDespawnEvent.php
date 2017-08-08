@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\entity;
 
@@ -27,7 +25,7 @@ use pocketmine\entity\Creature;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
 use pocketmine\entity\Item;
-use pocketmine\entity\projectile\Projectile;
+use pocketmine\entity\Projectile;
 use pocketmine\entity\Vehicle;
 
 /**
@@ -36,7 +34,6 @@ use pocketmine\entity\Vehicle;
 class EntityDespawnEvent extends EntityEvent{
 	public static $handlerList = null;
 
-	/** @var int */
 	private $entityType;
 
 	/**
@@ -50,42 +47,42 @@ class EntityDespawnEvent extends EntityEvent{
 	/**
 	 * @return int
 	 */
-	public function getType() : int{
+	public function getType(){
 		return $this->entityType;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isCreature() : bool{
+	public function isCreature(){
 		return $this->entity instanceof Creature;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isHuman() : bool{
+	public function isHuman(){
 		return $this->entity instanceof Human;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isProjectile() : bool{
+	public function isProjectile(){
 		return $this->entity instanceof Projectile;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isVehicle() : bool{
+	public function isVehicle(){
 		return $this->entity instanceof Vehicle;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isItem() : bool{
+	public function isItem(){
 		return $this->entity instanceof Item;
 	}
 

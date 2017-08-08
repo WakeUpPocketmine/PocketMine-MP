@@ -19,21 +19,19 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 use pocketmine\level\Level;
 
-class WallSign extends StandingSign{
+class WallSign extends SignPost{
 
-	protected $id = Block::WALL_SIGN;
+	protected $id = self::WALL_SIGN;
 
-	public function getName() : string{
+	public function getName(){
 		return "Wall Sign";
 	}
 
-	public function onUpdate(int $type){
+	public function onUpdate($type){
 		$faces = [
 			2 => 3,
 			3 => 2,
@@ -42,7 +40,7 @@ class WallSign extends StandingSign{
 		];
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if(isset($faces[$this->meta])){
-				if($this->getSide($faces[$this->meta])->getId() === Block::AIR){
+				if($this->getSide($faces[$this->meta])->getId() === self::AIR){
 					$this->getLevel()->useBreakOn($this);
 				}
 				return Level::BLOCK_UPDATE_NORMAL;

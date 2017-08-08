@@ -19,19 +19,17 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\block;
 
 class RedstoneLamp extends Solid{
 
-	protected $id = Block::REDSTONE_LAMP;
+	protected $id = self::REDSTONE_LAMP;
 
-	public function __construct(int $meta = 0){
+	public function __construct($meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName() : string{
+	public function getName(){
 		return "Redstone Lamp";
 	}
 }

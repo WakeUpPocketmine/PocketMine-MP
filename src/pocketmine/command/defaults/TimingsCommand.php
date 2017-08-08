@@ -19,12 +19,9 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TimingsHandler;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
@@ -44,13 +41,15 @@ class TimingsCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.timings");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
+	public function execute(CommandSender $sender, $currentAlias, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
 
 		if(count($args) !== 1){
-			throw new InvalidCommandSyntaxException();
+			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
+
+			return true;
 		}
 
 		$mode = strtolower($args[0]);
@@ -111,7 +110,7 @@ class TimingsCommand extends VanillaCommand{
 					["page" => "http://paste.ubuntu.com", "extraOpts" => [
 						CURLOPT_HTTPHEADER => ["User-Agent: " . $sender->getServer()->getName() . " " . $sender->getServer()->getPocketMineVersion()],
 						CURLOPT_POST => 1,
-						CURLOPT_POSTFIELDS => $data
+						CURLOPT_POSTFIELDS => $data,
 					]]
 				], $sender) extends BulkCurlTask{
 					public function onCompletion(Server $server){

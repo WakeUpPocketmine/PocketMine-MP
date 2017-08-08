@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\level;
 
 use pocketmine\block\Block;
@@ -63,7 +61,7 @@ class Explosion{
 	/**
 	 * @return bool
 	 */
-	public function explodeA() : bool{
+	public function explodeA(){
 		if($this->size < 0.1){
 			return false;
 		}
@@ -71,7 +69,7 @@ class Explosion{
 		$vector = new Vector3(0, 0, 0);
 		$vBlock = new Vector3(0, 0, 0);
 
-		$mRays = (int) ($this->rays - 1);
+		$mRays = intval($this->rays - 1);
 		for($i = 0; $i < $this->rays; ++$i){
 			for($j = 0; $j < $this->rays; ++$j){
 				for($k = 0; $k < $this->rays; ++$k){
@@ -89,27 +87,23 @@ class Explosion{
 							$vBlock->x = $pointerX >= $x ? $x : $x - 1;
 							$vBlock->y = $pointerY >= $y ? $y : $y - 1;
 							$vBlock->z = $pointerZ >= $z ? $z : $z - 1;
-
-							if(!$this->level->isInWorld($vBlock->x, $vBlock->y, $vBlock->z)){
+							if($vBlock->y < 0 or $vBlock->y >= Level::Y_MAX){
 								break;
 							}
+							$block = $this->level->getBlock($vBlock);
 
-							$blockId = $this->level->getBlockIdAt($vBlock->x, $vBlock->y, $vBlock->z);
-
-							if($blockId !== 0){
-								$blastForce -= (Block::$blastResistance[$blockId] / 5 + 0.3) * $this->stepLen;
+							if($block->getId() !== 0){
+								$blastForce -= ($block->getResistance() / 5 + 0.3) * $this->stepLen;
 								if($blastForce > 0){
-									if(!isset($this->affectedBlocks[$index = Level::blockHash($vBlock->x, $vBlock->y, $vBlock->z)])){
-										$this->affectedBlocks[$index] = $this->level->getBlock($vBlock);
+									if(!isset($this->affectedBlocks[$index = Level::blockHash($block->x, $block->y, $block->z)])){
+										$this->affectedBlocks[$index] = $block;
 									}
 								}
 							}
-
 							$pointerX += $vector->x;
 							$pointerY += $vector->y;
 							$pointerZ += $vector->z;
 						}
-
 					}
 				}
 			}
@@ -118,7 +112,7 @@ class Explosion{
 		return true;
 	}
 
-	public function explodeB() : bool{
+	public function explodeB(){
 		$send = [];
 		$updateBlocks = [];
 
@@ -164,7 +158,7 @@ class Explosion{
 					$ev = new EntityDamageEvent($entity, EntityDamageEvent::CAUSE_BLOCK_EXPLOSION, $damage);
 				}
 
-				$entity->attack($ev);
+				$entity->attack($ev->getFinalDamage(), $ev);
 				$entity->setMotion($motion->multiply($impact));
 			}
 		}
@@ -177,8 +171,7 @@ class Explosion{
 				$block->ignite(mt_rand(10, 30));
 			}elseif(mt_rand(0, 100) < $yield){
 				foreach($block->getDrops($air) as $drop){
-					assert($drop instanceof Item);
-					$this->level->dropItem($block->add(0.5, 0.5, 0.5), $drop);
+					$this->level->dropItem($block->add(0.5, 0.5, 0.5), Item::get(...$drop));
 				}
 			}
 

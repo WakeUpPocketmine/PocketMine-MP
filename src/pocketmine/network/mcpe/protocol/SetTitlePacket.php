@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -45,7 +43,7 @@ class SetTitlePacket extends DataPacket{
 	public $stayTime = 0;
 	public $fadeOutTime = 0;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->type = $this->getVarInt();
 		$this->text = $this->getString();
 		$this->fadeInTime = $this->getVarInt();
@@ -53,7 +51,8 @@ class SetTitlePacket extends DataPacket{
 		$this->fadeOutTime = $this->getVarInt();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putVarInt($this->type);
 		$this->putString($this->text);
 		$this->putVarInt($this->fadeInTime);

@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -38,12 +36,13 @@ class DisconnectPacket extends DataPacket{
 		return true;
 	}
 
-	public function decodePayload(){
+	public function decode(){
 		$this->hideDisconnectionScreen = $this->getBool();
 		$this->message = $this->getString();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putBool($this->hideDisconnectionScreen);
 		if(!$this->hideDisconnectionScreen){
 			$this->putString($this->message);

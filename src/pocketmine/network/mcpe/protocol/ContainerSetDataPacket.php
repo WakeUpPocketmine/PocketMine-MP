@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -35,13 +33,14 @@ class ContainerSetDataPacket extends DataPacket{
 	public $property;
 	public $value;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->windowid = $this->getByte();
 		$this->property = $this->getVarInt();
 		$this->value = $this->getVarInt();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putByte($this->windowid);
 		$this->putVarInt($this->property);
 		$this->putVarInt($this->value);

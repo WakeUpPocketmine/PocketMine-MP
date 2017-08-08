@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\plugin;
 
 use pocketmine\event\Cancellable;
@@ -57,7 +55,7 @@ class RegisteredListener{
 	 * @param bool           $ignoreCancelled
 	 * @param TimingsHandler $timings
 	 */
-	public function __construct(Listener $listener, EventExecutor $executor, int $priority, Plugin $plugin, bool $ignoreCancelled, TimingsHandler $timings){
+	public function __construct(Listener $listener, EventExecutor $executor, $priority, Plugin $plugin, $ignoreCancelled, TimingsHandler $timings){
 		$this->listener = $listener;
 		$this->priority = $priority;
 		$this->plugin = $plugin;
@@ -69,21 +67,21 @@ class RegisteredListener{
 	/**
 	 * @return Listener
 	 */
-	public function getListener() : Listener{
+	public function getListener(){
 		return $this->listener;
 	}
 
 	/**
 	 * @return Plugin
 	 */
-	public function getPlugin() : Plugin{
+	public function getPlugin(){
 		return $this->plugin;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getPriority() : int{
+	public function getPriority(){
 		return $this->priority;
 	}
 
@@ -106,7 +104,7 @@ class RegisteredListener{
 	/**
 	 * @return bool
 	 */
-	public function isIgnoringCancelled() : bool{
+	public function isIgnoringCancelled(){
 		return $this->ignoreCancelled === true;
 	}
 }

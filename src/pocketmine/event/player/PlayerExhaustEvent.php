@@ -19,15 +19,13 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\event\player;
 
 use pocketmine\entity\Human;
 use pocketmine\event\Cancellable;
-use pocketmine\event\entity\EntityEvent;
+use pocketmine\Player;
 
-class PlayerExhaustEvent extends EntityEvent implements Cancellable{
+class PlayerExhaustEvent extends PlayerEvent implements Cancellable{
 	public static $handlerList = null;
 
 	const CAUSE_ATTACK = 1;
@@ -47,18 +45,14 @@ class PlayerExhaustEvent extends EntityEvent implements Cancellable{
 	/** @var int */
 	private $cause;
 
-	/** @var Human */
-	protected $player;
-
 	public function __construct(Human $human, float $amount, int $cause){
-		$this->entity = $human;
 		$this->player = $human;
 		$this->amount = $amount;
 		$this->cause = $cause;
 	}
 
 	/**
-	 * @return Human
+	 * @return Human|Player
 	 */
 	public function getPlayer(){
 		return $this->player;

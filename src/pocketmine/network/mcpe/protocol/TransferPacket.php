@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -33,12 +31,13 @@ class TransferPacket extends DataPacket{
 	public $address;
 	public $port = 19132;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->address = $this->getString();
 		$this->port = $this->getLShort();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putString($this->address);
 		$this->putLShort($this->port);
 	}

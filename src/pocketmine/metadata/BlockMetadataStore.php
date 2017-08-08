@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 namespace pocketmine\metadata;
 
 use pocketmine\Block\Block;
@@ -35,7 +33,7 @@ class BlockMetadataStore extends MetadataStore{
 		$this->owningLevel = $owningLevel;
 	}
 
-	public function disambiguate(Metadatable $block, string $metadataKey) : string{
+	public function disambiguate(Metadatable $block, $metadataKey){
 		if(!($block instanceof Block)){
 			throw new \InvalidArgumentException("Argument must be a Block instance");
 		}

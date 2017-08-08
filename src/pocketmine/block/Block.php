@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 /**
  * All Block classes are in here
  */
@@ -28,7 +26,6 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
-use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 use pocketmine\level\Level;
 use pocketmine\level\MovingObjectPosition;
@@ -59,8 +56,12 @@ class Block extends Position implements BlockIds, Metadatable{
 	public static $transparent = null;
 	/** @var \SplFixedArray */
 	public static $diffusesSkyLight = null;
-	/** @var \SplFixedArray */
-	public static $blastResistance = null;
+
+	protected $id;
+	protected $meta = 0;
+
+	/** @var AxisAlignedBB */
+	public $boundingBox = null;
 
 	public static function init(){
 		if(self::$list === null){
@@ -72,265 +73,223 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::$hardness = new \SplFixedArray(256);
 			self::$transparent = new \SplFixedArray(256);
 			self::$diffusesSkyLight = new \SplFixedArray(256);
-			self::$blastResistance = new \SplFixedArray(256);
+			self::$list[self::AIR] = Air::class;
+			self::$list[self::STONE] = Stone::class;
+			self::$list[self::GRASS] = Grass::class;
+			self::$list[self::DIRT] = Dirt::class;
+			self::$list[self::COBBLESTONE] = Cobblestone::class;
+			self::$list[self::PLANKS] = Planks::class;
+			self::$list[self::SAPLING] = Sapling::class;
+			self::$list[self::BEDROCK] = Bedrock::class;
+			self::$list[self::WATER] = Water::class;
+			self::$list[self::STILL_WATER] = StillWater::class;
+			self::$list[self::LAVA] = Lava::class;
+			self::$list[self::STILL_LAVA] = StillLava::class;
+			self::$list[self::SAND] = Sand::class;
+			self::$list[self::GRAVEL] = Gravel::class;
+			self::$list[self::GOLD_ORE] = GoldOre::class;
+			self::$list[self::IRON_ORE] = IronOre::class;
+			self::$list[self::COAL_ORE] = CoalOre::class;
+			self::$list[self::WOOD] = Wood::class;
+			self::$list[self::LEAVES] = Leaves::class;
+			self::$list[self::SPONGE] = Sponge::class;
+			self::$list[self::GLASS] = Glass::class;
+			self::$list[self::LAPIS_ORE] = LapisOre::class;
+			self::$list[self::LAPIS_BLOCK] = Lapis::class;
+			self::$list[self::ACTIVATOR_RAIL] = ActivatorRail::class;
+			self::$list[self::COCOA_BLOCK] = CocoaBlock::class;
+			self::$list[self::SANDSTONE] = Sandstone::class;
+			self::$list[self::NOTE_BLOCK] = NoteBlock::class;
+			self::$list[self::BED_BLOCK] = Bed::class;
+			self::$list[self::POWERED_RAIL] = PoweredRail::class;
+			self::$list[self::DETECTOR_RAIL] = DetectorRail::class;
+			self::$list[self::COBWEB] = Cobweb::class;
+			self::$list[self::TALL_GRASS] = TallGrass::class;
+			self::$list[self::DEAD_BUSH] = DeadBush::class;
+			self::$list[self::WOOL] = Wool::class;
+			self::$list[self::DANDELION] = Dandelion::class;
+			self::$list[self::RED_FLOWER] = Flower::class;
+			self::$list[self::BROWN_MUSHROOM] = BrownMushroom::class;
+			self::$list[self::RED_MUSHROOM] = RedMushroom::class;
+			self::$list[self::GOLD_BLOCK] = Gold::class;
+			self::$list[self::IRON_BLOCK] = Iron::class;
+			self::$list[self::DOUBLE_SLAB] = DoubleSlab::class;
+			self::$list[self::SLAB] = Slab::class;
+			self::$list[self::BRICKS_BLOCK] = Bricks::class;
+			self::$list[self::TNT] = TNT::class;
+			self::$list[self::BOOKSHELF] = Bookshelf::class;
+			self::$list[self::MOSS_STONE] = MossStone::class;
+			self::$list[self::OBSIDIAN] = Obsidian::class;
+			self::$list[self::TORCH] = Torch::class;
+			self::$list[self::FIRE] = Fire::class;
+			self::$list[self::MONSTER_SPAWNER] = MonsterSpawner::class;
+			self::$list[self::WOOD_STAIRS] = WoodStairs::class;
+			self::$list[self::CHEST] = Chest::class;
 
-			self::registerBlock(new Air());
-			self::registerBlock(new Stone());
-			self::registerBlock(new Grass());
-			self::registerBlock(new Dirt());
-			self::registerBlock((new Block(Block::COBBLESTONE))->setName("Cobblestone")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2));
-			self::registerBlock(new Planks());
-			self::registerBlock(new Sapling());
-			self::registerBlock(new Bedrock());
-			self::registerBlock(new FlowingWater());
-			self::registerBlock(new StillWater());
-			self::registerBlock(new FlowingLava());
-			self::registerBlock(new StillLava());
-			self::registerBlock(new Sand());
-			self::registerBlock(new Gravel());
-			self::registerBlock((new Block(Block::GOLD_ORE))->setName("Gold Ore")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_IRON)->setHardness(3));
-			self::registerBlock((new Block(Block::IRON_ORE))->setName("Iron Ore")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_STONE)->setHardness(3));
-			self::registerBlock(new CoalOre());
-			self::registerBlock(new Wood());
-			self::registerBlock(new Leaves());
-			self::registerBlock(new Sponge());
-			self::registerBlock(new Glass());
-			self::registerBlock(new LapisOre());
-			self::registerBlock((new Block(Block::LAPIS_BLOCK))->setName("Lapis Lazuli Block")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_STONE)->setHardness(3));
-			self::registerBlock(new ActivatorRail());
-			self::registerBlock(new CocoaBlock());
-			self::registerBlock(new Sandstone());
-			self::registerBlock(new NoteBlock());
-			self::registerBlock(new Bed());
-			self::registerBlock(new PoweredRail());
-			self::registerBlock(new DetectorRail());
-			self::registerBlock(new Cobweb());
-			self::registerBlock(new TallGrass());
-			self::registerBlock(new DeadBush());
-			self::registerBlock(new Wool());
-			self::registerBlock(new Dandelion());
-			self::registerBlock(new Flower());
-			self::registerBlock(new BrownMushroom());
-			self::registerBlock(new RedMushroom());
-			self::registerBlock((new Block(Block::GOLD_BLOCK))->setName("Block of Gold")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_IRON)->setHardness(3)->setBlastResistance(30));
-			self::registerBlock((new Block(Block::IRON_BLOCK))->setName("Block of Iron")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_IRON)->setHardness(5)->setBlastResistance(30));
-			self::registerBlock(new DoubleStoneSlab());
-			self::registerBlock(new StoneSlab());
-			self::registerBlock((new Block(Block::BRICK_BLOCK))->setName("Bricks")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2)->setBlastResistance(30));
-			self::registerBlock(new TNT());
-			self::registerBlock(new Bookshelf());
-			self::registerBlock((new Block(Block::MOSSY_COBBLESTONE))->setName("Moss Stone")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2));
-			self::registerBlock(new Obsidian());
-			self::registerBlock(new Torch());
-			self::registerBlock(new Fire());
-			self::registerBlock(new MonsterSpawner());
-			self::registerBlock((new Stair(Block::OAK_STAIRS))->setName("Oak Wood Stairs")->setToolType(Tool::TYPE_AXE)->setHardness(2)->setBlastResistance(15));
-			self::registerBlock(new Chest());
+			self::$list[self::DIAMOND_ORE] = DiamondOre::class;
+			self::$list[self::DIAMOND_BLOCK] = Diamond::class;
+			self::$list[self::WORKBENCH] = Workbench::class;
+			self::$list[self::WHEAT_BLOCK] = Wheat::class;
+			self::$list[self::FARMLAND] = Farmland::class;
+			self::$list[self::FURNACE] = Furnace::class;
+			self::$list[self::BURNING_FURNACE] = BurningFurnace::class;
+			self::$list[self::SIGN_POST] = SignPost::class;
+			self::$list[self::WOOD_DOOR_BLOCK] = WoodDoor::class;
+			self::$list[self::LADDER] = Ladder::class;
+			self::$list[self::RAIL] = Rail::class;
 
-			self::registerBlock(new DiamondOre());
-			self::registerBlock((new Block(Block::DIAMOND_BLOCK))->setName("Block of Diamond")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_IRON)->setHardness(5)->setBlastResistance(30));
-			self::registerBlock(new CraftingTable());
-			self::registerBlock(new Wheat());
-			self::registerBlock(new Farmland());
-			self::registerBlock(new Furnace());
-			self::registerBlock(new BurningFurnace());
-			self::registerBlock(new StandingSign());
-			self::registerBlock((new WoodenDoor(Block::WOODEN_DOOR_BLOCK))->setName("Wooden Door Block")->setItemId(Item::OAK_DOOR));
-			self::registerBlock((new WoodenDoor(Block::SPRUCE_DOOR_BLOCK))->setName("Spruce Door Block")->setItemId(Item::SPRUCE_DOOR));
-			self::registerBlock((new WoodenDoor(Block::BIRCH_DOOR_BLOCK))->setName("Birch Door Block")->setItemId(Item::BIRCH_DOOR));
-			self::registerBlock((new WoodenDoor(Block::JUNGLE_DOOR_BLOCK))->setName("Jungle Door Block")->setItemId(Item::JUNGLE_DOOR));
-			self::registerBlock((new WoodenDoor(Block::ACACIA_DOOR_BLOCK))->setName("Acacia Door Block")->setItemId(Item::ACACIA_DOOR));
-			self::registerBlock((new WoodenDoor(Block::DARK_OAK_DOOR_BLOCK))->setName("Dark Oak Door Block")->setItemId(Item::DARK_OAK_DOOR));
-			self::registerBlock(new Ladder());
-			self::registerBlock(new Rail());
+			self::$list[self::COBBLESTONE_STAIRS] = CobblestoneStairs::class;
+			self::$list[self::WALL_SIGN] = WallSign::class;
+			self::$list[self::LEVER] = Lever::class;
+			self::$list[self::STONE_PRESSURE_PLATE] = StonePressurePlate::class;
+			self::$list[self::IRON_DOOR_BLOCK] = IronDoor::class;
+			self::$list[self::WOODEN_PRESSURE_PLATE] = WoodenPressurePlate::class;
+			self::$list[self::REDSTONE_ORE] = RedstoneOre::class;
+			self::$list[self::GLOWING_REDSTONE_ORE] = GlowingRedstoneOre::class;
 
-			self::registerBlock((new Stair(Block::COBBLESTONE_STAIRS))->setName("Cobblestone Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2)->setBlastResistance(30));
-			self::registerBlock(new WallSign());
-			self::registerBlock((new Lever(Block::LEVER))->setName("Lever")->setHardness(0.5));
-			self::registerBlock(new StonePressurePlate());
-			self::registerBlock(new IronDoor());
-			self::registerBlock(new WoodenPressurePlate());
-			self::registerBlock(new RedstoneOre());
-			self::registerBlock(new GlowingRedstoneOre());
+			self::$list[self::REDSTONE_TORCH] = RedstoneTorch::class;
+			self::$list[self::LIT_REDSTONE_TORCH] = LitRedstoneTorch::class;
+			self::$list[self::STONE_BUTTON] = StoneButton::class;
+			self::$list[self::SNOW_LAYER] = SnowLayer::class;
+			self::$list[self::ICE] = Ice::class;
+			self::$list[self::SNOW_BLOCK] = Snow::class;
+			self::$list[self::CACTUS] = Cactus::class;
+			self::$list[self::CLAY_BLOCK] = Clay::class;
+			self::$list[self::SUGARCANE_BLOCK] = Sugarcane::class;
 
-			self::registerBlock(new RedstoneTorch());
-			self::registerBlock(new LitRedstoneTorch());
-			self::registerBlock(new StoneButton());
-			self::registerBlock(new SnowLayer());
-			self::registerBlock(new Ice());
-			self::registerBlock(new Snow());
-			self::registerBlock(new Cactus());
-			self::registerBlock(new Clay());
-			self::registerBlock(new Sugarcane());
+			self::$list[self::FENCE] = Fence::class;
+			self::$list[self::PUMPKIN] = Pumpkin::class;
+			self::$list[self::NETHERRACK] = Netherrack::class;
+			self::$list[self::SOUL_SAND] = SoulSand::class;
+			self::$list[self::GLOWSTONE_BLOCK] = Glowstone::class;
 
-			self::registerBlock(new Fence());
-			self::registerBlock(new Pumpkin());
-			self::registerBlock((new Block(Block::NETHERRACK))->setName("Netherrack")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(0.4));
-			self::registerBlock(new SoulSand());
-			self::registerBlock(new Glowstone());
+			self::$list[self::LIT_PUMPKIN] = LitPumpkin::class;
+			self::$list[self::CAKE_BLOCK] = Cake::class;
 
-			self::registerBlock(new LitPumpkin());
-			self::registerBlock(new Cake());
+			self::$list[self::TRAPDOOR] = Trapdoor::class;
 
-			self::registerBlock(new Trapdoor());
+			self::$list[self::STONE_BRICKS] = StoneBricks::class;
 
-			self::registerBlock(new StoneBricks());
+			self::$list[self::IRON_BARS] = IronBars::class;
+			self::$list[self::GLASS_PANE] = GlassPane::class;
+			self::$list[self::MELON_BLOCK] = Melon::class;
+			self::$list[self::PUMPKIN_STEM] = PumpkinStem::class;
+			self::$list[self::MELON_STEM] = MelonStem::class;
+			self::$list[self::VINE] = Vine::class;
+			self::$list[self::FENCE_GATE] = FenceGate::class;
+			self::$list[self::BRICK_STAIRS] = BrickStairs::class;
+			self::$list[self::STONE_BRICK_STAIRS] = StoneBrickStairs::class;
 
-			self::registerBlock(new IronBars());
-			self::registerBlock(new GlassPane());
-			self::registerBlock(new Melon());
-			self::registerBlock(new PumpkinStem());
-			self::registerBlock(new MelonStem());
-			self::registerBlock(new Vine());
-			self::registerBlock((new FenceGate(Block::OAK_FENCE_GATE))->setName("Oak Fence Gate"));
-			self::registerBlock((new Stair(Block::BRICK_STAIRS))->setName("Brick Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2)->setBlastResistance(30));
-			self::registerBlock((new Stair(Block::STONE_BRICK_STAIRS))->setName("Stone Brick Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(1.5)->setBlastResistance(30));
+			self::$list[self::MYCELIUM] = Mycelium::class;
+			self::$list[self::WATER_LILY] = WaterLily::class;
+			self::$list[self::NETHER_BRICKS] = NetherBrick::class;
+			self::$list[self::NETHER_BRICK_FENCE] = NetherBrickFence::class;
+			self::$list[self::NETHER_BRICKS_STAIRS] = NetherBrickStairs::class;
 
-			self::registerBlock(new Mycelium());
-			self::registerBlock(new WaterLily());
-			self::registerBlock((new Block(Block::NETHER_BRICK_BLOCK))->setName("Nether Brick")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2)->setBlastResistance(30));
-			self::registerBlock(new NetherBrickFence());
+			self::$list[self::ENCHANTING_TABLE] = EnchantingTable::class;
+			self::$list[self::BREWING_STAND_BLOCK] = BrewingStand::class;
+			self::$list[self::END_PORTAL_FRAME] = EndPortalFrame::class;
+			self::$list[self::END_STONE] = EndStone::class;
+			self::$list[self::REDSTONE_LAMP] = RedstoneLamp::class;
+			self::$list[self::LIT_REDSTONE_LAMP] = LitRedstoneLamp::class;
+			self::$list[self::SANDSTONE_STAIRS] = SandstoneStairs::class;
+			self::$list[self::EMERALD_ORE] = EmeraldOre::class;
+			self::$list[self::TRIPWIRE_HOOK] = TripwireHook::class;
+			self::$list[self::TRIPWIRE] = Tripwire::class;
+			self::$list[self::EMERALD_BLOCK] = Emerald::class;
+			self::$list[self::SPRUCE_WOOD_STAIRS] = SpruceWoodStairs::class;
+			self::$list[self::BIRCH_WOOD_STAIRS] = BirchWoodStairs::class;
+			self::$list[self::JUNGLE_WOOD_STAIRS] = JungleWoodStairs::class;
+			self::$list[self::STONE_WALL] = StoneWall::class;
+			self::$list[self::FLOWER_POT_BLOCK] = FlowerPot::class;
+			self::$list[self::CARROT_BLOCK] = Carrot::class;
+			self::$list[self::POTATO_BLOCK] = Potato::class;
+			self::$list[self::WOODEN_BUTTON] = WoodenButton::class;
+			self::$list[self::MOB_HEAD_BLOCK] = MobHead::class;
+			self::$list[self::ANVIL] = Anvil::class;
+			self::$list[self::TRAPPED_CHEST] = TrappedChest::class;
+			self::$list[self::WEIGHTED_PRESSURE_PLATE_LIGHT] = WeightedPressurePlateLight::class;
+			self::$list[self::WEIGHTED_PRESSURE_PLATE_HEAVY] = WeightedPressurePlateHeavy::class;
 
-			self::registerBlock((new Stair(Block::NETHER_BRICK_STAIRS))->setName("Nether Brick Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2)->setBlastResistance(30));
-			self::registerBlock(new NetherWartPlant());
+			self::$list[self::DAYLIGHT_SENSOR] = DaylightSensor::class;
+			self::$list[self::REDSTONE_BLOCK] = Redstone::class;
 
-			self::registerBlock(new EnchantingTable());
-			self::registerBlock(new BrewingStand());
-			self::registerBlock(new EndPortalFrame());
-			self::registerBlock((new Block(Block::END_STONE))->setName("End Stone")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(3)->setBlastResistance(45));
-			self::registerBlock(new RedstoneLamp());
-			self::registerBlock(new LitRedstoneLamp());
-			self::registerBlock((new Stair(Block::SANDSTONE_STAIRS))->setName("Sandstone Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(0.8));
+			self::$list[self::QUARTZ_BLOCK] = Quartz::class;
+			self::$list[self::QUARTZ_STAIRS] = QuartzStairs::class;
+			self::$list[self::DOUBLE_WOOD_SLAB] = DoubleWoodSlab::class;
+			self::$list[self::WOOD_SLAB] = WoodSlab::class;
+			self::$list[self::STAINED_CLAY] = StainedClay::class;
 
-			self::registerBlock(new EmeraldOre());
-			self::registerBlock(new TripwireHook());
-			self::registerBlock(new Tripwire());
-			self::registerBlock((new Block(Block::EMERALD_BLOCK))->setName("Block of Emerald")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_IRON)->setHardness(5)->setBlastResistance(30));
-			self::registerBlock((new Stair(Block::SPRUCE_STAIRS))->setName("Spruce Wood Stairs")->setToolType(Tool::TYPE_AXE)->setHardness(2)->setBlastResistance(15));
-			self::registerBlock((new Stair(Block::BIRCH_STAIRS))->setName("Birch Wood Stairs")->setToolType(Tool::TYPE_AXE)->setHardness(2)->setBlastResistance(15));
-			self::registerBlock((new Stair(Block::JUNGLE_STAIRS))->setName("Jungle Wood Stairs")->setToolType(Tool::TYPE_AXE)->setHardness(2)->setBlastResistance(15));
-			self::registerBlock(new CobblestoneWall());
-			self::registerBlock(new FlowerPot());
-			self::registerBlock(new Carrot());
-			self::registerBlock(new Potato());
-			self::registerBlock(new WoodenButton());
-			self::registerBlock(new Skull());
-			self::registerBlock(new Anvil());
-			self::registerBlock(new TrappedChest());
-			self::registerBlock(new LightWeightedPressurePlate());
-			self::registerBlock(new HeavyWeightedPressurePlate());
+			self::$list[self::LEAVES2] = Leaves2::class;
+			self::$list[self::WOOD2] = Wood2::class;
+			self::$list[self::ACACIA_WOOD_STAIRS] = AcaciaWoodStairs::class;
+			self::$list[self::DARK_OAK_WOOD_STAIRS] = DarkOakWoodStairs::class;
+			self::$list[self::PRISMARINE] = Prismarine::class;
+			self::$list[self::SEA_LANTERN] = SeaLantern::class;
+			self::$list[self::IRON_TRAPDOOR] = IronTrapdoor::class;
+			self::$list[self::HAY_BALE] = HayBale::class;
+			self::$list[self::CARPET] = Carpet::class;
+			self::$list[self::HARDENED_CLAY] = HardenedClay::class;
+			self::$list[self::COAL_BLOCK] = Coal::class;
+			self::$list[self::PACKED_ICE] = PackedIce::class;
+			self::$list[self::DOUBLE_PLANT] = DoublePlant::class;
 
-			self::registerBlock(new DaylightSensor());
-			self::registerBlock((new Block(Block::REDSTONE_BLOCK))->setName("Block of Redstone")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(5)->setBlastResistance(30));
+			self::$list[self::FENCE_GATE_SPRUCE] = FenceGateSpruce::class;
+			self::$list[self::FENCE_GATE_BIRCH] = FenceGateBirch::class;
+			self::$list[self::FENCE_GATE_JUNGLE] = FenceGateJungle::class;
+			self::$list[self::FENCE_GATE_DARK_OAK] = FenceGateDarkOak::class;
+			self::$list[self::FENCE_GATE_ACACIA] = FenceGateAcacia::class;
 
-			self::registerBlock(new Quartz());
-			self::registerBlock((new Stair(Block::QUARTZ_STAIRS))->setName("Quartz Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(0.8));
-			self::registerBlock(new DoubleWoodSlab());
-			self::registerBlock(new WoodenSlab());
-			self::registerBlock(new StainedClay());
+			self::$list[self::ITEM_FRAME_BLOCK] = ItemFrame::class;
 
-			self::registerBlock(new Leaves2());
-			self::registerBlock(new Wood2());
-			self::registerBlock((new Stair(Block::ACACIA_STAIRS))->setName("Acacia Wood Stairs")->setToolType(Tool::TYPE_AXE)->setHardness(2)->setBlastResistance(15));
-			self::registerBlock((new Stair(Block::DARK_OAK_STAIRS))->setName("Dark Oak Wood Stairs")->setToolType(Tool::TYPE_AXE)->setHardness(2)->setBlastResistance(15));
+			self::$list[self::GRASS_PATH] = GrassPath::class;
 
-			self::registerBlock(new IronTrapdoor());
-			self::registerBlock(new Prismarine());
-			self::registerBlock(new SeaLantern());
-			self::registerBlock(new HayBale());
-			self::registerBlock(new Carpet());
-			self::registerBlock((new Block(Block::HARDENED_CLAY))->setName("Hardened Clay")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(1.25)->setBlastResistance(21));
-			self::registerBlock((new Block(Block::COAL_BLOCK))->setName("Block of Coal")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(5));
-			self::registerBlock(new PackedIce());
-			self::registerBlock(new DoublePlant());
+			self::$list[self::PODZOL] = Podzol::class;
+			self::$list[self::BEETROOT_BLOCK] = Beetroot::class;
+			self::$list[self::STONECUTTER] = Stonecutter::class;
+			self::$list[self::GLOWING_OBSIDIAN] = GlowingObsidian::class;
 
-			self::registerBlock((new Stair(Block::RED_SANDSTONE_STAIRS))->setName("Red Sandstone Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(0.8));
+			foreach(self::$list as $id => $class){
+				if($class !== null){
+					/** @var Block $block */
+					$block = new $class();
 
-			self::registerBlock((new FenceGate(Block::SPRUCE_FENCE_GATE))->setName("Spruce Fence Gate"));
-			self::registerBlock((new FenceGate(Block::BIRCH_FENCE_GATE))->setName("Birch Fence Gate"));
-			self::registerBlock((new FenceGate(Block::JUNGLE_FENCE_GATE))->setName("Jungle Fence Gate"));
-			self::registerBlock((new FenceGate(Block::DARK_OAK_FENCE_GATE))->setName("Dark Oak Fence Gate"));
-			self::registerBlock((new FenceGate(Block::ACACIA_FENCE_GATE))->setName("Acacia Fence Gate"));
+					for($data = 0; $data < 16; ++$data){
+						self::$fullList[($id << 4) | $data] = new $class($data);
+					}
+				}else{
+					$block = new UnknownBlock($id);
 
-
-			self::registerBlock(new GrassPath());
-			self::registerBlock(new ItemFrame());
-
-			self::registerBlock((new Stair(Block::PURPUR_STAIRS))->setName("Purpur Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(1.5)->setBlastResistance(30));
-			self::registerBlock((new Block(Block::END_BRICKS))->setName("End Stone Bricks")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(0.8));
-
-			self::registerBlock((new EndRod(Block::END_ROD))->setName("End Rod"));
-
-			self::registerBlock((new Block(Block::NETHER_WART_BLOCK))->setName("Nether Wart Block"));
-			self::registerBlock((new Block(Block::RED_NETHER_BRICK))->setName("Red Nether Brick")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2)->setBlastResistance(30));
-			self::registerBlock((new BoneBlock(Block::BONE_BLOCK))->setName("Bone Block")->setHardness(2)->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN));
-
-			self::registerBlock((new GlazedTerracotta(Block::PURPLE_GLAZED_TERRACOTTA))->setName("Purple Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::WHITE_GLAZED_TERRACOTTA))->setName("White Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::ORANGE_GLAZED_TERRACOTTA))->setName("Orange Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::MAGENTA_GLAZED_TERRACOTTA))->setName("Magenta Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::LIGHT_BLUE_GLAZED_TERRACOTTA))->setName("Light Blue Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::YELLOW_GLAZED_TERRACOTTA))->setName("Yellow Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::LIME_GLAZED_TERRACOTTA))->setName("Lime Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::PINK_GLAZED_TERRACOTTA))->setName("Pink Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::GRAY_GLAZED_TERRACOTTA))->setName("Grey Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::SILVER_GLAZED_TERRACOTTA))->setName("Light Grey Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::CYAN_GLAZED_TERRACOTTA))->setName("Cyan Glazed Terracotta"));
-			//chalkboard here
-			self::registerBlock((new GlazedTerracotta(Block::BLUE_GLAZED_TERRACOTTA))->setName("Blue Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::BROWN_GLAZED_TERRACOTTA))->setName("Brown Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::GREEN_GLAZED_TERRACOTTA))->setName("Green Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::RED_GLAZED_TERRACOTTA))->setName("Red Glazed Terracotta"));
-			self::registerBlock((new GlazedTerracotta(Block::BLACK_GLAZED_TERRACOTTA))->setName("Black Glazed Terracotta"));
-			self::registerBlock((new Block(Block::CONCRETE))->setName("Concrete")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(1.8));
-			self::registerBlock((new ConcretePowder(Block::CONCRETE_POWDER))->setName("Concrete Powder")->setToolType(Tool::TYPE_SHOVEL)->setHardness(0.5));
-
-			self::registerBlock(new Podzol());
-			self::registerBlock(new Beetroot());
-			self::registerBlock((new Block(Block::STONECUTTER))->setName("Stonecutter")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2.5)->setBlastResistance(17.5));
-			self::registerBlock(new GlowingObsidian());
-
-			foreach(self::$list as $id => $block){
-				if($block === null){
-					self::registerBlock(new UnknownBlock($id));
+					for($data = 0; $data < 16; ++$data){
+						self::$fullList[($id << 4) | $data] = new UnknownBlock($id, $data);
+					}
 				}
+
+				self::$solid[$id] = $block->isSolid();
+				self::$transparent[$id] = $block->isTransparent();
+				self::$hardness[$id] = $block->getHardness();
+				self::$light[$id] = $block->getLightLevel();
+				self::$lightFilter[$id] = $block->getLightFilter() + 1;
+				self::$diffusesSkyLight[$id] = $block->diffusesSkyLight();
 			}
 		}
 	}
 
 	/**
-	 * Adds a Block type to the index. Plugins may use this method to register new block types, or override existing ones.
-	 * @since API 3.0.0
-	 *
-	 * @param Block $block
-	 */
-	public static function registerBlock(Block $block){
-		self::$list[$block->id] = $block;
-		for($data = 0; $data < 16; ++$data){
-			$b = clone $block;
-			$b->meta = $data;
-			self::$fullList[($block->id << 4) | $data] = $b;
-		}
-
-		self::$solid[$block->id] = $block->isSolid();
-		self::$transparent[$block->id] = $block->isTransparent();
-		self::$hardness[$block->id] = $block->getHardness();
-		self::$light[$block->id] = $block->getLightLevel();
-		self::$lightFilter[$block->id] = $block->getLightFilter() + 1;
-		self::$diffusesSkyLight[$block->id] = $block->diffusesSkyLight();
-		self::$blastResistance[$block->id] = $block->getBlastResistance();
-	}
-
-	/**
-	 * @param int $id
-	 * @param int $meta
+	 * @param int      $id
+	 * @param int      $meta
 	 * @param Position $pos
 	 *
 	 * @return Block
 	 */
-	public static function get(int $id, int $meta = 0, Position $pos = null) : Block{
+	public static function get($id, $meta = 0, Position $pos = null){
 		try{
-			$block = clone self::$fullList[($id << 4) | $meta];
+			$block = self::$list[$id];
+			if($block !== null){
+				$block = new $block($meta);
+			}else{
+				$block = new UnknownBlock($id, $meta);
+			}
 		}catch(\RuntimeException $e){
 			$block = new UnknownBlock($id, $meta);
 		}
@@ -345,61 +304,30 @@ class Block extends Position implements BlockIds, Metadatable{
 		return $block;
 	}
 
-	/** @var string */
-	protected $fallbackName = "Unknown";
-
-	/** @var int */
-	protected $id;
-	/** @var int */
-	protected $meta = 0;
-	/** @var int|null */
-	protected $itemId = null;
-
-	/** @var AxisAlignedBB */
-	public $boundingBox = null;
-
-	/** @var float */
-	protected $blockHardness = 1.0;
-	/** @var float|null */
-	protected $blockBlastResistance = null;
-
-	/** @var int */
-	protected $toolType = Tool::TYPE_NONE;
-	/** @var int */
-	protected $harvestLevel = Tool::NOT_REQUIRED;
-	/** @var int */
-	protected $variantBitmask = -1;
-
-
 	/**
-	 * Constructs a new instance of a Block.
-	 *
-	 * Note for plugin developers: This constructor should ONLY be used when creating an instance of a new block type to register into the block type index.
-	 * To get an instance of an existing block for use, use {@link Block#get} instead of constructing a new one.
-	 *
 	 * @param int $id
 	 * @param int $meta
 	 */
-	public function __construct(int $id, int $meta = 0){
-		$this->id = $id;
-		$this->meta = $meta;
+	public function __construct($id, $meta = 0){
+		$this->id = (int) $id;
+		$this->meta = (int) $meta;
 	}
 
 	/**
 	 * Places the Block, using block space and block target, and side. Returns if the block has been placed.
 	 *
-	 * @param Item        $item
-	 * @param Block       $block
-	 * @param Block       $target
-	 * @param int         $face
-	 * @param float       $fx
-	 * @param float       $fy
-	 * @param float       $fz
-	 * @param Player|null $player
+	 * @param Item   $item
+	 * @param Block  $block
+	 * @param Block  $target
+	 * @param int    $face
+	 * @param float  $fx
+	 * @param float  $fy
+	 * @param float  $fz
+	 * @param Player $player = null
 	 *
 	 * @return bool
 	 */
-	public function place(Item $item, Block $block, Block $target, int $face, float $fx, float $fy, float $fz, Player $player = null) : bool{
+	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
 		return $this->getLevel()->setBlock($this, $this, true, true);
 	}
 
@@ -410,7 +338,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	 *
 	 * @return bool
 	 */
-	public function isBreakable(Item $item) : bool{
+	public function isBreakable(Item $item){
 		return true;
 	}
 
@@ -419,10 +347,10 @@ class Block extends Position implements BlockIds, Metadatable{
 	 *
 	 * @param Item $item
 	 *
-	 * @return bool
+	 * @return mixed
 	 */
-	public function onBreak(Item $item) : bool{
-		return $this->getLevel()->setBlock($this, Block::get(Block::AIR), true, true);
+	public function onBreak(Item $item){
+		return $this->getLevel()->setBlock($this, new Air(), true, true);
 	}
 
 	/**
@@ -430,71 +358,56 @@ class Block extends Position implements BlockIds, Metadatable{
 	 *
 	 * @param int $type
 	 *
-	 * @return bool|int
+	 * @return int|bool
 	 */
-	public function onUpdate(int $type){
+	public function onUpdate($type){
 		return false;
 	}
 
 	/**
 	 * Do actions when activated by Item. Returns if it has done anything
 	 *
-	 * @param Item        $item
-	 * @param Player|null $player
+	 * @param Item   $item
+	 * @param Player $player
 	 *
 	 * @return bool
 	 */
-	public function onActivate(Item $item, Player $player = null) : bool{
+	public function onActivate(Item $item, Player $player = null){
 		return false;
 	}
 
 	/**
-	 * @return float
+	 * @return int
 	 */
-	public function getHardness() : float{
-		return $this->blockHardness;
+	public function getHardness(){
+		return 10;
 	}
 
 	/**
-	 * @param float $hardness
-	 *
-	 * @return Block
+	 * @return int
 	 */
-	protected function setHardness(float $hardness) : Block{
-		$this->blockHardness = $hardness;
-
-		return $this;
+	public function getResistance(){
+		return $this->getHardness() * 5;
 	}
 
 	/**
-	 * @return float
+	 * @return int
 	 */
-	public function getBlastResistance() : float{
-		return $this->blockBlastResistance ?? $this->getHardness() * 5;
-	}
-
-	/**
-	 * @param float $value
-	 *
-	 * @return Block
-	 */
-	protected function setBlastResistance(float $value) : Block{
-		$this->blockBlastResistance = $value;
-
-		return $this;
+	public function getToolType(){
+		return Tool::TYPE_NONE;
 	}
 
 	/**
 	 * @return float
 	 */
-	public function getFrictionFactor() : float{
+	public function getFrictionFactor(){
 		return 0.6;
 	}
 
 	/**
 	 * @return int 0-15
 	 */
-	public function getLightLevel() : int{
+	public function getLightLevel(){
 		return 0;
 	}
 
@@ -522,40 +435,29 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
-	 * Returns whether random block updates will be done on this block.
-	 *
-	 * @return bool
-	 */
-	public function ticksRandomly() : bool{
-		return false;
-	}
-
-	/**
 	 * AKA: Block->isPlaceable
 	 *
 	 * @return bool
 	 */
-	public function canBePlaced() : bool{
+	public function canBePlaced(){
 		return true;
 	}
 
 	/**
-	 * @param Block|null $with
-	 *
 	 * @return bool
 	 */
-	public function canBeReplaced(Block $with = null) : bool{
+	public function canBeReplaced(){
 		return false;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isTransparent() : bool{
+	public function isTransparent(){
 		return false;
 	}
 
-	public function isSolid() : bool{
+	public function isSolid(){
 		return true;
 	}
 
@@ -564,23 +466,24 @@ class Block extends Position implements BlockIds, Metadatable{
 	 *
 	 * @return bool
 	 */
-	public function canBeFlowedInto() : bool{
-		return false;
-	}
-
-	public function hasEntityCollision() : bool{
-		return false;
-	}
-
-	public function canPassThrough() : bool{
+	public function canBeFlowedInto(){
 		return false;
 	}
 
 	/**
-	 * Returns whether this block type can be turned into farmland by right-clicking on it with a hoe.
+	 * AKA: Block->isActivable
+	 *
 	 * @return bool
 	 */
-	public function canBeTilled() : bool{
+	public function canBeActivated(){
+		return false;
+	}
+
+	public function hasEntityCollision(){
+		return false;
+	}
+
+	public function canPassThrough(){
 		return false;
 	}
 
@@ -595,38 +498,15 @@ class Block extends Position implements BlockIds, Metadatable{
 	/**
 	 * @return string
 	 */
-	public function getName() : string{
-		return $this->fallbackName;
-	}
-
-	/**
-	 * Sets the fallback English name of the block.
-	 * @since API 3.0.0
-	 *
-	 * @param string $name
-	 * @return $this
-	 */
-	protected function setName(string $name){
-		$this->fallbackName = $name;
-
-		return $this;
+	public function getName(){
+		return "Unknown";
 	}
 
 	/**
 	 * @return int
 	 */
-	final public function getId() : int{
+	final public function getId(){
 		return $this->id;
-	}
-
-	final public function getItemId() : int{
-		return $this->itemId ?? $this->id;
-	}
-
-	protected function setItemId(int $id) : Block{
-		$this->itemId = $id;
-
-		return $this;
 	}
 
 	public function addVelocityToEntity(Entity $entity, Vector3 $vector){
@@ -636,14 +516,14 @@ class Block extends Position implements BlockIds, Metadatable{
 	/**
 	 * @return int
 	 */
-	final public function getDamage() : int{
+	final public function getDamage(){
 		return $this->meta;
 	}
 
 	/**
 	 * @param int $meta
 	 */
-	final public function setDamage(int $meta){
+	final public function setDamage($meta){
 		$this->meta = $meta & 0x0f;
 	}
 
@@ -661,86 +541,20 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
-	 * Returns the best tool type to use for breaking this type of block.
-	 * @return int
-	 */
-	public function getToolType() : int{
-		return $this->toolType;
-	}
-
-	/**
-	 * @param int $toolType
-	 *
-	 * @return Block
-	 */
-	protected function setToolType(int $toolType) : Block{
-		$this->toolType = $toolType;
-
-		return $this;
-	}
-
-	/**
-	 * Returns the minimum best tool tier for harvesting this block. This value affects block breaking times with
-	 * different tiers of tool.
-	 *
-	 * If this method returns 0 (Tool::NOT_REQUIRED), it indicates that no tool is required to harvest the block, and
-	 * the block will always drop itself when broken unless {@link Block#getDrops} is overridden for some rare cases
-	 * such as vines.
-	 *
-	 * If the tool required is not a tiered-tool, this method should simply return a value of 1 (Tool::REQUIRED) to
-	 * indicate that a tool is requred to harvest the block.
-	 *
-	 * @return int
-	 */
-	public function getRequiredHarvestLevel() : int{
-		return $this->harvestLevel;
-	}
-
-	protected function setRequiredHarvestLevel(int $level){
-		$this->harvestLevel = $level;
-
-		return $this;
-	}
-
-	/**
-	 * Returns the bitmask used to get the true variant of this block. Used for things like removing rotation meta
-	 * values from dropped items such as wooden logs.
-	 *
-	 * By default this is -1, which will cause blocks of this type to always drop with damage. If you want blocks not to
-	 * retain their damage, override this with 0 in descendent classes.
-	 *
-	 * @return int
-	 */
-	public function getVariantBitmask() : int{
-		return $this->variantBitmask;
-	}
-
-	/**
-	 * @param int $mask
-	 *
-	 * @return Block
-	 */
-	protected function setVariantBitmask(int $mask) : Block{
-		$this->variantBitmask = $mask;
-
-		return $this;
-	}
-
-	/**
 	 * Returns an array of Item objects to be dropped
 	 *
 	 * @param Item $item
 	 *
-	 * @return Item[]
+	 * @return array
 	 */
-	public function getDrops(Item $item) : array{
-		if($this->canBeBrokenWith($item)){
+	public function getDrops(Item $item){
+		if(!isset(self::$list[$this->getId()])){ //Unknown blocks
+			return [];
+		}else{
 			return [
-				Item::get($this->getItemId(), $this->getDamage() & $this->getVariantBitmask(), 1)
+				[$this->getId(), $this->getDamage(), 1],
 			];
 		}
-
-		return [];
 	}
 
 	/**
@@ -750,52 +564,47 @@ class Block extends Position implements BlockIds, Metadatable{
 	 *
 	 * @return float
 	 */
-	public function getBreakTime(Item $item) : float{
-		$base = $this->getHardness();
-
+	public function getBreakTime(Item $item){
+		$base = $this->getHardness() * 1.5;
 		if($this->canBeBrokenWith($item)){
-			$base *= 1.5;
-		}else{
-			$base *= 5;
-		}
-
-		if($this->getToolType() === $item->getBlockBreakingToolType()){
-			//TODO: efficiency
-			if($this->getToolType() === Tool::TYPE_SHEARS){
+			if($this->getToolType() === Tool::TYPE_SHEARS and $item->isShears()){
 				$base /= 15;
-			}else{
-				switch($item->getToolHarvestLevel()){
-					case TieredTool::TIER_WOODEN:
+			}elseif(
+				($this->getToolType() === Tool::TYPE_PICKAXE and ($tier = $item->isPickaxe()) !== false) or
+				($this->getToolType() === Tool::TYPE_AXE and ($tier = $item->isAxe()) !== false) or
+				($this->getToolType() === Tool::TYPE_SHOVEL and ($tier = $item->isShovel()) !== false)
+			){
+				switch($tier){
+					case Tool::TIER_WOODEN:
 						$base /= 2;
 						break;
-					case TieredTool::TIER_STONE:
+					case Tool::TIER_STONE:
 						$base /= 4;
 						break;
-					case TieredTool::TIER_IRON:
+					case Tool::TIER_IRON:
 						$base /= 6;
 						break;
-					case TieredTool::TIER_DIAMOND:
+					case Tool::TIER_DIAMOND:
 						$base /= 8;
 						break;
-					case TieredTool::TIER_GOLD:
+					case Tool::TIER_GOLD:
 						$base /= 12;
 						break;
 				}
 			}
+		}else{
+			$base *= 3.33;
+		}
+
+		if($item->isSword()){
+			$base *= 0.5;
 		}
 
 		return $base;
 	}
 
-	public function canBeBrokenWith(Item $item) : bool{
-		if($this->getHardness() < 0){
-			return false;
-		}
-
-		return $this->getRequiredHarvestLevel() === 0 or (
-			$item->getBlockBreakingToolType() === $this->getToolType() and
-			$item->getToolHarvestLevel() >= $this->getRequiredHarvestLevel()
-		);
+	public function canBeBrokenWith(Item $item){
+		return $this->getHardness() !== -1;
 	}
 
 	/**
@@ -811,20 +620,7 @@ class Block extends Position implements BlockIds, Metadatable{
 			return $this->getLevel()->getBlock(Vector3::getSide($side, $step));
 		}
 
-		return Block::get(Block::AIR, 0, Position::fromObject(Vector3::getSide($side, $step)));
-	}
-
-	/**
-	 * Returns an array of blocks which are considered a part of this block. This is usually just the block itself, but in the case of
-	 * - doors and double plants: will return the top and bottom half (if present)
-	 * - beds: will return the top and bottom halves of the bed (if present)
-	 *
-	 * Used for sending block updates to clients to revert interaction and breaking events if they are cancelled server-side for whatever reason.
-	 *
-	 * @return Block[]
-	 */
-	public function getAffectedBlocks() : array{
-		return [$this];
+		return Block::get(Item::AIR, 0, Position::fromObject(Vector3::getSide($side, $step)));
 	}
 
 	/**
@@ -841,7 +637,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	 *
 	 * @return bool
 	 */
-	public function collidesWithBB(AxisAlignedBB $bb) : bool{
+	public function collidesWithBB(AxisAlignedBB $bb){
 		$bb2 = $this->getBoundingBox();
 
 		return $bb2 !== null and $bb->intersectsWith($bb2);
@@ -855,7 +651,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
-	 * @return AxisAlignedBB|null
+	 * @return AxisAlignedBB
 	 */
 	public function getBoundingBox(){
 		if($this->boundingBox === null){
@@ -865,7 +661,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
-	 * @return AxisAlignedBB|null
+	 * @return AxisAlignedBB
 	 */
 	protected function recalculateBoundingBox(){
 		return new AxisAlignedBB(
@@ -882,7 +678,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	 * @param Vector3 $pos1
 	 * @param Vector3 $pos2
 	 *
-	 * @return MovingObjectPosition|null
+	 * @return MovingObjectPosition
 	 */
 	public function calculateIntercept(Vector3 $pos1, Vector3 $pos2){
 		$bb = $this->getBoundingBox();

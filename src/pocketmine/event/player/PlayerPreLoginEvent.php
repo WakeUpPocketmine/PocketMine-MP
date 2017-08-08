@@ -14,12 +14,10 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @link   http://www.pocketmine.net/
  *
  *
-*/
-
-declare(strict_types=1);
+ */
 
 namespace pocketmine\event\player;
 
@@ -35,26 +33,16 @@ class PlayerPreLoginEvent extends PlayerEvent implements Cancellable{
 	/** @var string */
 	protected $kickMessage;
 
-	/**
-	 * @param Player $player
-	 * @param string $kickMessage
-	 */
-	public function __construct(Player $player, string $kickMessage){
+	public function __construct(Player $player, $kickMessage){
 		$this->player = $player;
 		$this->kickMessage = $kickMessage;
 	}
 
-	/**
-	 * @param string $kickMessage
-	 */
-	public function setKickMessage(string $kickMessage){
+	public function setKickMessage($kickMessage){
 		$this->kickMessage = $kickMessage;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getKickMessage() : string{
+	public function getKickMessage(){
 		return $this->kickMessage;
 	}
 

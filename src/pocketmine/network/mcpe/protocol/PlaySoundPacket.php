@@ -19,8 +19,6 @@
  *
 */
 
-declare(strict_types=1);
-
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -39,14 +37,15 @@ class PlaySoundPacket extends DataPacket{
 	public $volume;
 	public $pitch;
 
-	public function decodePayload(){
+	public function decode(){
 		$this->soundName = $this->getString();
 		$this->getBlockPosition($this->x, $this->y, $this->z);
 		$this->volume = $this->getLFloat();
 		$this->pitch = $this->getLFloat();
 	}
 
-	public function encodePayload(){
+	public function encode(){
+		$this->reset();
 		$this->putString($this->soundName);
 		$this->putBlockPosition($this->x, $this->y, $this->z);
 		$this->putLFloat($this->volume);
