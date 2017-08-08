@@ -8,8 +8,8 @@ __A highly customisable, open source server software for Minecraft: Pocket Editi
 
 - [x] Load plugins with different versions
 - [ ] Support with BigBrother plugin
-- [ ] More blocks
-
+- [x] More blocks
+ 
 ### Setup, help & support, FAQs
 Head over to the [documentation site](http://pmmp.readthedocs.org/).
 If you don't find what you're looking for there, [talk to a human](#discussion). Please do not use our issue tracker for support requests.
