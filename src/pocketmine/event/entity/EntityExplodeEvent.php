@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +14,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\entity;
 
@@ -49,7 +51,7 @@ class EntityExplodeEvent extends EntityEvent implements Cancellable{
 	 * @param Block[]  $blocks
 	 * @param float    $yield
 	 */
-	public function __construct(Entity $entity, Position $position, array $blocks, $yield){
+	public function __construct(Entity $entity, Position $position, array $blocks, float $yield){
 		$this->entity = $entity;
 		$this->position = $position;
 		$this->blocks = $blocks;
@@ -59,14 +61,14 @@ class EntityExplodeEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return Position
 	 */
-	public function getPosition(){
+	public function getPosition() : Position{
 		return $this->position;
 	}
 
 	/**
 	 * @return Block[]
 	 */
-	public function getBlockList(){
+	public function getBlockList() : array{
 		return $this->blocks;
 	}
 
@@ -80,14 +82,14 @@ class EntityExplodeEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return float
 	 */
-	public function getYield(){
+	public function getYield() : float{
 		return $this->yield;
 	}
 
 	/**
 	 * @param float $yield
 	 */
-	public function setYield($yield){
+	public function setYield(float $yield){
 		$this->yield = $yield;
 	}
 

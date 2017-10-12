@@ -19,15 +19,17 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 
 class BeetrootSoup extends Food{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::BEETROOT_SOUP, 0, $count, "Beetroot Soup");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::BEETROOT_SOUP, $meta, "Beetroot Soup");
 	}
 
-	public function getMaxStackSize(){
+	public function getMaxStackSize() : int{
 		return 1;
 	}
 
@@ -40,6 +42,6 @@ class BeetrootSoup extends Food{
 	}
 
 	public function getResidue(){
-		return Item::get(Item::BOWL);
+		return ItemFactory::get(Item::BOWL);
 	}
 }

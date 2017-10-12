@@ -19,75 +19,58 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 use pocketmine\level\Level;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
+use pocketmine\tile\Sign as TileSign;
 use pocketmine\tile\Tile;
 
 class SignPost extends Transparent{
 
 	protected $id = self::SIGN_POST;
 
-	public function __construct($meta = 0){
+	protected $itemId = Item::SIGN;
+
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 1;
 	}
 
-	public function isSolid(){
+	public function isSolid() : bool{
 		return false;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Sign Post";
 	}
 
-	public function getBoundingBox(){
+	protected function recalculateBoundingBox() : ?AxisAlignedBB{
 		return null;
 	}
 
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($face !== 0){
-			$nbt = new CompoundTag("", [
-				"id" => new StringTag("id", Tile::SIGN),
-				"x" => new IntTag("x", $block->x),
-				"y" => new IntTag("y", $block->y),
-				"z" => new IntTag("z", $block->z),
-				"Text1" => new StringTag("Text1", ""),
-				"Text2" => new StringTag("Text2", ""),
-				"Text3" => new StringTag("Text3", ""),
-				"Text4" => new StringTag("Text4", "")
-			]);
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $facePos, Player $player = null) : bool{
+		if($face !== Vector3::SIDE_DOWN){
 
-			if($player !== null){
-				$nbt->Creator = new StringTag("Creator", $player->getRawUniqueId());
-			}
-
-			if($item->hasCustomBlockData()){
-				foreach($item->getCustomBlockData() as $key => $v){
-					$nbt->{$key} = $v;
-				}
-			}
-
-			if($face === 1){
+			if($face === Vector3::SIDE_UP){
 				$this->meta = floor((($player->yaw + 180) * 16 / 360) + 0.5) & 0x0f;
-				$this->getLevel()->setBlock($block, $this, true);
+				$this->getLevel()->setBlock($blockReplace, $this, true);
 			}else{
 				$this->meta = $face;
-				$this->getLevel()->setBlock($block, new WallSign($this->meta), true);
+				$this->getLevel()->setBlock($blockReplace, new WallSign($this->meta), true);
 			}
 
-			Tile::createTile(Tile::SIGN, $this->getLevel(), $nbt);
+			Tile::createTile(Tile::SIGN, $this->getLevel(), TileSign::createNBT($this, $face, $item, $player));
 
 			return true;
 		}
@@ -95,7 +78,7 @@ class SignPost extends Transparent{
 		return false;
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if($this->getSide(Vector3::SIDE_DOWN)->getId() === self::AIR){
 				$this->getLevel()->useBreakOn($this);
@@ -107,13 +90,11 @@ class SignPost extends Transparent{
 		return false;
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[Item::SIGN, 0, 1],
-		];
+	public function getToolType() : int{
+		return Tool::TYPE_AXE;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_AXE;
+	public function getVariantBitmask() : int{
+		return 0;
 	}
 }

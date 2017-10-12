@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -30,7 +32,9 @@ use pocketmine\utils\UUID;
 class CraftingEventPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::CRAFTING_EVENT_PACKET;
 
+	/** @var int */
 	public $windowId;
+	/** @var int */
 	public $type;
 	/** @var UUID */
 	public $id;
@@ -45,7 +49,7 @@ class CraftingEventPacket extends DataPacket{
 		return parent::clean();
 	}
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->windowId = $this->getByte();
 		$this->type = $this->getVarInt();
 		$this->id = $this->getUUID();
@@ -61,8 +65,7 @@ class CraftingEventPacket extends DataPacket{
 		}
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putByte($this->windowId);
 		$this->putVarInt($this->type);
 		$this->putUUID($this->id);

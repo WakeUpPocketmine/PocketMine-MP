@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine;
 
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
@@ -36,7 +38,9 @@ class CrashDump{
 	private $fp;
 	private $time;
 	private $data = [];
-	private $encodedData = null;
+	/** @var string */
+	private $encodedData = "";
+	/** @var string */
 	private $path;
 
 	public function __construct(Server $server){
@@ -62,7 +66,7 @@ class CrashDump{
 		$this->encodeData();
 	}
 
-	public function getPath(){
+	public function getPath() : string{
 		return $this->path;
 	}
 
@@ -70,7 +74,7 @@ class CrashDump{
 		return $this->encodedData;
 	}
 
-	public function getData(){
+	public function getData() : array{
 		return $this->data;
 	}
 
@@ -160,7 +164,7 @@ class CrashDump{
 				E_STRICT => "E_STRICT",
 				E_RECOVERABLE_ERROR => "E_RECOVERABLE_ERROR",
 				E_DEPRECATED => "E_DEPRECATED",
-				E_USER_DEPRECATED => "E_USER_DEPRECATED",
+				E_USER_DEPRECATED => "E_USER_DEPRECATED"
 			];
 			$error["fullFile"] = $error["file"];
 			$error["file"] = cleanPath($error["file"]);

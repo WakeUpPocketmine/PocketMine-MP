@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
 use pocketmine\level\Level;
@@ -30,7 +32,6 @@ class Arrow extends Projectile{
 	const NETWORK_ID = 80;
 
 	public $width = 0.5;
-	public $length = 0.5;
 	public $height = 0.5;
 
 	protected $gravity = 0.05;
@@ -44,11 +45,11 @@ class Arrow extends Projectile{
 	}
 
 	public function isCritical() : bool{
-		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL);
+		return $this->getGenericFlag(self::DATA_FLAG_CRITICAL);
 	}
 
 	public function setCritical(bool $value = true){
-		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL, $value);
+		$this->setGenericFlag(self::DATA_FLAG_CRITICAL, $value);
 	}
 
 	public function getResultDamage() : int{
@@ -60,14 +61,12 @@ class Arrow extends Projectile{
 		}
 	}
 
-	public function onUpdate($currentTick){
+	public function entityBaseTick(int $tickDiff = 1) : bool{
 		if($this->closed){
 			return false;
 		}
 
-		$this->timings->startTiming();
-
-		$hasUpdate = parent::onUpdate($currentTick);
+		$hasUpdate = parent::entityBaseTick($tickDiff);
 
 		if($this->onGround or $this->hadCollision){
 			$this->setCritical(false);
@@ -78,8 +77,6 @@ class Arrow extends Projectile{
 			$hasUpdate = true;
 		}
 
-		$this->timings->stopTiming();
-
 		return $hasUpdate;
 	}
 
@@ -87,12 +84,9 @@ class Arrow extends Projectile{
 		$pk = new AddEntityPacket();
 		$pk->type = Arrow::NETWORK_ID;
 		$pk->entityRuntimeId = $this->getId();
-		$pk->x = $this->x;
-		$pk->y = $this->y;
-		$pk->z = $this->z;
-		$pk->speedX = $this->motionX;
-		$pk->speedY = $this->motionY;
-		$pk->speedZ = $this->motionZ;
+		$pk->position = $this->asVector3();
+		$pk->motion = $this->getMotion();
+
 		$pk->yaw = $this->yaw;
 		$pk->pitch = $this->pitch;
 		$pk->metadata = $this->dataProperties;

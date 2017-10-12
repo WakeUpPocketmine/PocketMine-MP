@@ -19,23 +19,18 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\inventory;
 
-use pocketmine\utils\UUID;
+use pocketmine\item\Item;
 
 interface Recipe{
 
 	/**
-	 * @return \pocketmine\item\Item
+	 * @return Item
 	 */
-	public function getResult();
+	public function getResult() : Item;
 
-	public function registerToCraftingManager();
-
-	/**
-	 * @return UUID
-	 */
-	public function getId();
-
-	public function setId(UUID $id);
+	public function registerToCraftingManager(CraftingManager $manager) : void;
 }

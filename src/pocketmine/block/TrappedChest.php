@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 class TrappedChest extends Chest{
@@ -27,7 +29,7 @@ class TrappedChest extends Chest{
 
 	protected $id = self::TRAPPED_CHEST;
 
-	public function getName(){
+	public function getName() : string{
 		return "Trapped Chest";
 	}
 }

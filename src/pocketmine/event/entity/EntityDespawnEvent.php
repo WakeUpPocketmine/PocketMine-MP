@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +14,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\entity;
 
@@ -34,6 +36,7 @@ use pocketmine\entity\Vehicle;
 class EntityDespawnEvent extends EntityEvent{
 	public static $handlerList = null;
 
+	/** @var int */
 	private $entityType;
 
 	/**
@@ -47,42 +50,42 @@ class EntityDespawnEvent extends EntityEvent{
 	/**
 	 * @return int
 	 */
-	public function getType(){
+	public function getType() : int{
 		return $this->entityType;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isCreature(){
+	public function isCreature() : bool{
 		return $this->entity instanceof Creature;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isHuman(){
+	public function isHuman() : bool{
 		return $this->entity instanceof Human;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isProjectile(){
+	public function isProjectile() : bool{
 		return $this->entity instanceof Projectile;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isVehicle(){
+	public function isVehicle() : bool{
 		return $this->entity instanceof Vehicle;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isItem(){
+	public function isItem() : bool{
 		return $this->entity instanceof Item;
 	}
 

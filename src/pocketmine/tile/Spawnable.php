@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\tile;
 
 use pocketmine\level\Level;
@@ -29,11 +31,7 @@ use pocketmine\Player;
 
 abstract class Spawnable extends Tile{
 
-	public function spawnTo(Player $player){
-		if($this->closed){
-			return false;
-		}
-
+	public function createSpawnPacket() : BlockEntityDataPacket{
 		$nbt = new NBT(NBT::LITTLE_ENDIAN);
 		$nbt->setData($this->getSpawnCompound());
 		$pk = new BlockEntityDataPacket();
@@ -41,7 +39,16 @@ abstract class Spawnable extends Tile{
 		$pk->y = $this->y;
 		$pk->z = $this->z;
 		$pk->namedtag = $nbt->write(true);
-		$player->dataPacket($pk);
+
+		return $pk;
+	}
+
+	public function spawnTo(Player $player){
+		if($this->closed){
+			return false;
+		}
+
+		$player->dataPacket($this->createSpawnPacket());
 
 		return true;
 	}
@@ -56,11 +63,8 @@ abstract class Spawnable extends Tile{
 			return;
 		}
 
-		foreach($this->getLevel()->getChunkPlayers($this->chunk->getX(), $this->chunk->getZ()) as $player){
-			if($player->spawned === true){
-				$this->spawnTo($player);
-			}
-		}
+		$pk = $this->createSpawnPacket();
+		$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
 	}
 
 	protected function onChanged(){
@@ -75,7 +79,24 @@ abstract class Spawnable extends Tile{
 	/**
 	 * @return CompoundTag
 	 */
-	abstract public function getSpawnCompound();
+	final public function getSpawnCompound() : CompoundTag{
+		$nbt = new CompoundTag("", [
+			$this->namedtag->id,
+			$this->namedtag->x,
+			$this->namedtag->y,
+			$this->namedtag->z
+		]);
+		$this->addAdditionalSpawnData($nbt);
+		return $nbt;
+	}
+
+	/**
+	 * An extension to getSpawnCompound() for
+	 * further modifying the generic tile NBT.
+	 *
+	 * @param CompoundTag $nbt
+	 */
+	abstract public function addAdditionalSpawnData(CompoundTag $nbt);
 
 	/**
 	 * Called when a player updates a block entity's NBT data

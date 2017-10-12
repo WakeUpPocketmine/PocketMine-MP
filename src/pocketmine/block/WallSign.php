@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\level\Level;
@@ -27,16 +29,16 @@ class WallSign extends SignPost{
 
 	protected $id = self::WALL_SIGN;
 
-	public function getName(){
+	public function getName() : string{
 		return "Wall Sign";
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		$faces = [
 			2 => 3,
 			3 => 2,
 			4 => 5,
-			5 => 4,
+			5 => 4
 		];
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			if(isset($faces[$this->meta])){

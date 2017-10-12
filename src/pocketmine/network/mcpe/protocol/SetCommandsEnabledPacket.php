@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -29,14 +31,14 @@ use pocketmine\network\mcpe\NetworkSession;
 class SetCommandsEnabledPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::SET_COMMANDS_ENABLED_PACKET;
 
+	/** @var bool */
 	public $enabled;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->enabled = $this->getBool();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putBool($this->enabled);
 	}
 

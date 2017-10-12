@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +14,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\entity;
 
@@ -31,15 +33,14 @@ class EntityDamageByChildEntityEvent extends EntityDamageByEntityEvent{
 	/** @var int */
 	private $childEntityEid;
 
-
 	/**
-	 * @param Entity    $damager
-	 * @param Entity    $childEntity
-	 * @param Entity    $entity
-	 * @param int       $cause
-	 * @param int|int[] $damage
+	 * @param Entity        $damager
+	 * @param Entity        $childEntity
+	 * @param Entity        $entity
+	 * @param int           $cause
+	 * @param float|float[] $damage
 	 */
-	public function __construct(Entity $damager, Entity $childEntity, Entity $entity, $cause, $damage){
+	public function __construct(Entity $damager, Entity $childEntity, Entity $entity, int $cause, $damage){
 		$this->childEntityEid = $childEntity->getId();
 		parent::__construct($damager, $entity, $cause, $damage);
 	}

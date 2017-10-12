@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
@@ -33,32 +35,39 @@ use pocketmine\nbt\tag\ListTag;
 
 abstract class Fallable extends Solid{
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$down = $this->getSide(Vector3::SIDE_DOWN);
-			if($down->getId() === self::AIR or ($down instanceof Liquid)){
-				$this->level->setBlock($this, Block::get(Block::AIR), true, true);
+			if($down->getId() === self::AIR or $down instanceof Liquid or $down instanceof Fire){
+				$this->level->setBlock($this, BlockFactory::get(Block::AIR), true);
 				$fall = Entity::createEntity("FallingSand", $this->getLevel(), new CompoundTag("", [
-					"Pos" => new ListTag("Pos", [
+					new ListTag("Pos", [
 						new DoubleTag("", $this->x + 0.5),
 						new DoubleTag("", $this->y),
 						new DoubleTag("", $this->z + 0.5)
 					]),
-					"Motion" => new ListTag("Motion", [
+					new ListTag("Motion", [
 						new DoubleTag("", 0),
 						new DoubleTag("", 0),
 						new DoubleTag("", 0)
 					]),
-					"Rotation" => new ListTag("Rotation", [
+					new ListTag("Rotation", [
 						new FloatTag("", 0),
 						new FloatTag("", 0)
 					]),
-					"TileID" => new IntTag("TileID", $this->getId()),
-					"Data" => new ByteTag("Data", $this->getDamage()),
+					new IntTag("TileID", $this->getId()),
+					new ByteTag("Data", $this->getDamage())
 				]));
 
 				$fall->spawnToAll();
 			}
 		}
+	}
+
+	/**
+	 * @return null|Block
+	 */
+	public function tickFalling() : ?Block{
+		return null;
 	}
 }

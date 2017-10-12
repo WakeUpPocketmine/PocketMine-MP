@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
@@ -26,33 +28,38 @@ use pocketmine\item\Item;
 use pocketmine\item\Tool;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Vine extends Transparent{
+	const FLAG_SOUTH = 0x01;
+	const FLAG_WEST = 0x02;
+	const FLAG_NORTH = 0x04;
+	const FLAG_EAST = 0x08;
 
 	protected $id = self::VINE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function isSolid(){
+	public function isSolid() : bool{
 		return false;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Vines";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.2;
 	}
 
-	public function canPassThrough(){
+	public function canPassThrough() : bool{
 		return true;
 	}
 
-	public function hasEntityCollision(){
+	public function hasEntityCollision() : bool{
 		return true;
 	}
 
@@ -60,82 +67,89 @@ class Vine extends Transparent{
 		return true;
 	}
 
-	public function onEntityCollide(Entity $entity){
+	public function ticksRandomly() : bool{
+		return true;
+	}
+
+	public function onEntityCollide(Entity $entity) : void{
 		$entity->resetFallDistance();
 	}
 
-	protected function recalculateBoundingBox(){
+	protected function recalculateBoundingBox() : ?AxisAlignedBB{
 
-		$f1 = 1;
-		$f2 = 1;
-		$f3 = 1;
-		$f4 = 0;
-		$f5 = 0;
-		$f6 = 0;
+		$minX = 1;
+		$minY = 1;
+		$minZ = 1;
+		$maxX = 0;
+		$maxY = 0;
+		$maxZ = 0;
 
 		$flag = $this->meta > 0;
 
-		if(($this->meta & 0x02) > 0){
-			$f4 = max($f4, 0.0625);
-			$f1 = 0;
-			$f2 = 0;
-			$f5 = 1;
-			$f3 = 0;
-			$f6 = 1;
+		if(($this->meta & self::FLAG_WEST) > 0){
+			$maxX = max($maxX, 0.0625);
+			$minX = 0;
+			$minY = 0;
+			$maxY = 1;
+			$minZ = 0;
+			$maxZ = 1;
 			$flag = true;
 		}
 
-		if(($this->meta & 0x08) > 0){
-			$f1 = min($f1, 0.9375);
-			$f4 = 1;
-			$f2 = 0;
-			$f5 = 1;
-			$f3 = 0;
-			$f6 = 1;
+		if(($this->meta & self::FLAG_EAST) > 0){
+			$minX = min($minX, 0.9375);
+			$maxX = 1;
+			$minY = 0;
+			$maxY = 1;
+			$minZ = 0;
+			$maxZ = 1;
 			$flag = true;
 		}
 
-		if(($this->meta & 0x01) > 0){
-			$f3 = min($f3, 0.9375);
-			$f6 = 1;
-			$f1 = 0;
-			$f4 = 1;
-			$f2 = 0;
-			$f5 = 1;
+		if(($this->meta & self::FLAG_SOUTH) > 0){
+			$minZ = min($minZ, 0.9375);
+			$maxZ = 1;
+			$minX = 0;
+			$maxX = 1;
+			$minY = 0;
+			$maxY = 1;
 			$flag = true;
 		}
 
-		if(!$flag and $this->getSide(1)->isSolid()){
-			$f2 = min($f2, 0.9375);
-			$f5 = 1;
-			$f1 = 0;
-			$f4 = 1;
-			$f3 = 0;
-			$f6 = 1;
+		//TODO: Missing NORTH check
+
+		if(!$flag and $this->getSide(Vector3::SIDE_UP)->isSolid()){
+			$minY = min($minY, 0.9375);
+			$maxY = 1;
+			$minX = 0;
+			$maxX = 1;
+			$minZ = 0;
+			$maxZ = 1;
 		}
 
 		return new AxisAlignedBB(
-			$this->x + $f1,
-			$this->y + $f2,
-			$this->z + $f3,
-			$this->x + $f4,
-			$this->y + $f5,
-			$this->z + $f6
+			$this->x + $minX,
+			$this->y + $minY,
+			$this->z + $minZ,
+			$this->x + $maxX,
+			$this->y + $maxY,
+			$this->z + $maxZ
 		);
 	}
 
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($target->isSolid()){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $facePos, Player $player = null) : bool{
+		//TODO: multiple sides
+		if($blockClicked->isSolid()){
 			$faces = [
-				2 => 1,
-				3 => 4,
-				4 => 8,
-				5 => 2,
+				2 => self::FLAG_SOUTH,
+				3 => self::FLAG_NORTH,
+				4 => self::FLAG_EAST,
+				5 => self::FLAG_WEST
 			];
 			if(isset($faces[$face])){
 				$this->meta = $faces[$face];
-				$this->getLevel()->setBlock($block, $this, true, true);
+				$this->getLevel()->setBlock($blockReplace, $this, true, true);
 
 				return true;
 			}
@@ -144,34 +158,43 @@ class Vine extends Transparent{
 		return false;
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
 			$sides = [
+				1 => 3,
 				2 => 4,
-				3 => 1,
 				4 => 2,
-				5 => 8
+				8 => 5
 			];
+
+			if(!isset($sides[$this->meta])){
+				return false; //TODO: remove this once placing on multiple sides is supported (these are bitflags, not actual meta values
+			}
+
 			if(!$this->getSide($sides[$this->meta])->isSolid()){ //Replace with common break method
 				$this->level->useBreakOn($this);
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
+		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
+			//TODO: vine growth
 		}
 
 		return false;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isShears()){
-			return [
-				[$this->id, 0, 1],
-			];
-		}else{
-			return [];
-		}
+	public function getVariantBitmask() : int{
+		return 0;
 	}
 
-	public function getToolType(){
+	public function getDrops(Item $item) : array{
+		if($item->isShears()){
+			return parent::getDrops($item);
+		}
+
+		return [];
+	}
+
+	public function getToolType() : int{
 		return Tool::TYPE_AXE;
 	}
 }

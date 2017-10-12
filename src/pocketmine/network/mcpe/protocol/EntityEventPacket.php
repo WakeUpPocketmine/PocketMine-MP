@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -46,20 +48,24 @@ class EntityEventPacket extends DataPacket{
 
 	const RESPAWN = 18;
 
+	const EATING_ITEM = 57;
+
 	//TODO: add more events
 
+	/** @var int */
 	public $entityRuntimeId;
+	/** @var int */
 	public $event;
+	/** @var int */
 	public $data = 0;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
 		$this->event = $this->getByte();
 		$this->data = $this->getVarInt();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		$this->putByte($this->event);
 		$this->putVarInt($this->data);

@@ -19,13 +19,13 @@
  *
 */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace pocketmine\level\format\io\region;
 
 use pocketmine\level\format\Chunk;
+use pocketmine\level\format\ChunkException;
 use pocketmine\level\format\io\BaseLevelProvider;
-use pocketmine\level\format\io\ChunkException;
 use pocketmine\level\format\io\ChunkUtils;
 use pocketmine\level\format\SubChunk;
 use pocketmine\level\generator\Generator;
@@ -58,8 +58,8 @@ class McRegion extends BaseLevelProvider{
 		$nbt->zPos = new IntTag("zPos", $chunk->getZ());
 
 		$nbt->LastUpdate = new LongTag("LastUpdate", 0); //TODO
-		$nbt->TerrainPopulated = new ByteTag("TerrainPopulated", $chunk->isPopulated());
-		$nbt->LightPopulated = new ByteTag("LightPopulated", $chunk->isLightPopulated());
+		$nbt->TerrainPopulated = new ByteTag("TerrainPopulated", $chunk->isPopulated() ? 1 : 0);
+		$nbt->LightPopulated = new ByteTag("LightPopulated", $chunk->isLightPopulated() ? 1 : 0);
 
 		$ids = "";
 		$data = "";
@@ -72,7 +72,7 @@ class McRegion extends BaseLevelProvider{
 					$subChunk = $subChunks[$y];
 					$ids .= $subChunk->getBlockIdColumn($x, $z);
 					$data .= $subChunk->getBlockDataColumn($x, $z);
-					$skyLight .= $subChunk->getSkyLightColumn($x, $z);
+					$skyLight .= $subChunk->getBlockSkyLightColumn($x, $z);
 					$blockLight .= $subChunk->getBlockLightColumn($x, $z);
 				}
 			}
@@ -89,14 +89,13 @@ class McRegion extends BaseLevelProvider{
 		$entities = [];
 
 		foreach($chunk->getEntities() as $entity){
-			if(!($entity instanceof Player) and !$entity->closed){
+			if($entity->canSaveWithChunk() and !$entity->isClosed()){
 				$entity->saveNBT();
 				$entities[] = $entity->namedtag;
 			}
 		}
 
-		$nbt->Entities = new ListTag("Entities", $entities);
-		$nbt->Entities->setTagType(NBT::TAG_Compound);
+		$nbt->Entities = new ListTag("Entities", $entities, NBT::TAG_Compound);
 
 		$tiles = [];
 		foreach($chunk->getTiles() as $tile){
@@ -104,12 +103,11 @@ class McRegion extends BaseLevelProvider{
 			$tiles[] = $tile->namedtag;
 		}
 
-		$nbt->TileEntities = new ListTag("TileEntities", $tiles);
-		$nbt->TileEntities->setTagType(NBT::TAG_Compound);
+		$nbt->TileEntities = new ListTag("TileEntities", $tiles, NBT::TAG_Compound);
 
 		$writer = new NBT(NBT::BIG_ENDIAN);
 		$nbt->setName("Level");
-		$writer->setData(new CompoundTag("", ["Level" => $nbt]));
+		$writer->setData(new CompoundTag("", [$nbt]));
 
 		return $writer->writeCompressed(ZLIB_ENCODING_DEFLATE, RegionLoader::$COMPRESSION_LEVEL);
 	}
@@ -134,9 +132,9 @@ class McRegion extends BaseLevelProvider{
 
 			$subChunks = [];
 			$fullIds = isset($chunk->Blocks) ? $chunk->Blocks->getValue() : str_repeat("\x00", 32768);
-			$fullData = isset($chunk->Data) ? $chunk->Data->getValue() : (str_repeat("\x00", 16384));
+			$fullData = isset($chunk->Data) ? $chunk->Data->getValue() : str_repeat("\x00", 16384);
 			$fullSkyLight = isset($chunk->SkyLight) ? $chunk->SkyLight->getValue() : str_repeat("\xff", 16384);
-			$fullBlockLight = isset($chunk->BlockLight) ? $chunk->BlockLight->getValue() : (str_repeat("\x00", 16384));
+			$fullBlockLight = isset($chunk->BlockLight) ? $chunk->BlockLight->getValue() : str_repeat("\x00", 16384);
 
 			for($y = 0; $y < 8; ++$y){
 				$offset = ($y << 4);
@@ -223,7 +221,7 @@ class McRegion extends BaseLevelProvider{
 		$isValid = (file_exists($path . "/level.dat") and is_dir($path . "/region/"));
 
 		if($isValid){
-			$files = array_filter(scandir($path . "/region/"), function($file){
+			$files = array_filter(scandir($path . "/region/", SCANDIR_SORT_NONE), function($file){
 				return substr($file, strrpos($file, ".") + 1, 2) === "mc"; //region file
 			});
 
@@ -238,7 +236,7 @@ class McRegion extends BaseLevelProvider{
 		return $isValid;
 	}
 
-	public static function generate(string $path, string $name, $seed, string $generator, array $options = []){
+	public static function generate(string $path, string $name, int $seed, string $generator, array $options = []){
 		if(!file_exists($path)){
 			mkdir($path, 0777, true);
 		}
@@ -248,27 +246,28 @@ class McRegion extends BaseLevelProvider{
 		}
 		//TODO, add extra details
 		$levelData = new CompoundTag("Data", [
-			"hardcore" => new ByteTag("hardcore", 0),
-			"initialized" => new ByteTag("initialized", 1),
-			"GameType" => new IntTag("GameType", 0),
-			"generatorVersion" => new IntTag("generatorVersion", 1), //2 in MCPE
-			"SpawnX" => new IntTag("SpawnX", 256),
-			"SpawnY" => new IntTag("SpawnY", 70),
-			"SpawnZ" => new IntTag("SpawnZ", 256),
-			"version" => new IntTag("version", static::getPcWorldFormatVersion()),
-			"DayTime" => new IntTag("DayTime", 0),
-			"LastPlayed" => new LongTag("LastPlayed", microtime(true) * 1000),
-			"RandomSeed" => new LongTag("RandomSeed", $seed),
-			"SizeOnDisk" => new LongTag("SizeOnDisk", 0),
-			"Time" => new LongTag("Time", 0),
-			"generatorName" => new StringTag("generatorName", Generator::getGeneratorName($generator)),
-			"generatorOptions" => new StringTag("generatorOptions", isset($options["preset"]) ? $options["preset"] : ""),
-			"LevelName" => new StringTag("LevelName", $name),
-			"GameRules" => new CompoundTag("GameRules", [])
+			new ByteTag("hardcore", ($options["hardcore"] ?? false) === true ? 1 : 0),
+			new ByteTag("Difficulty", Level::getDifficultyFromString((string) ($options["difficulty"] ?? "normal"))),
+			new ByteTag("initialized", 1),
+			new IntTag("GameType", 0),
+			new IntTag("generatorVersion", 1), //2 in MCPE
+			new IntTag("SpawnX", 256),
+			new IntTag("SpawnY", 70),
+			new IntTag("SpawnZ", 256),
+			new IntTag("version", static::getPcWorldFormatVersion()),
+			new IntTag("DayTime", 0),
+			new LongTag("LastPlayed", (int) (microtime(true) * 1000)),
+			new LongTag("RandomSeed", $seed),
+			new LongTag("SizeOnDisk", 0),
+			new LongTag("Time", 0),
+			new StringTag("generatorName", Generator::getGeneratorName($generator)),
+			new StringTag("generatorOptions", $options["preset"] ?? ""),
+			new StringTag("LevelName", $name),
+			new CompoundTag("GameRules", [])
 		]);
 		$nbt = new NBT(NBT::BIG_ENDIAN);
 		$nbt->setData(new CompoundTag("", [
-			"Data" => $levelData
+			$levelData
 		]));
 		$buffer = $nbt->writeCompressed();
 		file_put_contents($path . "level.dat", $buffer);
@@ -280,6 +279,14 @@ class McRegion extends BaseLevelProvider{
 
 	public function getGeneratorOptions() : array{
 		return ["preset" => $this->levelData["generatorOptions"]];
+	}
+
+	public function getDifficulty() : int{
+		return isset($this->levelData->Difficulty) ? $this->levelData->Difficulty->getValue() : Level::DIFFICULTY_NORMAL;
+	}
+
+	public function setDifficulty(int $difficulty){
+		$this->levelData->Difficulty = new ByteTag("Difficulty", $difficulty);
 	}
 
 	public function getChunk(int $chunkX, int $chunkZ, bool $create = false){
@@ -422,7 +429,7 @@ class McRegion extends BaseLevelProvider{
 	 *
 	 * @return Chunk
 	 */
-	public function getEmptyChunk(int $chunkX, int $chunkZ){
+	public function getEmptyChunk(int $chunkX, int $chunkZ) : Chunk{
 		return Chunk::getEmptyChunk($chunkX, $chunkZ);
 	}
 
@@ -430,7 +437,7 @@ class McRegion extends BaseLevelProvider{
 	 * @param int $x
 	 * @param int $z
 	 *
-	 * @return RegionLoader
+	 * @return RegionLoader|null
 	 */
 	protected function getRegion(int $x, int $z){
 		return $this->regions[Level::chunkHash($x, $z)] ?? null;

@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\event\entity;
 
 use pocketmine\entity\Effect;
@@ -35,6 +37,7 @@ class EntityEatEvent extends EntityEvent implements Cancellable{
 	private $foodRestore;
 	/** @var float */
 	private $saturationRestore;
+	/** @var mixed */
 	private $residue;
 	/** @var Effect[] */
 	private $additionalEffects;
@@ -48,7 +51,7 @@ class EntityEatEvent extends EntityEvent implements Cancellable{
 		$this->additionalEffects = $foodSource->getAdditionalEffects();
 	}
 
-	public function getFoodSource(){
+	public function getFoodSource() : FoodSource{
 		return $this->foodSource;
 	}
 
@@ -68,10 +71,17 @@ class EntityEatEvent extends EntityEvent implements Cancellable{
 		$this->saturationRestore = $saturationRestore;
 	}
 
+	/**
+	 * Returns the result of eating the food source.
+	 * @return mixed
+	 */
 	public function getResidue(){
 		return $this->residue;
 	}
 
+	/**
+	 * @param mixed $residue
+	 */
 	public function setResidue($residue){
 		$this->residue = $residue;
 	}
@@ -79,7 +89,7 @@ class EntityEatEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return Effect[]
 	 */
-	public function getAdditionalEffects(){
+	public function getAdditionalEffects() : array{
 		return $this->additionalEffects;
 	}
 

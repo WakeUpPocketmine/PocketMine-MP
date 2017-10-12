@@ -19,13 +19,16 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\tile;
 
+use pocketmine\item\Item;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\Player;
 
 class Skull extends Spawnable{
 	const TYPE_SKELETON = 0;
@@ -46,22 +49,26 @@ class Skull extends Spawnable{
 	}
 
 	public function setType(int $type){
-		$this->namedtag->SkullType = new ByteTag("SkullType", $type);
+		$this->namedtag->SkullType->setValue($type);
 		$this->onChanged();
 	}
 
-	public function getType(){
-		return $this->namedtag["SkullType"];
+	public function getType() : int{
+		return $this->namedtag->SkullType->getValue();
 	}
 
-	public function getSpawnCompound(){
-		return new CompoundTag("", [
-			new StringTag("id", Tile::SKULL),
-			$this->namedtag->SkullType,
-			$this->namedtag->Rot,
-			new IntTag("x", (int) $this->x),
-			new IntTag("y", (int) $this->y),
-			new IntTag("z", (int) $this->z)
-		]);
+	public function addAdditionalSpawnData(CompoundTag $nbt){
+		$nbt->SkullType = $this->namedtag->SkullType;
+		$nbt->Rot = $this->namedtag->Rot;
+	}
+
+	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
+		$nbt->SkullType = new ByteTag("SkullType", $item !== null ? $item->getDamage() : self::TYPE_SKELETON);
+
+		$rot = 0;
+		if($face === Vector3::SIDE_UP and $player !== null){
+			$rot = floor(($player->yaw * 16 / 360) + 0.5) & 0x0F;
+		}
+		$nbt->Rot = new ByteTag("Rot", $rot);
 	}
 }

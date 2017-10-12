@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
@@ -31,19 +33,19 @@ class WaterLily extends Flowable{
 
 	protected $id = self::WATER_LILY;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Lily Pad";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.6;
 	}
 
-	protected function recalculateBoundingBox(){
+	protected function recalculateBoundingBox() : ?AxisAlignedBB{
 		return new AxisAlignedBB(
 			$this->x + 0.0625,
 			$this->y,
@@ -55,9 +57,9 @@ class WaterLily extends Flowable{
 	}
 
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($target instanceof Water){
-			$up = $target->getSide(Vector3::SIDE_UP);
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $facePos, Player $player = null) : bool{
+		if($blockClicked instanceof Water){
+			$up = $blockClicked->getSide(Vector3::SIDE_UP);
 			if($up->getId() === Block::AIR){
 				$this->getLevel()->setBlock($up, $this, true, true);
 				return true;
@@ -67,9 +69,9 @@ class WaterLily extends Flowable{
 		return false;
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if(!($this->getSide(0) instanceof Water)){
+			if(!($this->getSide(Vector3::SIDE_DOWN) instanceof Water)){
 				$this->getLevel()->useBreakOn($this);
 				return Level::BLOCK_UPDATE_NORMAL;
 			}
@@ -78,9 +80,7 @@ class WaterLily extends Flowable{
 		return false;
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[$this->id, 0, 1]
-		];
+	public function getVariantBitmask() : int{
+		return 0;
 	}
 }

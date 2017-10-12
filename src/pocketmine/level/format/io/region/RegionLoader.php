@@ -19,12 +19,12 @@
  *
 */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace pocketmine\level\format\io\region;
 
 use pocketmine\level\format\Chunk;
-use pocketmine\level\format\io\ChunkException;
+use pocketmine\level\format\ChunkException;
 use pocketmine\utils\Binary;
 use pocketmine\utils\MainLogger;
 
@@ -39,16 +39,22 @@ class RegionLoader{
 
 	public static $COMPRESSION_LEVEL = 7;
 
+	/** @var int */
 	protected $x;
+	/** @var int */
 	protected $z;
+	/** @var string */
 	protected $filePath;
+	/** @var resource */
 	protected $filePointer;
+	/** @var int */
 	protected $lastSector;
 	/** @var McRegion */
 	protected $levelProvider;
+	/** @var int[][] [offset in sectors, chunk size in sectors, timestamp] */
 	protected $locationTable = [];
-
-	public $lastUsed;
+	/** @var int */
+	public $lastUsed = 0;
 
 	public function __construct(McRegion $level, int $regionX, int $regionZ, string $fileExtension = McRegion::REGION_FILE_EXTENSION){
 		$this->x = $regionX;
@@ -292,7 +298,7 @@ class RegionLoader{
 			$index = $data[$i + 1];
 			$offset = $index >> 8;
 			if($offset !== 0){
-				fseek($this->filePointer, ($offset << 12));
+				fseek($this->filePointer, $offset << 12);
 				if(fgetc($this->filePointer) === false){ //Try and read from the location
 					throw new CorruptedRegionException("Region file location offset points to invalid location");
 				}elseif(isset($usedOffsets[$offset])){

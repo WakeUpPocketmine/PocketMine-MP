@@ -19,13 +19,15 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 use pocketmine\entity\Entity;
 
 class Potion extends Item{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::POTION, $meta, $count, "Potion");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::POTION, $meta, "Potion");
 	}
 
 	public function canBeConsumed() : bool{

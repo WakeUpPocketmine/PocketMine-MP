@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\nbt\tag;
 
 use pocketmine\nbt\NBT;
@@ -27,16 +29,24 @@ use pocketmine\nbt\NBT;
 
 class ListTag extends NamedTag implements \ArrayAccess, \Countable{
 
-	private $tagType = NBT::TAG_End;
+	private $tagType;
 
-	public function __construct($name = "", $value = []){
-		$this->__name = $name;
-		foreach($value as $k => $v){
-			$this->{$k} = $v;
-		}
+	/**
+	 * ListTag constructor.
+	 *
+	 * @param string     $name
+	 * @param NamedTag[] $value
+	 * @param int        $tagType
+	 */
+	public function __construct(string $name = "", array $value = [], int $tagType = NBT::TAG_End){
+		parent::__construct($name, $value);
+		$this->tagType = $tagType;
 	}
 
-	public function &getValue(){
+	/**
+	 * @return NamedTag[]
+	 */
+	public function &getValue() : array{
 		$value = [];
 		foreach($this as $k => $v){
 			if($v instanceof Tag){
@@ -47,13 +57,22 @@ class ListTag extends NamedTag implements \ArrayAccess, \Countable{
 		return $value;
 	}
 
+	/**
+	 * @param NamedTag[] $value
+	 *
+	 * @throws \TypeError
+	 */
 	public function setValue($value){
 		if(is_array($value)){
 			foreach($value as $name => $tag){
 				if($tag instanceof NamedTag){
 					$this->{$name} = $tag;
+				}else{
+					throw new \TypeError("ListTag members must be NamedTags, got " . gettype($tag) . " in given array");
 				}
 			}
+		}else{
+			throw new \TypeError("ListTag value must be NamedTag[], " . gettype($value) . " given");
 		}
 	}
 

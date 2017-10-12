@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
@@ -29,31 +31,31 @@ class Cobweb extends Flowable{
 
 	protected $id = self::COBWEB;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function hasEntityCollision(){
+	public function hasEntityCollision() : bool{
 		return true;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Cobweb";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 4;
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_SWORD;
 	}
 
-	public function onEntityCollide(Entity $entity){
+	public function onEntityCollide(Entity $entity) : void{
 		$entity->resetFallDistance();
 	}
 
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		//TODO: correct drops
 		return [];
 	}

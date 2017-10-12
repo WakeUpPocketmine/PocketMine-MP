@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\nbt\tag;
 
 use pocketmine\nbt\NBT;
@@ -27,17 +29,25 @@ use pocketmine\nbt\NBT;
 
 class LongTag extends NamedTag{
 
+	/**
+	 * LongTag constructor.
+	 *
+	 * @param string $name
+	 * @param int    $value
+	 */
+	public function __construct(string $name = "", int $value = 0){
+		parent::__construct($name, $value);
+	}
+
 	public function getType(){
 		return NBT::TAG_Long;
 	}
 
-	//TODO: check if this also changed to varint
-
 	public function read(NBT $nbt, bool $network = false){
-		$this->value = $nbt->getLong();
+		$this->value = $nbt->getLong($network);
 	}
 
 	public function write(NBT $nbt, bool $network = false){
-		$nbt->putLong($this->value);
+		$nbt->putLong($this->value, $network);
 	}
 }

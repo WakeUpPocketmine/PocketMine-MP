@@ -19,15 +19,21 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 
 class IronAxe extends Tool{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::IRON_AXE, $meta, $count, "Iron Axe");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::IRON_AXE, $meta, "Iron Axe");
 	}
 
 	public function isAxe(){
 		return Tool::TIER_IRON;
+	}
+
+	public function getAttackPoints() : int{
+		return 6;
 	}
 }

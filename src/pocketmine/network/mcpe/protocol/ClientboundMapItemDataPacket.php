@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -26,6 +28,7 @@ namespace pocketmine\network\mcpe\protocol;
 
 
 use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\utils\Color;
 
 class ClientboundMapItemDataPacket extends DataPacket{
@@ -34,23 +37,38 @@ class ClientboundMapItemDataPacket extends DataPacket{
 	const BITFLAG_TEXTURE_UPDATE = 0x02;
 	const BITFLAG_DECORATION_UPDATE = 0x04;
 
+	/** @var int */
 	public $mapId;
+	/** @var int */
 	public $type;
+	/** @var int */
+	public $dimensionId = DimensionIds::OVERWORLD;
 
+	/** @var int[] */
 	public $eids = [];
+	/** @var int */
 	public $scale;
+
+	/** @var int[] */
+	public $decorationEntityUniqueIds = [];
+	/** @var array */
 	public $decorations = [];
 
+	/** @var int */
 	public $width;
+	/** @var int */
 	public $height;
+	/** @var int */
 	public $xOffset = 0;
+	/** @var int */
 	public $yOffset = 0;
 	/** @var Color[][] */
 	public $colors = [];
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->mapId = $this->getEntityUniqueId();
 		$this->type = $this->getUnsignedVarInt();
+		$this->dimensionId = $this->getByte();
 
 		if(($this->type & 0x08) !== 0){
 			$count = $this->getUnsignedVarInt();
@@ -64,17 +82,18 @@ class ClientboundMapItemDataPacket extends DataPacket{
 		}
 
 		if(($this->type & self::BITFLAG_DECORATION_UPDATE) !== 0){
-			$count = $this->getUnsignedVarInt();
-			for($i = 0; $i < $count; ++$i){
-				$weird = $this->getVarInt();
-				$this->decorations[$i]["rot"] = $weird & 0x0f;
-				$this->decorations[$i]["img"] = $weird >> 4;
+			for($i = 0, $count = $this->getUnsignedVarInt(); $i < $count; ++$i){
+				$this->decorationEntityUniqueIds[] = $this->getEntityUniqueId();
+			}
 
+			for($i = 0, $count = $this->getUnsignedVarInt(); $i < $count; ++$i){
+				$this->decorations[$i]["rot"] = $this->getByte();
+				$this->decorations[$i]["img"] = $this->getByte();
 				$this->decorations[$i]["xOffset"] = $this->getByte();
 				$this->decorations[$i]["yOffset"] = $this->getByte();
 				$this->decorations[$i]["label"] = $this->getString();
 
-				$this->decorations[$i]["color"] = Color::fromARGB($this->getLInt()); //already BE, don't need to reverse it again
+				$this->decorations[$i]["color"] = Color::fromABGR($this->getUnsignedVarInt());
 			}
 		}
 
@@ -83,6 +102,10 @@ class ClientboundMapItemDataPacket extends DataPacket{
 			$this->height = $this->getVarInt();
 			$this->xOffset = $this->getVarInt();
 			$this->yOffset = $this->getVarInt();
+
+			$count = $this->getUnsignedVarInt();
+			assert($count === $this->width * $this->height);
+
 			for($y = 0; $y < $this->height; ++$y){
 				for($x = 0; $x < $this->width; ++$x){
 					$this->colors[$y][$x] = Color::fromABGR($this->getUnsignedVarInt());
@@ -91,8 +114,7 @@ class ClientboundMapItemDataPacket extends DataPacket{
 		}
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putEntityUniqueId($this->mapId);
 
 		$type = 0;
@@ -107,6 +129,7 @@ class ClientboundMapItemDataPacket extends DataPacket{
 		}
 
 		$this->putUnsignedVarInt($type);
+		$this->putByte($this->dimensionId);
 
 		if(($type & 0x08) !== 0){ //TODO: find out what these are for
 			$this->putUnsignedVarInt($eidsCount);
@@ -120,13 +143,21 @@ class ClientboundMapItemDataPacket extends DataPacket{
 		}
 
 		if(($type & self::BITFLAG_DECORATION_UPDATE) !== 0){
+			$this->putUnsignedVarInt(count($this->decorationEntityUniqueIds));
+			foreach($this->decorationEntityUniqueIds as $id){
+				$this->putEntityUniqueId($id);
+			}
+
 			$this->putUnsignedVarInt($decorationCount);
 			foreach($this->decorations as $decoration){
-				$this->putVarInt(($decoration["rot"] & 0x0f) | ($decoration["img"] << 4));
+				$this->putByte($decoration["rot"]);
+				$this->putByte($decoration["img"]);
 				$this->putByte($decoration["xOffset"]);
 				$this->putByte($decoration["yOffset"]);
 				$this->putString($decoration["label"]);
-				$this->putLInt($decoration["color"]->toARGB());
+
+				assert($decoration["color"] instanceof Color);
+				$this->putUnsignedVarInt($decoration["color"]->toABGR());
 			}
 		}
 
@@ -135,6 +166,9 @@ class ClientboundMapItemDataPacket extends DataPacket{
 			$this->putVarInt($this->height);
 			$this->putVarInt($this->xOffset);
 			$this->putVarInt($this->yOffset);
+
+			$this->putUnsignedVarInt($this->width * $this->height); //list count, but we handle it as a 2D array... thanks for the confusion mojang
+
 			for($y = 0; $y < $this->height; ++$y){
 				for($x = 0; $x < $this->width; ++$x){
 					$this->putUnsignedVarInt($this->colors[$y][$x]->toABGR());

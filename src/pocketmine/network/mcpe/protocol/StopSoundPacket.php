@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -30,16 +32,17 @@ use pocketmine\network\mcpe\NetworkSession;
 class StopSoundPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::STOP_SOUND_PACKET;
 
+	/** @var string */
 	public $soundName;
+	/** @var bool */
 	public $stopAll;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->soundName = $this->getString();
 		$this->stopAll = $this->getBool();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putString($this->soundName);
 		$this->putBool($this->stopAll);
 	}
