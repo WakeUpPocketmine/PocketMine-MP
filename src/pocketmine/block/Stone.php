@@ -19,35 +19,42 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\TieredTool;
 
 class Stone extends Solid{
-	const NORMAL = 0;
-	const GRANITE = 1;
-	const POLISHED_GRANITE = 2;
-	const DIORITE = 3;
-	const POLISHED_DIORITE = 4;
-	const ANDESITE = 5;
-	const POLISHED_ANDESITE = 6;
+	public const NORMAL = 0;
+	public const GRANITE = 1;
+	public const POLISHED_GRANITE = 2;
+	public const DIORITE = 3;
+	public const POLISHED_DIORITE = 4;
+	public const ANDESITE = 5;
+	public const POLISHED_ANDESITE = 6;
 
 	protected $id = self::STONE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 1.5;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	public function getName(){
+	public function getToolHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
+	}
+
+	public function getName() : string{
 		static $names = [
 			self::NORMAL => "Stone",
 			self::GRANITE => "Granite",
@@ -55,20 +62,19 @@ class Stone extends Solid{
 			self::DIORITE => "Diorite",
 			self::POLISHED_DIORITE => "Polished Diorite",
 			self::ANDESITE => "Andesite",
-			self::POLISHED_ANDESITE => "Polished Andesite",
-			7 => "Unknown Stone",
+			self::POLISHED_ANDESITE => "Polished Andesite"
 		];
-		return $names[$this->meta & 0x07];
+		return $names[$this->getVariant()] ?? "Unknown";
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+	public function getDropsForCompatibleTool(Item $item) : array{
+		if($this->getDamage() === self::NORMAL){
 			return [
-				[$this->getDamage() === 0 ? Item::COBBLESTONE : Item::STONE, $this->getDamage(), 1],
+				ItemFactory::get(Item::COBBLESTONE, $this->getDamage())
 			];
-		}else{
-			return [];
 		}
+
+		return parent::getDropsForCompatibleTool($item);
 	}
 
 }

@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\scheduler;
 
 use pocketmine\utils\Utils;
@@ -44,7 +46,7 @@ class BulkCurlTask extends AsyncTask{
 	 * @param mixed|null $complexData
 	 */
 	public function __construct(array $operations, $complexData = null){
-		parent::__construct($complexData);
+		$this->storeLocal($complexData);
 		$this->operations = serialize($operations);
 	}
 

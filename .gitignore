@@ -1,8 +1,9 @@
 players/*
 worlds/*
 plugins/*
-bin/*
+bin*/*
 timings/*
+crashdumps/*
 *.log
 *.txt
 *.phar
@@ -28,3 +29,12 @@ Desktop.ini
 # Sphinx-doc
 /docs/build/
 !/docs/requirements.txt
+
+# Composer
+vendor/*
+
+# Travis files
+test_data/*
+
+# Doxygen
+Documentation/*

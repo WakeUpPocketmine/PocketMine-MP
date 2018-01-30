@@ -19,43 +19,50 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\item\ItemFactory;
 
 class Cobweb extends Flowable{
 
 	protected $id = self::COBWEB;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function hasEntityCollision(){
+	public function hasEntityCollision() : bool{
 		return true;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Cobweb";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 4;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_SWORD;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_SWORD | BlockToolType::TYPE_SHEARS;
 	}
 
-	public function onEntityCollide(Entity $entity){
+	public function getToolHarvestLevel() : int{
+		return 1;
+	}
+
+	public function onEntityCollide(Entity $entity) : void{
 		$entity->resetFallDistance();
 	}
 
-	public function getDrops(Item $item){
-		//TODO: correct drops
-		return [];
+	public function getDropsForCompatibleTool(Item $item) : array{
+		return [
+			ItemFactory::get(Item::STRING)
+		];
 	}
 
 	public function diffusesSkyLight() : bool{

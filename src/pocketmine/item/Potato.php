@@ -19,14 +19,17 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 
 class Potato extends Food{
-	public function __construct($meta = 0, $count = 1){
-		$this->block = Block::get(Item::POTATO_BLOCK);
-		parent::__construct(self::POTATO, 0, $count, "Potato");
+	public function __construct(int $meta = 0){
+		$this->block = BlockFactory::get(Block::POTATO_BLOCK);
+		parent::__construct(self::POTATO, $meta, "Potato");
 	}
 
 	public function getFoodRestore() : int{

@@ -19,16 +19,19 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
 
 class BanIpCommand extends VanillaCommand{
 
-	public function __construct($name){
+	public function __construct(string $name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.ban.ip.description",
@@ -37,15 +40,13 @@ class BanIpCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.ban.ip");
 	}
 
-	public function execute(CommandSender $sender, $currentAlias, array $args){
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
 
 		if(count($args) === 0){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
-			return false;
+			throw new InvalidCommandSyntaxException();
 		}
 
 		$value = array_shift($args);
@@ -70,7 +71,7 @@ class BanIpCommand extends VanillaCommand{
 		return true;
 	}
 
-	private function processIPBan($ip, CommandSender $sender, $reason){
+	private function processIPBan(string $ip, CommandSender $sender, string $reason){
 		$sender->getServer()->getIPBans()->addBan($ip, $reason, null, $sender->getName());
 
 		foreach($sender->getServer()->getOnlinePlayers() as $player){

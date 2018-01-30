@@ -19,49 +19,32 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\item\ItemFactory;
 
-class DoubleSlab extends Solid{
+abstract class DoubleSlab extends Solid{
 
-	protected $id = self::DOUBLE_SLAB;
-
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
-		return 2;
+	abstract public function getSlabId() : int;
+
+	public function getName() : string{
+		return "Double " . BlockFactory::get($this->getSlabId(), $this->getVariant())->getName() . " Slab";
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
-	}
-
-	public function getName(){
-		static $names = [
-			0 => "Stone",
-			1 => "Sandstone",
-			2 => "Wooden",
-			3 => "Cobblestone",
-			4 => "Brick",
-			5 => "Stone Brick",
-			6 => "Quartz",
-			7 => "Nether Brick",
+	public function getDropsForCompatibleTool(Item $item) : array{
+		return [
+			ItemFactory::get($this->getSlabId(), $this->getVariant(), 2)
 		];
-		return "Double " . $names[$this->meta & 0x07] . " Slab";
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
-			return [
-				[Item::SLAB, $this->meta & 0x07, 2],
-			];
-		}else{
-			return [];
-		}
+	public function isAffectedBySilkTouch() : bool{
+		return false;
 	}
-
 }

@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +14,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\entity;
 
@@ -33,17 +35,21 @@ class EntityCombustEvent extends EntityEvent implements Cancellable{
 	 * @param Entity $combustee
 	 * @param int    $duration
 	 */
-	public function __construct(Entity $combustee, $duration){
+	public function __construct(Entity $combustee, int $duration){
 		$this->entity = $combustee;
 		$this->duration = $duration;
 	}
 
-	public function getDuration(){
+	/**
+	 * Returns the duration in seconds the entity will burn for.
+	 * @return int
+	 */
+	public function getDuration() : int{
 		return $this->duration;
 	}
 
-	public function setDuration($duration){
-		$this->duration = (int) $duration;
+	public function setDuration(int $duration){
+		$this->duration = $duration;
 	}
 
 }

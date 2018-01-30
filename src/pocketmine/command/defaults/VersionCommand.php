@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
@@ -29,7 +31,7 @@ use pocketmine\utils\TextFormat;
 
 class VersionCommand extends VanillaCommand{
 
-	public function __construct($name){
+	public function __construct(string $name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.version.description",
@@ -39,7 +41,7 @@ class VersionCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.version");
 	}
 
-	public function execute(CommandSender $sender, $currentAlias, array $args){
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
@@ -84,11 +86,11 @@ class VersionCommand extends VanillaCommand{
 		$desc = $plugin->getDescription();
 		$sender->sendMessage(TextFormat::DARK_GREEN . $desc->getName() . TextFormat::WHITE . " version " . TextFormat::DARK_GREEN . $desc->getVersion());
 
-		if($desc->getDescription() != null){
+		if($desc->getDescription() !== ""){
 			$sender->sendMessage($desc->getDescription());
 		}
 
-		if($desc->getWebsite() != null){
+		if($desc->getWebsite() !== ""){
 			$sender->sendMessage("Website: " . $desc->getWebsite());
 		}
 

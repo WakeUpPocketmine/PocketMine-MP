@@ -1,26 +1,34 @@
-﻿param (
-	[switch]$Loop = $false
+﻿[CmdletBinding(PositionalBinding=$false)]
+param (
+	[string]$php = "",
+	[switch]$Loop = $false,
+	[string]$file = "",
+	[string][Parameter(ValueFromRemainingArguments)]$extraPocketMineArgs
 )
 
-if(Test-Path "bin\php\php.exe"){
+if($php -ne ""){
+	$binary = $php
+}elseif(Test-Path "bin\php\php.exe"){
 	$env:PHPRC = ""
 	$binary = "bin\php\php.exe"
 }else{
 	$binary = "php"
 }
 
-if(Test-Path "PocketMine-MP.phar"){
-	$file = "PocketMine-MP.phar"
-}elseif(Test-Path "src\pocketmine\PocketMine.php"){
-	$file = "src\pocketmine\PocketMine.php"
-}else{
-	echo "Couldn't find a valid PocketMine-MP installation"
-	pause
-	exit 1
+if($file -eq ""){
+	if(Test-Path "PocketMine-MP.phar"){
+	    $file = "PocketMine-MP.phar"
+	}elseif(Test-Path "src\pocketmine\PocketMine.php"){
+	    $file = "src\pocketmine\PocketMine.php"
+	}else{
+	    echo "Couldn't find a valid PocketMine-MP installation"
+	    pause
+	    exit 1
+	}
 }
 
 function StartServer{
-	$command = "powershell " + $binary + " " + $file + " --enable-ansi"
+	$command = "powershell " + $binary + " " + $file + " " + $extraPocketMineArgs
 	iex $command
 }
 

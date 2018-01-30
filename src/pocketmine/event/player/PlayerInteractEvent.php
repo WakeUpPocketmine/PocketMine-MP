@@ -14,14 +14,17 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\player;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\event\Cancellable;
 use pocketmine\item\Item;
 use pocketmine\level\Position;
@@ -34,73 +37,77 @@ use pocketmine\Player;
 class PlayerInteractEvent extends PlayerEvent implements Cancellable{
 	public static $handlerList = null;
 
-	const LEFT_CLICK_BLOCK = 0;
-	const RIGHT_CLICK_BLOCK = 1;
-	const LEFT_CLICK_AIR = 2;
-	const RIGHT_CLICK_AIR = 3;
-	const PHYSICAL = 4;
+	public const LEFT_CLICK_BLOCK = 0;
+	public const RIGHT_CLICK_BLOCK = 1;
+	public const LEFT_CLICK_AIR = 2;
+	public const RIGHT_CLICK_AIR = 3;
+	public const PHYSICAL = 4;
 
-	/**
-	 * @var \pocketmine\block\Block;
-	 */
+	/** @var Block */
 	protected $blockTouched;
 
+	/** @var Vector3 */
 	protected $touchVector;
 
 	/** @var int */
 	protected $blockFace;
 
-	/** @var \pocketmine\item\Item */
+	/** @var Item */
 	protected $item;
 
+	/** @var int */
 	protected $action;
 
-	public function __construct(Player $player, Item $item, Vector3 $block, $face, $action = PlayerInteractEvent::RIGHT_CLICK_BLOCK){
-		if($block instanceof Block){
-			$this->blockTouched = $block;
-			$this->touchVector = new Vector3(0, 0, 0);
-		}else{
-			$this->touchVector = $block;
-			$this->blockTouched = Block::get(0, 0, new Position(0, 0, 0, $player->level));
-		}
+	/**
+	 * @param Player       $player
+	 * @param Item         $item
+	 * @param Block|null   $block
+	 * @param Vector3|null $touchVector
+	 * @param int          $face
+	 * @param int          $action
+	 */
+	public function __construct(Player $player, Item $item, ?Block $block, ?Vector3 $touchVector, int $face, int $action = PlayerInteractEvent::RIGHT_CLICK_BLOCK){
+		assert($block !== null or $touchVector !== null);
 		$this->player = $player;
 		$this->item = $item;
-		$this->blockFace = (int) $face;
-		$this->action = (int) $action;
+		$this->blockTouched = $block ?? BlockFactory::get(0, 0, new Position(0, 0, 0, $player->level));
+		$this->touchVector = $touchVector ?? new Vector3(0, 0, 0);
+		$this->blockFace = $face;
+		$this->action = $action;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getAction(){
+	public function getAction() : int{
 		return $this->action;
 	}
 
 	/**
 	 * @return Item
 	 */
-	public function getItem(){
+	public function getItem() : Item{
 		return $this->item;
 	}
 
 	/**
 	 * @return Block
 	 */
-	public function getBlock(){
+	public function getBlock() : Block{
 		return $this->blockTouched;
 	}
 
 	/**
 	 * @return Vector3
 	 */
-	public function getTouchVector(){
+	public function getTouchVector() : Vector3{
 		return $this->touchVector;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getFace(){
+	public function getFace() : int{
 		return $this->blockFace;
 	}
 }

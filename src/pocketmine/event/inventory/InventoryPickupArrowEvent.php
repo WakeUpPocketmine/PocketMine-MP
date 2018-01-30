@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,14 +14,16 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\inventory;
 
-use pocketmine\entity\Arrow;
+use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\Cancellable;
 use pocketmine\inventory\Inventory;
 
@@ -43,7 +45,7 @@ class InventoryPickupArrowEvent extends InventoryEvent implements Cancellable{
 	/**
 	 * @return Arrow
 	 */
-	public function getArrow(){
+	public function getArrow() : Arrow{
 		return $this->arrow;
 	}
 

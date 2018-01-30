@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\plugin;
 
 use pocketmine\permission\Permission;
@@ -27,16 +29,23 @@ class PluginDescription{
 	private $name;
 	private $main;
 	private $api;
+	/** @var int[] */
+	private $compatibleMcpeProtocols = [];
 	private $extensions = [];
 	private $depend = [];
 	private $softDepend = [];
 	private $loadBefore = [];
+	/** @var string */
 	private $version;
 	private $commands = [];
-	private $description = null;
+	/** @var string */
+	private $description = "";
+	/** @var string[] */
 	private $authors = [];
-	private $website = null;
-	private $prefix = null;
+	/** @var string */
+	private $website = "";
+	/** @var string */
+	private $prefix = "";
 	private $order = PluginLoadOrder::POSTWORLD;
 
 	/**
@@ -57,17 +66,19 @@ class PluginDescription{
 	 * @throws PluginException
 	 */
 	private function loadMap(array $plugin){
-		$this->name = preg_replace("[^A-Za-z0-9 _.-]", "", $plugin["name"]);
-		if($this->name === ""){
+		$this->name = $plugin["name"];
+		if(preg_match('/^[A-Za-z0-9 _.-]+$/', $this->name) === 0){
 			throw new PluginException("Invalid PluginDescription name");
 		}
 		$this->name = str_replace(" ", "_", $this->name);
-		$this->version = $plugin["version"];
+		$this->version = (string) $plugin["version"];
 		$this->main = $plugin["main"];
-		$this->api = !is_array($plugin["api"]) ? [$plugin["api"]] : $plugin["api"];
 		if(stripos($this->main, "pocketmine\\") === 0){
 			throw new PluginException("Invalid PluginDescription main, cannot start within the PocketMine namespace");
 		}
+
+		$this->api = array_map("strval", (array) $plugin["api"] ?? []);
+		$this->compatibleMcpeProtocols = array_map("intval", (array) ($plugin["mcpe-protocol"] ?? []));
 
 		if(isset($plugin["commands"]) and is_array($plugin["commands"])){
 			$this->commands = $plugin["commands"];
@@ -87,22 +98,17 @@ class PluginDescription{
 				$this->extensions[$k] = is_array($v) ? $v : [$v];
 			}
 		}
-		if(isset($plugin["softdepend"])){
-			$this->softDepend = (array) $plugin["softdepend"];
-		}
-		if(isset($plugin["loadbefore"])){
-			$this->loadBefore = (array) $plugin["loadbefore"];
-		}
 
-		if(isset($plugin["website"])){
-			$this->website = $plugin["website"];
-		}
-		if(isset($plugin["description"])){
-			$this->description = $plugin["description"];
-		}
-		if(isset($plugin["prefix"])){
-			$this->prefix = $plugin["prefix"];
-		}
+		$this->softDepend = (array) ($plugin["softdepend"] ?? $this->softDepend);
+
+		$this->loadBefore = (array) ($plugin["loadbefore"] ?? $this->loadBefore);
+
+		$this->website = (string) ($plugin["website"] ?? $this->website);
+
+		$this->description = (string) ($plugin["description"] ?? $this->description);
+
+		$this->prefix = (string) ($plugin["prefix"] ?? $this->prefix);
+
 		if(isset($plugin["load"])){
 			$order = strtoupper($plugin["load"]);
 			if(!defined(PluginLoadOrder::class . "::" . $order)){
@@ -129,42 +135,49 @@ class PluginDescription{
 	/**
 	 * @return string
 	 */
-	public function getFullName(){
+	public function getFullName() : string{
 		return $this->name . " v" . $this->version;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getCompatibleApis(){
+	public function getCompatibleApis() : array{
 		return $this->api;
 	}
 
 	/**
-	 * @return array
+	 * @return int[]
 	 */
-	public function getAuthors(){
+	public function getCompatibleMcpeProtocols() : array{
+		return $this->compatibleMcpeProtocols;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getAuthors() : array{
 		return $this->authors;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getPrefix(){
+	public function getPrefix() : string{
 		return $this->prefix;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getCommands(){
+	public function getCommands() : array{
 		return $this->commands;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getRequiredExtensions(){
+	public function getRequiredExtensions() : array{
 		return $this->extensions;
 	}
 
@@ -208,70 +221,70 @@ class PluginDescription{
 	/**
 	 * @return array
 	 */
-	public function getDepend(){
+	public function getDepend() : array{
 		return $this->depend;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getDescription(){
+	public function getDescription() : string{
 		return $this->description;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getLoadBefore(){
+	public function getLoadBefore() : array{
 		return $this->loadBefore;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getMain(){
+	public function getMain() : string{
 		return $this->main;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getName(){
+	public function getName() : string{
 		return $this->name;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getOrder(){
+	public function getOrder() : int{
 		return $this->order;
 	}
 
 	/**
 	 * @return Permission[]
 	 */
-	public function getPermissions(){
+	public function getPermissions() : array{
 		return $this->permissions;
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getSoftDepend(){
+	public function getSoftDepend() : array{
 		return $this->softDepend;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getVersion(){
+	public function getVersion() : string{
 		return $this->version;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getWebsite(){
+	public function getWebsite() : string{
 		return $this->website;
 	}
 }

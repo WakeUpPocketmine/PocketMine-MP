@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine;
 
 /**
@@ -28,6 +30,9 @@ abstract class Thread extends \Thread{
 
 	/** @var \ClassLoader */
 	protected $classLoader;
+	/** @var string|null */
+	protected $composerAutoloaderPath;
+
 	protected $isKilled = false;
 
 	public function getClassLoader(){
@@ -35,23 +40,31 @@ abstract class Thread extends \Thread{
 	}
 
 	public function setClassLoader(\ClassLoader $loader = null){
+		$this->composerAutoloaderPath = \pocketmine\COMPOSER_AUTOLOADER_PATH;
+
 		if($loader === null){
 			$loader = Server::getInstance()->getLoader();
 		}
 		$this->classLoader = $loader;
 	}
 
+	/**
+	 * Registers the class loader for this thread.
+	 *
+	 * WARNING: This method MUST be called from any descendent threads' run() method to make autoloading usable.
+	 * If you do not do this, you will not be able to use new classes that were not loaded when the thread was started
+	 * (unless you are using a custom autoloader).
+	 */
 	public function registerClassLoader(){
-		if(!interface_exists("ClassLoader", false)){
-			require(\pocketmine\PATH . "src/spl/ClassLoader.php");
-			require(\pocketmine\PATH . "src/spl/BaseClassLoader.php");
+		if($this->composerAutoloaderPath !== null){
+			require $this->composerAutoloaderPath;
 		}
 		if($this->classLoader !== null){
-			$this->classLoader->register(true);
+			$this->classLoader->register(false);
 		}
 	}
 
-	public function start(int $options = PTHREADS_INHERIT_ALL){
+	public function start(?int $options = \PTHREADS_INHERIT_ALL){
 		ThreadManager::getInstance()->add($this);
 
 		if(!$this->isRunning() and !$this->isJoined() and !$this->isTerminated()){
@@ -81,7 +94,7 @@ abstract class Thread extends \Thread{
 		ThreadManager::getInstance()->remove($this);
 	}
 
-	public function getThreadName(){
+	public function getThreadName() : string{
 		return (new \ReflectionClass($this))->getShortName();
 	}
 }

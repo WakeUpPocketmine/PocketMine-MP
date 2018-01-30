@@ -19,38 +19,38 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
-use pocketmine\block\Fire;
+use pocketmine\block\BlockFactory;
 use pocketmine\block\Solid;
-use pocketmine\level\Level;
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 
 class FlintSteel extends Tool{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::FLINT_STEEL, $meta, $count, "Flint and Steel");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::FLINT_STEEL, $meta, "Flint and Steel");
 	}
 
-	public function canBeActivated(){
-		return true;
-	}
+	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector) : bool{
+		if($blockReplace->getId() === self::AIR and ($blockClicked instanceof Solid)){
+			$level = $player->getLevel();
+			assert($level !== null);
+			$level->setBlock($blockReplace, BlockFactory::get(Block::FIRE), true);
+			$level->broadcastLevelSoundEvent($blockReplace->add(0.5, 0.5, 0.5), LevelSoundEventPacket::SOUND_IGNITE);
 
-	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
-		if($block->getId() === self::AIR and ($target instanceof Solid)){
-			$level->setBlock($block, new Fire(), true);
-			if(($player->gamemode & 0x01) === 0 and $this->useOn($block)){
-				if($this->getDamage() >= $this->getMaxDurability()){
-					$player->getInventory()->setItemInHand(new Item(Item::AIR, 0, 0));
-				}else{
-					$this->meta++;
-					$player->getInventory()->setItemInHand($this);
-				}
-			}
+			$this->applyDamage(1);
 
 			return true;
 		}
 
 		return false;
+	}
+
+	public function getMaxDurability() : int{
+		return 65;
 	}
 }

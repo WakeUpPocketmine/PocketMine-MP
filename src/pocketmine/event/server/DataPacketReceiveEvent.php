@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +14,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\server;
 
@@ -28,19 +30,31 @@ use pocketmine\Player;
 class DataPacketReceiveEvent extends ServerEvent implements Cancellable{
 	public static $handlerList = null;
 
+	/** @var DataPacket */
 	private $packet;
+	/** @var Player */
 	private $player;
 
+	/**
+	 * @param Player     $player
+	 * @param DataPacket $packet
+	 */
 	public function __construct(Player $player, DataPacket $packet){
 		$this->packet = $packet;
 		$this->player = $player;
 	}
 
-	public function getPacket(){
+	/**
+	 * @return DataPacket
+	 */
+	public function getPacket() : DataPacket{
 		return $this->packet;
 	}
 
-	public function getPlayer(){
+	/**
+	 * @return Player
+	 */
+	public function getPlayer() : Player{
 		return $this->player;
 	}
 }

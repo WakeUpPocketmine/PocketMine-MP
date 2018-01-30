@@ -19,49 +19,46 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\item\TieredTool;
 
 class Sandstone extends Solid{
 
-	const NORMAL = 0;
-	const CHISELED = 1;
-	const SMOOTH = 2;
+	public const NORMAL = 0;
+	public const CHISELED = 1;
+	public const SMOOTH = 2;
 
 	protected $id = self::SANDSTONE;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.8;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		static $names = [
 			self::NORMAL => "Sandstone",
 			self::CHISELED => "Chiseled Sandstone",
-			self::SMOOTH => "Smooth Sandstone",
-			3 => "",
+			self::SMOOTH => "Smooth Sandstone"
 		];
-		return $names[$this->meta & 0x03];
+		return $names[$this->getVariant()] ?? "Unknown";
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
-			return [
-				[Item::SANDSTONE, $this->meta & 0x03, 1],
-			];
-		}else{
-			return [];
-		}
+	public function getToolHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
 	}
 
+	public function getVariantBitmask() : int{
+		return 0x03;
+	}
 }

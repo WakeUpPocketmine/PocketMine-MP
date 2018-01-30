@@ -19,23 +19,21 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
-use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Painting extends Item{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::PAINTING, 0, $count, "Painting");
+	public function __construct(int $meta = 0){
+		parent::__construct(self::PAINTING, $meta, "Painting");
 	}
 
-	public function canBeActivated(){
-		return true;
-	}
-
-	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
-		if($target->isTransparent() === false and $face > 1 and $block->isSolid() === false){
+	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector) : bool{
+		if($blockClicked->isTransparent() === false and $face > 1 and $blockReplace->isSolid() === false){
 			$faces = [
 				2 => 1,
 				3 => 3,
@@ -74,9 +72,9 @@ class Painting extends Item{
 			];
 			$motive = $motives[mt_rand(0, count($motives) - 1)];
 			$data = [
-				"x" => $target->x,
-				"y" => $target->y,
-				"z" => $target->z,
+				"x" => $blockClicked->x,
+				"y" => $blockClicked->y,
+				"z" => $blockClicked->z,
 				"yaw" => $faces[$face] * 90,
 				"Motive" => $motive[0],
 			];

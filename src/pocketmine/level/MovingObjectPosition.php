@@ -19,65 +19,57 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\level;
 
+use pocketmine\block\Block;
 use pocketmine\entity\Entity;
-use pocketmine\math\Vector3;
+use pocketmine\math\RayTraceResult;
 
 class MovingObjectPosition{
+	public const TYPE_BLOCK_COLLISION = 0;
+	public const TYPE_ENTITY_COLLISION = 1;
 
-	/** 0 = block, 1 = entity */
+	/** @var RayTraceResult */
+	public $hitResult;
+
+	/** @var int */
 	public $typeOfHit;
 
-	public $blockX;
-	public $blockY;
-	public $blockZ;
-
-	/**
-	 * Which side was hit. If its -1 then it went the full length of the ray trace.
-	 * Bottom = 0, Top = 1, East = 2, West = 3, North = 4, South = 5.
-	 */
-	public $sideHit;
-
-	/** @var Vector3 */
-	public $hitVector;
-
-	/** @var Entity */
+	/** @var Entity|null */
 	public $entityHit = null;
+	/** @var Block|null */
+	public $blockHit = null;
 
-	protected function __construct(){
-
+	protected function __construct(int $hitType, RayTraceResult $hitResult){
+		$this->typeOfHit = $hitType;
+		$this->hitResult = $hitResult;
 	}
 
 	/**
-	 * @param int     $x
-	 * @param int     $y
-	 * @param int     $z
-	 * @param int     $side
-	 * @param Vector3 $hitVector
+	 * @param Block          $block
+	 * @param RayTraceResult $result
 	 *
 	 * @return MovingObjectPosition
 	 */
-	public static function fromBlock($x, $y, $z, $side, Vector3 $hitVector){
-		$ob = new MovingObjectPosition;
-		$ob->typeOfHit = 0;
-		$ob->blockX = $x;
-		$ob->blockY = $y;
-		$ob->blockZ = $z;
-		$ob->hitVector = new Vector3($hitVector->x, $hitVector->y, $hitVector->z);
+	public static function fromBlock(Block $block, RayTraceResult $result) : MovingObjectPosition{
+		$ob = new MovingObjectPosition(self::TYPE_BLOCK_COLLISION, $result);
+		$ob->blockHit = $block;
 		return $ob;
 	}
 
 	/**
-	 * @param Entity $entity
+	 * @param Entity         $entity
+	 *
+	 * @param RayTraceResult $result
 	 *
 	 * @return MovingObjectPosition
 	 */
-	public static function fromEntity(Entity $entity){
-		$ob = new MovingObjectPosition;
-		$ob->typeOfHit = 1;
+	public static function fromEntity(Entity $entity, RayTraceResult $result) : MovingObjectPosition{
+		$ob = new MovingObjectPosition(self::TYPE_ENTITY_COLLISION, $result);
 		$ob->entityHit = $entity;
-		$ob->hitVector = new Vector3($entity->x, $entity->y, $entity->z);
+
 		return $ob;
 	}
 }

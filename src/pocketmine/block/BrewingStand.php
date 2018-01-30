@@ -19,27 +19,39 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\item\Tool;
+use pocketmine\item\TieredTool;
 
 class BrewingStand extends Transparent{
 
 	protected $id = self::BREWING_STAND_BLOCK;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Brewing Stand";
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.5;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
+
+	public function getToolHarvestLevel() : int{
+		return TieredTool::TIER_WOODEN;
+	}
+
+	public function getVariantBitmask() : int{
+		return 0;
+	}
+
+	//TODO
 }

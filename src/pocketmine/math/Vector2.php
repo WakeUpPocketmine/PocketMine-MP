@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\math;
 
 class Vector2{
@@ -63,11 +65,11 @@ class Vector2{
 	}
 
 	public function ceil(){
-		return new Vector2((int) ($this->x + 1), (int) ($this->y + 1));
+		return new Vector2((int) ceil($this->x), (int) ceil($this->y));
 	}
 
 	public function floor(){
-		return new Vector2((int) $this->x, (int) $this->y);
+		return new Vector2((int) floor($this->x), (int) floor($this->y));
 	}
 
 	public function round(){
@@ -98,7 +100,7 @@ class Vector2{
 		if($x instanceof Vector2){
 			return $this->distanceSquared($x->x, $x->y);
 		}else{
-			return pow($this->x - $x, 2) + pow($this->y - $y, 2);
+			return (($this->x - $x) ** 2) + (($this->y - $y) ** 2);
 		}
 	}
 

@@ -19,38 +19,37 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
-use pocketmine\item\Tool;
+use pocketmine\item\TieredTool;
 
 class Obsidian extends Solid{
 
 	protected $id = self::OBSIDIAN;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "Obsidian";
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
-	public function getHardness(){
-		return 35;
+	public function getToolHarvestLevel() : int{
+		return TieredTool::TIER_DIAMOND;
 	}
 
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_DIAMOND){
-			return [
-				[Item::OBSIDIAN, 0, 1],
-			];
-		}else{
-			return [];
-		}
+	public function getHardness() : float{
+		return 35; //50 in PC
+	}
+
+	public function getBlastResistance() : float{
+		return 6000;
 	}
 }

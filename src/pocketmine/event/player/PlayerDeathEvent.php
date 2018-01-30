@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,10 +14,12 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\player;
 
@@ -28,6 +30,9 @@ use pocketmine\Player;
 
 class PlayerDeathEvent extends EntityDeathEvent{
 	public static $handlerList = null;
+
+	/** @var Player */
+	protected $entity;
 
 	/** @var TextContainer|string */
 	private $deathMessage;
@@ -53,7 +58,7 @@ class PlayerDeathEvent extends EntityDeathEvent{
 	/**
 	 * @return Player
 	 */
-	public function getPlayer(){
+	public function getPlayer() : Player{
 		return $this->entity;
 	}
 
@@ -65,18 +70,18 @@ class PlayerDeathEvent extends EntityDeathEvent{
 	}
 
 	/**
-	 * @param string|TextContainer $deathMessage
+	 * @param TextContainer|string $deathMessage
 	 */
 	public function setDeathMessage($deathMessage){
 		$this->deathMessage = $deathMessage;
 	}
 
-	public function getKeepInventory(){
+	public function getKeepInventory() : bool{
 		return $this->keepInventory;
 	}
 
-	public function setKeepInventory($keepInventory){
-		$this->keepInventory = (bool) $keepInventory;
+	public function setKeepInventory(bool $keepInventory){
+		$this->keepInventory = $keepInventory;
 	}
 
 }

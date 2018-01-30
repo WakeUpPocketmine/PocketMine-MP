@@ -19,14 +19,14 @@
  *
 */
 
+declare(strict_types=1);
 
 namespace pocketmine\network\mcpe;
 
-
+use pocketmine\network\mcpe\protocol\AddBehaviorTreePacket;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\network\mcpe\protocol\AddHangingEntityPacket;
 use pocketmine\network\mcpe\protocol\AddItemEntityPacket;
-use pocketmine\network\mcpe\protocol\AddItemPacket;
 use pocketmine\network\mcpe\protocol\AddPaintingPacket;
 use pocketmine\network\mcpe\protocol\AddPlayerPacket;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
@@ -35,29 +35,36 @@ use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\network\mcpe\protocol\BlockEventPacket;
 use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
+use pocketmine\network\mcpe\protocol\BookEditPacket;
 use pocketmine\network\mcpe\protocol\BossEventPacket;
+use pocketmine\network\mcpe\protocol\CameraPacket;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
-use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
 use pocketmine\network\mcpe\protocol\ClientToServerHandshakePacket;
+use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
 use pocketmine\network\mcpe\protocol\CommandBlockUpdatePacket;
-use pocketmine\network\mcpe\protocol\CommandStepPacket;
+use pocketmine\network\mcpe\protocol\CommandOutputPacket;
+use pocketmine\network\mcpe\protocol\CommandRequestPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
-use pocketmine\network\mcpe\protocol\ContainerSetContentPacket;
 use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
-use pocketmine\network\mcpe\protocol\ContainerSetSlotPacket;
 use pocketmine\network\mcpe\protocol\CraftingDataPacket;
 use pocketmine\network\mcpe\protocol\CraftingEventPacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
-use pocketmine\network\mcpe\protocol\DropItemPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\EntityFallPacket;
+use pocketmine\network\mcpe\protocol\EntityPickRequestPacket;
+use pocketmine\network\mcpe\protocol\EventPacket;
 use pocketmine\network\mcpe\protocol\ExplodePacket;
 use pocketmine\network\mcpe\protocol\FullChunkDataPacket;
+use pocketmine\network\mcpe\protocol\GameRulesChangedPacket;
+use pocketmine\network\mcpe\protocol\GuiDataPickItemPacket;
 use pocketmine\network\mcpe\protocol\HurtArmorPacket;
 use pocketmine\network\mcpe\protocol\InteractPacket;
-use pocketmine\network\mcpe\protocol\InventoryActionPacket;
+use pocketmine\network\mcpe\protocol\InventoryContentPacket;
+use pocketmine\network\mcpe\protocol\InventorySlotPacket;
+use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
@@ -66,230 +73,485 @@ use pocketmine\network\mcpe\protocol\MapInfoRequestPacket;
 use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\network\mcpe\protocol\MobEffectPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
+use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
+use pocketmine\network\mcpe\protocol\ModalFormResponsePacket;
 use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\MovePlayerPacket;
-use pocketmine\network\mcpe\protocol\PlayerActionPacket;
-use pocketmine\network\mcpe\protocol\EntityFallPacket;
-use pocketmine\network\mcpe\protocol\PlayerInputPacket;
-use pocketmine\network\mcpe\protocol\PlayerListPacket;
+use pocketmine\network\mcpe\protocol\NpcRequestPacket;
+use pocketmine\network\mcpe\protocol\PhotoTransferPacket;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\network\mcpe\protocol\PlayStatusPacket;
-use pocketmine\network\mcpe\protocol\RemoveBlockPacket;
+use pocketmine\network\mcpe\protocol\PlayerActionPacket;
+use pocketmine\network\mcpe\protocol\PlayerHotbarPacket;
+use pocketmine\network\mcpe\protocol\PlayerInputPacket;
+use pocketmine\network\mcpe\protocol\PlayerListPacket;
+use pocketmine\network\mcpe\protocol\PlayerSkinPacket;
+use pocketmine\network\mcpe\protocol\PurchaseReceiptPacket;
 use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
-use pocketmine\network\mcpe\protocol\ReplaceItemInSlotPacket;
 use pocketmine\network\mcpe\protocol\RequestChunkRadiusPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackChunkDataPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackChunkRequestPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackClientResponsePacket;
 use pocketmine\network\mcpe\protocol\ResourcePackDataInfoPacket;
-use pocketmine\network\mcpe\protocol\ResourcePacksInfoPacket;
 use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
+use pocketmine\network\mcpe\protocol\ResourcePacksInfoPacket;
 use pocketmine\network\mcpe\protocol\RespawnPacket;
 use pocketmine\network\mcpe\protocol\RiderJumpPacket;
+use pocketmine\network\mcpe\protocol\ServerSettingsRequestPacket;
+use pocketmine\network\mcpe\protocol\ServerSettingsResponsePacket;
 use pocketmine\network\mcpe\protocol\ServerToClientHandshakePacket;
 use pocketmine\network\mcpe\protocol\SetCommandsEnabledPacket;
+use pocketmine\network\mcpe\protocol\SetDefaultGameTypePacket;
 use pocketmine\network\mcpe\protocol\SetDifficultyPacket;
 use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
 use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
 use pocketmine\network\mcpe\protocol\SetHealthPacket;
+use pocketmine\network\mcpe\protocol\SetLastHurtByPacket;
 use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
 use pocketmine\network\mcpe\protocol\SetSpawnPositionPacket;
 use pocketmine\network\mcpe\protocol\SetTimePacket;
 use pocketmine\network\mcpe\protocol\SetTitlePacket;
 use pocketmine\network\mcpe\protocol\ShowCreditsPacket;
+use pocketmine\network\mcpe\protocol\ShowProfilePacket;
+use pocketmine\network\mcpe\protocol\ShowStoreOfferPacket;
+use pocketmine\network\mcpe\protocol\SimpleEventPacket;
 use pocketmine\network\mcpe\protocol\SpawnExperienceOrbPacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\StopSoundPacket;
+use pocketmine\network\mcpe\protocol\StructureBlockUpdatePacket;
+use pocketmine\network\mcpe\protocol\SubClientLoginPacket;
 use pocketmine\network\mcpe\protocol\TakeItemEntityPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\network\mcpe\protocol\UpdateAttributesPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
+use pocketmine\network\mcpe\protocol\UpdateEquipPacket;
 use pocketmine\network\mcpe\protocol\UpdateTradePacket;
-use pocketmine\network\mcpe\protocol\UseItemPacket;
-use pocketmine\Server;
+use pocketmine\network\mcpe\protocol\WSConnectPacket;
 
-interface NetworkSession{
+abstract class NetworkSession{
 
-	/**
-	 * @return Server
-	 */
-	public function getServer();
+	abstract public function handleDataPacket(DataPacket $packet);
 
-	public function handleDataPacket(DataPacket $pk);
+	public function handleLogin(LoginPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleLogin(LoginPacket $packet) : bool;
+	public function handlePlayStatus(PlayStatusPacket $packet) : bool{
+		return false;
+	}
 
-	public function handlePlayStatus(PlayStatusPacket $packet) : bool;
+	public function handleServerToClientHandshake(ServerToClientHandshakePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleServerToClientHandshake(ServerToClientHandshakePacket $packet) : bool;
+	public function handleClientToServerHandshake(ClientToServerHandshakePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleClientToServerHandshake(ClientToServerHandshakePacket $packet) : bool;
+	public function handleDisconnect(DisconnectPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleDisconnect(DisconnectPacket $packet) : bool;
+	public function handleResourcePacksInfo(ResourcePacksInfoPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleResourcePacksInfo(ResourcePacksInfoPacket $packet) : bool;
+	public function handleResourcePackStack(ResourcePackStackPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleResourcePackStack(ResourcePackStackPacket $packet) : bool;
+	public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool;
+	public function handleText(TextPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleText(TextPacket $packet) : bool;
+	public function handleSetTime(SetTimePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleSetTime(SetTimePacket $packet) : bool;
+	public function handleStartGame(StartGamePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleStartGame(StartGamePacket $packet) : bool;
+	public function handleAddPlayer(AddPlayerPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleAddPlayer(AddPlayerPacket $packet) : bool;
+	public function handleAddEntity(AddEntityPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleAddEntity(AddEntityPacket $packet) : bool;
+	public function handleRemoveEntity(RemoveEntityPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleRemoveEntity(RemoveEntityPacket $packet) : bool;
+	public function handleAddItemEntity(AddItemEntityPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleAddItemEntity(AddItemEntityPacket $packet) : bool;
+	public function handleAddHangingEntity(AddHangingEntityPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleAddHangingEntity(AddHangingEntityPacket $packet) : bool;
+	public function handleTakeItemEntity(TakeItemEntityPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleTakeItemEntity(TakeItemEntityPacket $packet) : bool;
+	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleMoveEntity(MoveEntityPacket $packet) : bool;
+	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleMovePlayer(MovePlayerPacket $packet) : bool;
+	public function handleRiderJump(RiderJumpPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleRiderJump(RiderJumpPacket $packet) : bool;
+	public function handleUpdateBlock(UpdateBlockPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleRemoveBlock(RemoveBlockPacket $packet) : bool;
+	public function handleAddPainting(AddPaintingPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleUpdateBlock(UpdateBlockPacket $packet) : bool;
+	public function handleExplode(ExplodePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleAddPainting(AddPaintingPacket $packet) : bool;
+	public function handleLevelSoundEvent(LevelSoundEventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleLevelEvent(LevelEventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleBlockEvent(BlockEventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleEntityEvent(EntityEventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleMobEffect(MobEffectPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleUpdateAttributes(UpdateAttributesPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleInventoryTransaction(InventoryTransactionPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleMobEquipment(MobEquipmentPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleMobArmorEquipment(MobArmorEquipmentPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleInteract(InteractPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleBlockPickRequest(BlockPickRequestPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleEntityPickRequest(EntityPickRequestPacket $packet) : bool{
+		return false;
+	}
+
+	public function handlePlayerAction(PlayerActionPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleEntityFall(EntityFallPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleHurtArmor(HurtArmorPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetEntityData(SetEntityDataPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetEntityLink(SetEntityLinkPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetHealth(SetHealthPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetSpawnPosition(SetSpawnPositionPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleAnimate(AnimatePacket $packet) : bool{
+		return false;
+	}
+
+	public function handleRespawn(RespawnPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleContainerOpen(ContainerOpenPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleContainerClose(ContainerClosePacket $packet) : bool{
+		return false;
+	}
+
+	public function handlePlayerHotbar(PlayerHotbarPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleInventoryContent(InventoryContentPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleInventorySlot(InventorySlotPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleContainerSetData(ContainerSetDataPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCraftingData(CraftingDataPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCraftingEvent(CraftingEventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleGuiDataPickItem(GuiDataPickItemPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleAdventureSettings(AdventureSettingsPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleBlockEntityData(BlockEntityDataPacket $packet) : bool{
+		return false;
+	}
+
+	public function handlePlayerInput(PlayerInputPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleFullChunkData(FullChunkDataPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetCommandsEnabled(SetCommandsEnabledPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetDifficulty(SetDifficultyPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleChangeDimension(ChangeDimensionPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
+		return false;
+	}
+
+	public function handlePlayerList(PlayerListPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSimpleEvent(SimpleEventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleEvent(EventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSpawnExperienceOrb(SpawnExperienceOrbPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleClientboundMapItemData(ClientboundMapItemDataPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleMapInfoRequest(MapInfoRequestPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleRequestChunkRadius(RequestChunkRadiusPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleChunkRadiusUpdated(ChunkRadiusUpdatedPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleItemFrameDropItem(ItemFrameDropItemPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleGameRulesChanged(GameRulesChangedPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCamera(CameraPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleBossEvent(BossEventPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleShowCredits(ShowCreditsPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleAvailableCommands(AvailableCommandsPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCommandRequest(CommandRequestPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCommandBlockUpdate(CommandBlockUpdatePacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCommandOutput(CommandOutputPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleUpdateTrade(UpdateTradePacket $packet) : bool{
+		return false;
+	}
+
+	public function handleUpdateEquip(UpdateEquipPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleExplode(ExplodePacket $packet) : bool;
+	public function handleResourcePackDataInfo(ResourcePackDataInfoPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleLevelSoundEvent(LevelSoundEventPacket $packet) : bool;
+	public function handleResourcePackChunkData(ResourcePackChunkDataPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleLevelEvent(LevelEventPacket $packet) : bool;
+	public function handleResourcePackChunkRequest(ResourcePackChunkRequestPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleBlockEvent(BlockEventPacket $packet) : bool;
+	public function handleTransfer(TransferPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleEntityEvent(EntityEventPacket $packet) : bool;
+	public function handlePlaySound(PlaySoundPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleMobEffect(MobEffectPacket $packet) : bool;
+	public function handleStopSound(StopSoundPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleUpdateAttributes(UpdateAttributesPacket $packet) : bool;
+	public function handleSetTitle(SetTitlePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleMobEquipment(MobEquipmentPacket $packet) : bool;
+	public function handleAddBehaviorTree(AddBehaviorTreePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleMobArmorEquipment(MobArmorEquipmentPacket $packet) : bool;
+	public function handleStructureBlockUpdate(StructureBlockUpdatePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleInteract(InteractPacket $packet) : bool;
+	public function handleShowStoreOffer(ShowStoreOfferPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleBlockPickRequest(BlockPickRequestPacket $packet) : bool;
+	public function handlePurchaseReceipt(PurchaseReceiptPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleUseItem(UseItemPacket $packet) : bool;
+	public function handlePlayerSkin(PlayerSkinPacket $packet) : bool{
+		return false;
+	}
 
-	public function handlePlayerAction(PlayerActionPacket $packet) : bool;
+	public function handleSubClientLogin(SubClientLoginPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleEntityFall(EntityFallPacket $packet) : bool;
+	public function handleWSConnect(WSConnectPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleHurtArmor(HurtArmorPacket $packet) : bool;
+	public function handleSetLastHurtBy(SetLastHurtByPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleSetEntityData(SetEntityDataPacket $packet) : bool;
+	public function handleBookEdit(BookEditPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool;
+	public function handleNpcRequest(NpcRequestPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleSetEntityLink(SetEntityLinkPacket $packet) : bool;
+	public function handlePhotoTransfer(PhotoTransferPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleSetHealth(SetHealthPacket $packet) : bool;
+	public function handleModalFormRequest(ModalFormRequestPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleSetSpawnPosition(SetSpawnPositionPacket $packet) : bool;
+	public function handleModalFormResponse(ModalFormResponsePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleAnimate(AnimatePacket $packet) : bool;
+	public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
+		return false;
+	}
 
-	public function handleRespawn(RespawnPacket $packet) : bool;
+	public function handleServerSettingsResponse(ServerSettingsResponsePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleDropItem(DropItemPacket $packet) : bool;
+	public function handleShowProfile(ShowProfilePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleInventoryAction(InventoryActionPacket $packet) : bool;
+	public function handleSetDefaultGameType(SetDefaultGameTypePacket $packet) : bool{
+		return false;
+	}
 
-	public function handleContainerOpen(ContainerOpenPacket $packet) : bool;
-
-	public function handleContainerClose(ContainerClosePacket $packet) : bool;
-
-	public function handleContainerSetSlot(ContainerSetSlotPacket $packet) : bool;
-
-	public function handleContainerSetData(ContainerSetDataPacket $packet) : bool;
-
-	public function handleContainerSetContent(ContainerSetContentPacket $packet) : bool;
-
-	public function handleCraftingData(CraftingDataPacket $packet) : bool;
-
-	public function handleCraftingEvent(CraftingEventPacket $packet) : bool;
-
-	public function handleAdventureSettings(AdventureSettingsPacket $packet) : bool;
-
-	public function handleBlockEntityData(BlockEntityDataPacket $packet) : bool;
-
-	public function handlePlayerInput(PlayerInputPacket $packet) : bool;
-
-	public function handleFullChunkData(FullChunkDataPacket $packet) : bool;
-
-	public function handleSetCommandsEnabled(SetCommandsEnabledPacket $packet) : bool;
-
-	public function handleSetDifficulty(SetDifficultyPacket $packet) : bool;
-
-	public function handleChangeDimension(ChangeDimensionPacket $packet) : bool;
-
-	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool;
-
-	public function handlePlayerList(PlayerListPacket $packet) : bool;
-
-	//public function handleTelemetryEvent(EventPacket $packet) : bool; //TODO
-
-	public function handleSpawnExperienceOrb(SpawnExperienceOrbPacket $packet) : bool;
-
-	public function handleClientboundMapItemData(ClientboundMapItemDataPacket $packet) : bool;
-
-	public function handleMapInfoRequest(MapInfoRequestPacket $packet) : bool; //TODO
-
-	public function handleRequestChunkRadius(RequestChunkRadiusPacket $packet) : bool;
-
-	public function handleChunkRadiusUpdated(ChunkRadiusUpdatedPacket $packet) : bool;
-
-	public function handleItemFrameDropItem(ItemFrameDropItemPacket $packet) : bool;
-
-	public function handleReplaceItemInSlot(ReplaceItemInSlotPacket $packet) : bool;
-
-	//public function handleGameRulesChanged(GameRulesChangedPacket $packet) : bool; //TODO
-
-	//public function handleCamera(CameraPacket $packet) : bool; //edu only :(
-
-	public function handleAddItem(AddItemPacket $packet) : bool;
-
-	public function handleBossEvent(BossEventPacket $packet) : bool;
-
-	public function handleShowCredits(ShowCreditsPacket $packet) : bool;
-
-	public function handleAvailableCommands(AvailableCommandsPacket $packet) : bool;
-
-	public function handleCommandStep(CommandStepPacket $packet) : bool;
-
-	public function handleCommandBlockUpdate(CommandBlockUpdatePacket $packet) : bool;
-
-	public function handleUpdateTrade(UpdateTradePacket $packet) : bool;
-
-	public function handleResourcePackDataInfo(ResourcePackDataInfoPacket $packet) : bool;
-
-	public function handleResourcePackChunkData(ResourcePackChunkDataPacket $packet) : bool;
-
-	public function handleResourcePackChunkRequest(ResourcePackChunkRequestPacket $packet) : bool;
-
-	public function handleTransfer(TransferPacket $packet) : bool;
-
-	public function handlePlaySound(PlaySoundPacket $packet) : bool;
-
-	public function handleStopSound(StopSoundPacket $packet) : bool;
-
-	public function handleSetTitle(SetTitlePacket $packet) : bool;
 }

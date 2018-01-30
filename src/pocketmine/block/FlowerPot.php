@@ -19,40 +19,35 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\FlowerPot as TileFlowerPot;
 use pocketmine\tile\Tile;
 
 class FlowerPot extends Flowable{
 
-	const STATE_EMPTY = 0;
-	const STATE_FULL = 1;
+	public const STATE_EMPTY = 0;
+	public const STATE_FULL = 1;
 
 	protected $id = self::FLOWER_POT_BLOCK;
+	protected $itemId = Item::FLOWER_POT;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
-		return "Flower Pot Block";
+	public function getName() : string{
+		return "Flower Pot";
 	}
 
-	public function canBeActivated(): bool{
-		return true;
-	}
-
-	protected function recalculateBoundingBox(){
+	protected function recalculateBoundingBox() : ?AxisAlignedBB{
 		return new AxisAlignedBB(
 			$this->x + 0.3125,
 			$this->y,
@@ -63,35 +58,19 @@ class FlowerPot extends Flowable{
 		);
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		if($this->getSide(Vector3::SIDE_DOWN)->isTransparent()){
 			return false;
 		}
 
-		$this->getLevel()->setBlock($block, $this, true, true);
-
-		$nbt = new CompoundTag("", [
-			new StringTag("id", Tile::FLOWER_POT),
-			new IntTag("x", $block->x),
-			new IntTag("y", $block->y),
-			new IntTag("z", $block->z),
-			new ShortTag("item", 0),
-			new IntTag("mData", 0),
-		]);
-
-		if($item->hasCustomBlockData()){
-			foreach($item->getCustomBlockData() as $key => $v){
-				$nbt->{$key} = $v;
-			}
-		}
-
-		Tile::createTile(Tile::FLOWER_POT, $this->getLevel(), $nbt);
+		$this->getLevel()->setBlock($blockReplace, $this, true, true);
+		Tile::createTile(Tile::FLOWER_POT, $this->getLevel(), TileFlowerPot::createNBT($this, $face, $item, $player));
 		return true;
 	}
 
-	public function onUpdate($type){
+	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(0)->isTransparent() === true){
+			if($this->getSide(Vector3::SIDE_DOWN)->isTransparent() === true){
 				$this->getLevel()->useBreakOn($this);
 
 				return Level::BLOCK_UPDATE_NORMAL;
@@ -101,7 +80,7 @@ class FlowerPot extends Flowable{
 		return false;
 	}
 
-	public function onActivate(Item $item, Player $player = null){
+	public function onActivate(Item $item, Player $player = null) : bool{
 		$pot = $this->getLevel()->getTile($this);
 		if(!($pot instanceof TileFlowerPot)){
 			return false;
@@ -112,26 +91,30 @@ class FlowerPot extends Flowable{
 
 		$this->setDamage(self::STATE_FULL); //specific damage value is unnecessary, it just needs to be non-zero to show an item.
 		$this->getLevel()->setBlock($this, $this, true, false);
-		$pot->setItem($item);
+		$pot->setItem($item->pop());
 
-		if($player instanceof Player){
-			if($player->isSurvival()){
-				$item->setCount($item->getCount() - 1);
-				$player->getInventory()->setItemInHand($item->getCount() > 0 ? $item : Item::get(Item::AIR));
-			}
-		}
 		return true;
 	}
 
-	public function getDrops(Item $item){
-		$items = [[Item::FLOWER_POT, 0, 1]];
+	public function getVariantBitmask() : int{
+		return 0;
+	}
+
+	public function getDropsForCompatibleTool(Item $item) : array{
+		$items = parent::getDropsForCompatibleTool($item);
+
 		$tile = $this->getLevel()->getTile($this);
 		if($tile instanceof TileFlowerPot){
-			if(($item = $tile->getItem())->getId() !== Item::AIR){
-				$items[] = [$item->getId(), $item->getDamage(), 1];
+			$item = $tile->getItem();
+			if($item->getId() !== Item::AIR){
+				$items[] = $item;
 			}
 		}
+
 		return $items;
 	}
 
+	public function isAffectedBySilkTouch() : bool{
+		return false;
+	}
 }

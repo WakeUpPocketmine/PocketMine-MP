@@ -19,16 +19,19 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Effect;
 use pocketmine\event\TranslationContainer;
 use pocketmine\utils\TextFormat;
 
 class EffectCommand extends VanillaCommand{
 
-	public function __construct($name){
+	public function __construct(string $name){
 		parent::__construct(
 			$name,
 			"%pocketmine.command.effect.description",
@@ -37,15 +40,13 @@ class EffectCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.effect");
 	}
 
-	public function execute(CommandSender $sender, $currentAlias, array $args){
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
 
 		if(count($args) < 2){
-			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
-
-			return true;
+			throw new InvalidCommandSyntaxException();
 		}
 
 		$player = $sender->getServer()->getPlayer($args[0]);
@@ -117,7 +118,7 @@ class EffectCommand extends VanillaCommand{
 			$effect->setDuration($duration)->setAmplifier($amplification);
 
 			$player->addEffect($effect);
-			self::broadcastCommandMessage($sender, new TranslationContainer("%commands.effect.success", [$effect->getName(), $effect->getId(), $effect->getAmplifier(), $player->getDisplayName(), $effect->getDuration() / 20]));
+			self::broadcastCommandMessage($sender, new TranslationContainer("%commands.effect.success", [$effect->getName(), $effect->getAmplifier(), $player->getDisplayName(), $effect->getDuration() / 20, $effect->getId()]));
 		}
 
 

@@ -19,82 +19,87 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\tile;
 
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
+use pocketmine\Player;
 
 class ItemFrame extends Spawnable{
+	public const TAG_ITEM_ROTATION = "ItemRotation";
+	public const TAG_ITEM_DROP_CHANCE = "ItemDropChance";
+	public const TAG_ITEM = "Item";
 
 	public function __construct(Level $level, CompoundTag $nbt){
-		if(!isset($nbt->ItemRotation)){
-			$nbt->ItemRotation = new ByteTag("ItemRotation", 0);
+		if(!$nbt->hasTag(self::TAG_ITEM_ROTATION, ByteTag::class)){
+			$nbt->setByte(self::TAG_ITEM_ROTATION, 0, true);
 		}
 
-		if(!isset($nbt->ItemDropChance)){
-			$nbt->ItemDropChance = new FloatTag("ItemDropChance", 1.0);
+		if(!$nbt->hasTag(self::TAG_ITEM_DROP_CHANCE, FloatTag::class)){
+			$nbt->setFloat(self::TAG_ITEM_DROP_CHANCE, 1.0, true);
 		}
 
 		parent::__construct($level, $nbt);
 	}
 
 	public function hasItem() : bool{
-		return $this->getItem()->getId() !== Item::AIR;
+		return !$this->getItem()->isNull();
 	}
 
 	public function getItem() : Item{
-		if(isset($this->namedtag->Item)){
-			return Item::nbtDeserialize($this->namedtag->Item);
-		}else{
-			return Item::get(Item::AIR);
+		$c = $this->namedtag->getCompoundTag(self::TAG_ITEM);
+		if($c !== null){
+			return Item::nbtDeserialize($c);
 		}
+
+		return ItemFactory::get(Item::AIR, 0, 0);
 	}
 
 	public function setItem(Item $item = null){
-		if($item !== null and $item->getId() !== Item::AIR){
-			$this->namedtag->Item = $item->nbtSerialize(-1, "Item");
+		if($item !== null and !$item->isNull()){
+			$this->namedtag->setTag($item->nbtSerialize(-1, self::TAG_ITEM));
 		}else{
-			unset($this->namedtag->Item);
+			$this->namedtag->removeTag(self::TAG_ITEM);
 		}
 		$this->onChanged();
 	}
 
 	public function getItemRotation() : int{
-		return $this->namedtag->ItemRotation->getValue();
+		return $this->namedtag->getByte(self::TAG_ITEM_ROTATION);
 	}
 
 	public function setItemRotation(int $rotation){
-		$this->namedtag->ItemRotation = new ByteTag("ItemRotation", $rotation);
+		$this->namedtag->setByte(self::TAG_ITEM_ROTATION, $rotation);
 		$this->onChanged();
 	}
 
 	public function getItemDropChance() : float{
-		return $this->namedtag->ItemDropChance->getValue();
+		return $this->namedtag->getFloat(self::TAG_ITEM_DROP_CHANCE);
 	}
 
 	public function setItemDropChance(float $chance){
-		$this->namedtag->ItemDropChance = new FloatTag("ItemDropChance", $chance);
+		$this->namedtag->setFloat(self::TAG_ITEM_DROP_CHANCE, $chance);
 		$this->onChanged();
 	}
 
-	public function getSpawnCompound(){
-		$tag = new CompoundTag("", [
-			new StringTag("id", Tile::ITEM_FRAME),
-			new IntTag("x", (int) $this->x),
-			new IntTag("y", (int) $this->y),
-			new IntTag("z", (int) $this->z),
-			$this->namedtag->ItemDropChance,
-			$this->namedtag->ItemRotation,
-		]);
+	public function addAdditionalSpawnData(CompoundTag $nbt) : void{
+		$nbt->setTag($this->namedtag->getTag(self::TAG_ITEM_DROP_CHANCE));
+		$nbt->setTag($this->namedtag->getTag(self::TAG_ITEM_ROTATION));
+
 		if($this->hasItem()){
-			$tag->Item = $this->namedtag->Item;
+			$nbt->setTag($this->namedtag->getTag(self::TAG_ITEM));
 		}
-		return $tag;
 	}
 
+	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
+		$nbt->setFloat(self::TAG_ITEM_DROP_CHANCE, 1.0);
+		$nbt->setByte(self::TAG_ITEM_ROTATION, 0);
+	}
 }

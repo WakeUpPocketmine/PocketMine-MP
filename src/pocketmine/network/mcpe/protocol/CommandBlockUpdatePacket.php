@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -28,26 +30,37 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class CommandBlockUpdatePacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::COMMAND_BLOCK_UPDATE_PACKET;
+	public const NETWORK_ID = ProtocolInfo::COMMAND_BLOCK_UPDATE_PACKET;
 
+	/** @var bool */
 	public $isBlock;
 
+	/** @var int */
 	public $x;
+	/** @var int */
 	public $y;
+	/** @var int */
 	public $z;
+	/** @var int */
 	public $commandBlockMode;
+	/** @var bool */
 	public $isRedstoneMode;
+	/** @var bool */
 	public $isConditional;
 
+	/** @var int */
 	public $minecartEid;
 
+	/** @var string */
 	public $command;
+	/** @var string */
 	public $lastOutput;
+	/** @var string */
 	public $name;
-
+	/** @var bool */
 	public $shouldTrackOutput;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->isBlock = $this->getBool();
 
 		if($this->isBlock){
@@ -67,8 +80,7 @@ class CommandBlockUpdatePacket extends DataPacket{
 		$this->shouldTrackOutput = $this->getBool();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putBool($this->isBlock);
 
 		if($this->isBlock){

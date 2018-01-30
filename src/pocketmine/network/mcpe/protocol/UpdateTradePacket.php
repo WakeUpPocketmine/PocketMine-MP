@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -29,20 +31,30 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\types\WindowTypes;
 
 class UpdateTradePacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::UPDATE_TRADE_PACKET;
+	public const NETWORK_ID = ProtocolInfo::UPDATE_TRADE_PACKET;
 
 	//TODO: find fields
+
+	/** @var int */
 	public $windowId;
+	/** @var int */
 	public $windowType = WindowTypes::TRADING; //Mojang hardcoded this -_-
+	/** @var int */
 	public $varint1;
+	/** @var int */
 	public $varint2;
+	/** @var bool */
 	public $isWilling;
+	/** @var int */
 	public $traderEid;
+	/** @var int */
 	public $playerEid;
+	/** @var string */
 	public $displayName;
+	/** @var string */
 	public $offers;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->windowId = $this->getByte();
 		$this->windowType = $this->getByte();
 		$this->varint1 = $this->getVarInt();
@@ -51,11 +63,10 @@ class UpdateTradePacket extends DataPacket{
 		$this->traderEid = $this->getEntityUniqueId();
 		$this->playerEid = $this->getEntityUniqueId();
 		$this->displayName = $this->getString();
-		$this->offers = $this->get(true);
+		$this->offers = $this->getRemaining();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putByte($this->windowId);
 		$this->putByte($this->windowType);
 		$this->putVarInt($this->varint1);

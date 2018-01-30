@@ -19,145 +19,118 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
 use pocketmine\block\Block;
-use pocketmine\block\Liquid;
+use pocketmine\block\BlockFactory;
+use pocketmine\block\Fallable;
 use pocketmine\event\entity\EntityBlockChangeEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\item\Item as ItemItem;
-use pocketmine\math\Vector3;
+use pocketmine\item\ItemFactory;
+use pocketmine\level\Position;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\network\mcpe\protocol\AddEntityPacket;
-use pocketmine\Player;
 
 class FallingSand extends Entity{
-	const NETWORK_ID = 66;
+	public const NETWORK_ID = self::FALLING_BLOCK;
 
 	public $width = 0.98;
-	public $length = 0.98;
 	public $height = 0.98;
 
 	protected $baseOffset = 0.49;
 
 	protected $gravity = 0.04;
 	protected $drag = 0.02;
-	protected $blockId = 0;
-	protected $damage;
+
+	/** @var Block */
+	protected $block;
 
 	public $canCollide = false;
 
 	protected function initEntity(){
 		parent::initEntity();
-		if(isset($this->namedtag->TileID)){
-			$this->blockId = $this->namedtag["TileID"];
-		}elseif(isset($this->namedtag->Tile)){
-			$this->blockId = $this->namedtag["Tile"];
-			$this->namedtag["TileID"] = new IntTag("TileID", $this->blockId);
+
+		$blockId = 0;
+
+		//TODO: 1.8+ save format
+		if($this->namedtag->hasTag("TileID", IntTag::class)){
+			$blockId = $this->namedtag->getInt("TileID");
+		}elseif($this->namedtag->hasTag("Tile", ByteTag::class)){
+			$blockId = $this->namedtag->getByte("Tile");
+			$this->namedtag->removeTag("Tile");
 		}
 
-		if(isset($this->namedtag->Data)){
-			$this->damage = $this->namedtag["Data"];
-		}
-
-		if($this->blockId === 0){
+		if($blockId === 0){
 			$this->close();
 			return;
 		}
 
-		$this->setDataProperty(self::DATA_VARIANT, self::DATA_TYPE_INT, $this->getBlock() | ($this->getDamage() << 8));
+		$damage = $this->namedtag->getByte("Data", 0);
+
+		$this->block = BlockFactory::get($blockId, $damage);
+
+		$this->propertyManager->setInt(self::DATA_VARIANT, $this->block->getId() | ($this->block->getDamage() << 8));
 	}
 
-	public function canCollideWith(Entity $entity){
+	public function canCollideWith(Entity $entity) : bool{
 		return false;
 	}
 
-	public function attack($damage, EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source){
 		if($source->getCause() === EntityDamageEvent::CAUSE_VOID){
-			parent::attack($damage, $source);
+			parent::attack($source);
 		}
 	}
 
-	public function onUpdate($currentTick){
-
+	public function entityBaseTick(int $tickDiff = 1) : bool{
 		if($this->closed){
 			return false;
 		}
 
-		$this->timings->startTiming();
+		$hasUpdate = parent::entityBaseTick($tickDiff);
 
-		$tickDiff = $currentTick - $this->lastUpdate;
-		if($tickDiff <= 0 and !$this->justCreated){
-			return true;
-		}
+		if(!$this->isFlaggedForDespawn()){
+			$pos = Position::fromObject($this->add(-$this->width / 2, $this->height, -$this->width / 2)->floor(), $this->getLevel());
 
-		$this->lastUpdate = $currentTick;
+			$this->block->position($pos);
 
-		$hasUpdate = $this->entityBaseTick($tickDiff);
+			$blockTarget = null;
+			if($this->block instanceof Fallable){
+				$blockTarget = $this->block->tickFalling();
+			}
 
-		if($this->isAlive()){
-			$this->motionY -= $this->gravity;
+			if($this->onGround or $blockTarget !== null){
+				$this->flagForDespawn();
 
-			$this->move($this->motionX, $this->motionY, $this->motionZ);
-
-			$friction = 1 - $this->drag;
-
-			$this->motionX *= $friction;
-			$this->motionY *= 1 - $this->drag;
-			$this->motionZ *= $friction;
-
-			$pos = (new Vector3($this->x - 0.5, $this->y, $this->z - 0.5))->floor();
-
-			if($this->onGround){
-				$this->kill();
 				$block = $this->level->getBlock($pos);
 				if($block->getId() > 0 and $block->isTransparent() and !$block->canBeReplaced()){
 					//FIXME: anvils are supposed to destroy torches
-					$this->getLevel()->dropItem($this, ItemItem::get($this->getBlock(), $this->getDamage(), 1));
+					$this->getLevel()->dropItem($this, ItemFactory::get($this->getBlock(), $this->getDamage()));
 				}else{
-					$this->server->getPluginManager()->callEvent($ev = new EntityBlockChangeEvent($this, $block, Block::get($this->getBlock(), $this->getDamage())));
+					$this->server->getPluginManager()->callEvent($ev = new EntityBlockChangeEvent($this, $block, $blockTarget ?? $this->block));
 					if(!$ev->isCancelled()){
 						$this->getLevel()->setBlock($pos, $ev->getTo(), true);
 					}
 				}
 				$hasUpdate = true;
 			}
-
-			$this->updateMovement();
 		}
 
-		return $hasUpdate or !$this->onGround or abs($this->motionX) > 0.00001 or abs($this->motionY) > 0.00001 or abs($this->motionZ) > 0.00001;
+		return $hasUpdate;
 	}
 
 	public function getBlock(){
-		return $this->blockId;
+		return $this->block->getId();
 	}
 
 	public function getDamage(){
-		return $this->damage;
+		return $this->block->getDamage();
 	}
 
 	public function saveNBT(){
-		$this->namedtag->TileID = new IntTag("TileID", $this->blockId);
-		$this->namedtag->Data = new ByteTag("Data", $this->damage);
-	}
-
-	public function spawnTo(Player $player){
-		$pk = new AddEntityPacket();
-		$pk->type = FallingSand::NETWORK_ID;
-		$pk->entityRuntimeId = $this->getId();
-		$pk->x = $this->x;
-		$pk->y = $this->y;
-		$pk->z = $this->z;
-		$pk->speedX = $this->motionX;
-		$pk->speedY = $this->motionY;
-		$pk->speedZ = $this->motionZ;
-		$pk->yaw = $this->yaw;
-		$pk->pitch = $this->pitch;
-		$pk->metadata = $this->dataProperties;
-		$player->dataPacket($pk);
-
-		parent::spawnTo($player);
+		$this->namedtag->setInt("TileID", $this->block->getId(), true);
+		$this->namedtag->setByte("Data", $this->block->getDamage());
 	}
 }

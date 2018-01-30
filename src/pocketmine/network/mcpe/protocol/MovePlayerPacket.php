@@ -19,40 +19,51 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
 
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\NetworkSession;
 
 class MovePlayerPacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::MOVE_PLAYER_PACKET;
+	public const NETWORK_ID = ProtocolInfo::MOVE_PLAYER_PACKET;
 
-	const MODE_NORMAL = 0;
-	const MODE_RESET = 1;
-	const MODE_TELEPORT = 2;
-	const MODE_PITCH = 3; //facepalm Mojang
+	public const MODE_NORMAL = 0;
+	public const MODE_RESET = 1;
+	public const MODE_TELEPORT = 2;
+	public const MODE_PITCH = 3; //facepalm Mojang
 
+	/** @var int */
 	public $entityRuntimeId;
-	public $x;
-	public $y;
-	public $z;
-	public $yaw;
-	public $bodyYaw;
+	/** @var Vector3 */
+	public $position;
+	/** @var float */
 	public $pitch;
+	/** @var float */
+	public $yaw;
+	/** @var float */
+	public $headYaw;
+	/** @var int */
 	public $mode = self::MODE_NORMAL;
-	public $onGround;
+	/** @var bool */
+	public $onGround = false; //TODO
+	/** @var int */
 	public $ridingEid = 0;
+	/** @var int */
 	public $int1 = 0;
+	/** @var int */
 	public $int2 = 0;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
-		$this->getVector3f($this->x, $this->y, $this->z);
+		$this->position = $this->getVector3();
 		$this->pitch = $this->getLFloat();
 		$this->yaw = $this->getLFloat();
-		$this->bodyYaw = $this->getLFloat();
+		$this->headYaw = $this->getLFloat();
 		$this->mode = $this->getByte();
 		$this->onGround = $this->getBool();
 		$this->ridingEid = $this->getEntityRuntimeId();
@@ -62,13 +73,12 @@ class MovePlayerPacket extends DataPacket{
 		}
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putEntityRuntimeId($this->entityRuntimeId);
-		$this->putVector3f($this->x, $this->y, $this->z);
+		$this->putVector3($this->position);
 		$this->putLFloat($this->pitch);
 		$this->putLFloat($this->yaw);
-		$this->putLFloat($this->bodyYaw); //TODO
+		$this->putLFloat($this->headYaw); //TODO
 		$this->putByte($this->mode);
 		$this->putBool($this->onGround);
 		$this->putEntityRuntimeId($this->ridingEid);

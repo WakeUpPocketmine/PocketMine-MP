@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *
  *  ____            _        _   __  __ _                  __  __ ____
  * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
@@ -14,15 +14,18 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
+
+declare(strict_types=1);
 
 namespace pocketmine\event\entity;
 
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
+use pocketmine\entity\Living;
 
 /**
  * Called when an entity takes damage from another entity.
@@ -30,31 +33,33 @@ use pocketmine\entity\Entity;
 class EntityDamageByEntityEvent extends EntityDamageEvent{
 
 	/** @var int */
-	private $damagerEid;
+	private $damagerEntityId;
 	/** @var float */
 	private $knockBack;
 
 	/**
-	 * @param Entity    $damager
-	 * @param Entity    $entity
-	 * @param int       $cause
-	 * @param int|int[] $damage
-	 * @param float     $knockBack
+	 * @param Entity        $damager
+	 * @param Entity        $entity
+	 * @param int           $cause
+	 * @param float|float[] $damage
+	 * @param float         $knockBack
 	 */
-	public function __construct(Entity $damager, Entity $entity, $cause, $damage, $knockBack = 0.4){
-		$this->damagerEid = $damager->getId();
+	public function __construct(Entity $damager, Entity $entity, int $cause, $damage, float $knockBack = 0.4){
+		$this->damagerEntityId = $damager->getId();
 		$this->knockBack = $knockBack;
 		parent::__construct($entity, $cause, $damage);
 		$this->addAttackerModifiers($damager);
 	}
 
 	protected function addAttackerModifiers(Entity $damager){
-		if($damager->hasEffect(Effect::STRENGTH)){
-			$this->setDamage($this->getDamage(self::MODIFIER_BASE) * 0.3 * $damager->getEffect(Effect::STRENGTH)->getEffectLevel(), self::MODIFIER_STRENGTH);
-		}
+		if($damager instanceof Living){ //TODO: move this to entity classes
+			if($damager->hasEffect(Effect::STRENGTH)){
+				$this->setDamage($this->getDamage(self::MODIFIER_BASE) * 0.3 * $damager->getEffect(Effect::STRENGTH)->getEffectLevel(), self::MODIFIER_STRENGTH);
+			}
 
-		if($damager->hasEffect(Effect::WEAKNESS)){
-			$this->setDamage(-($this->getDamage(self::MODIFIER_BASE) * 0.2 * $damager->getEffect(Effect::WEAKNESS)->getEffectLevel()), self::MODIFIER_WEAKNESS);
+			if($damager->hasEffect(Effect::WEAKNESS)){
+				$this->setDamage(-($this->getDamage(self::MODIFIER_BASE) * 0.2 * $damager->getEffect(Effect::WEAKNESS)->getEffectLevel()), self::MODIFIER_WEAKNESS);
+			}
 		}
 	}
 
@@ -64,20 +69,20 @@ class EntityDamageByEntityEvent extends EntityDamageEvent{
 	 * @return Entity|null
 	 */
 	public function getDamager(){
-		return $this->getEntity()->getLevel()->getServer()->findEntity($this->damagerEid, $this->getEntity()->getLevel());
+		return $this->getEntity()->getLevel()->getServer()->findEntity($this->damagerEntityId, $this->getEntity()->getLevel());
 	}
 
 	/**
 	 * @return float
 	 */
-	public function getKnockBack(){
+	public function getKnockBack() : float{
 		return $this->knockBack;
 	}
 
 	/**
 	 * @param float $knockBack
 	 */
-	public function setKnockBack($knockBack){
+	public function setKnockBack(float $knockBack){
 		$this->knockBack = $knockBack;
 	}
 }

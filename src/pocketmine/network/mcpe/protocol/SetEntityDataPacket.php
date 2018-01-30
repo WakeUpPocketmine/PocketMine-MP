@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -27,18 +29,19 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class SetEntityDataPacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::SET_ENTITY_DATA_PACKET;
+	public const NETWORK_ID = ProtocolInfo::SET_ENTITY_DATA_PACKET;
 
+	/** @var int */
 	public $entityRuntimeId;
+	/** @var array */
 	public $metadata;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
 		$this->metadata = $this->getEntityMetadata();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		$this->putEntityMetadata($this->metadata);
 	}

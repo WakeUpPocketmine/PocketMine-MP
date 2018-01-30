@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -27,16 +29,16 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class SetDifficultyPacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::SET_DIFFICULTY_PACKET;
+	public const NETWORK_ID = ProtocolInfo::SET_DIFFICULTY_PACKET;
 
+	/** @var int */
 	public $difficulty;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->difficulty = $this->getUnsignedVarInt();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putUnsignedVarInt($this->difficulty);
 	}
 

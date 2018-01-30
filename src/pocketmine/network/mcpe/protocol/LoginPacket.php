@@ -19,50 +19,94 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
 
 use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\utils\BinaryStream;
+use pocketmine\utils\MainLogger;
+use pocketmine\utils\Utils;
 
 class LoginPacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::LOGIN_PACKET;
+	public const NETWORK_ID = ProtocolInfo::LOGIN_PACKET;
 
-	const EDITION_POCKET = 0;
+	public const EDITION_POCKET = 0;
 
+	/** @var string */
 	public $username;
+	/** @var int */
 	public $protocol;
-	public $gameEdition;
+	/** @var string */
 	public $clientUUID;
+	/** @var int */
 	public $clientId;
+	/** @var string */
+	public $xuid;
+	/** @var string */
 	public $identityPublicKey;
+	/** @var string */
 	public $serverAddress;
+	/** @var string */
+	public $locale;
 
-	public $skinId;
-	public $skin = "";
-
+	/** @var array (the "chain" index contains one or more JWTs) */
+	public $chainData = [];
+	/** @var string */
+	public $clientDataJwt;
+	/** @var array decoded payload of the clientData JWT */
 	public $clientData = [];
+
+	/**
+	 * This field may be used by plugins to bypass keychain verification. It should only be used for plugins such as
+	 * Specter where passing verification would take too much time and not be worth it.
+	 *
+	 * @var bool
+	 */
+	public $skipVerification = false;
 
 	public function canBeSentBeforeLogin() : bool{
 		return true;
 	}
 
-	public function decode(){
+	public function mayHaveUnreadBytes() : bool{
+		return $this->protocol !== null and $this->protocol !== ProtocolInfo::CURRENT_PROTOCOL;
+	}
+
+	protected function decodePayload(){
 		$this->protocol = $this->getInt();
 
 		if($this->protocol !== ProtocolInfo::CURRENT_PROTOCOL){
-			$this->buffer = null;
-			return; //Do not attempt to decode for non-accepted protocols
+			if($this->protocol > 0xffff){ //guess MCPE <= 1.1
+				$this->offset -= 6;
+				$this->protocol = $this->getInt();
+			}
 		}
 
-		$this->gameEdition = $this->getByte();
+		try{
+			$this->decodeConnectionRequest();
+		}catch(\Throwable $e){
+			if($this->protocol === ProtocolInfo::CURRENT_PROTOCOL){
+				throw $e;
+			}
 
-		$this->setBuffer($this->getString(), 0);
+			$logger = MainLogger::getLogger();
+			$logger->debug(get_class($e)  . " was thrown while decoding connection request in login (protocol version " . ($this->protocol ?? "unknown") . "): " . $e->getMessage());
+			foreach(\pocketmine\getTrace(0, $e->getTrace()) as $line){
+				$logger->debug($line);
+			}
+		}
+	}
 
-		$chainData = json_decode($this->get($this->getLInt()));
-		foreach($chainData->{"chain"} as $chain){
-			$webtoken = $this->decodeToken($chain);
+	protected function decodeConnectionRequest() : void{
+		$buffer = new BinaryStream($this->getString());
+
+		$this->chainData = json_decode($buffer->get($buffer->getLInt()), true);
+		foreach($this->chainData["chain"] as $chain){
+			$webtoken = Utils::decodeJWT($chain);
 			if(isset($webtoken["extraData"])){
 				if(isset($webtoken["extraData"]["displayName"])){
 					$this->username = $webtoken["extraData"]["displayName"];
@@ -70,32 +114,27 @@ class LoginPacket extends DataPacket{
 				if(isset($webtoken["extraData"]["identity"])){
 					$this->clientUUID = $webtoken["extraData"]["identity"];
 				}
-				if(isset($webtoken["identityPublicKey"])){
-					$this->identityPublicKey = $webtoken["identityPublicKey"];
+				if(isset($webtoken["extraData"]["XUID"])){
+					$this->xuid = $webtoken["extraData"]["XUID"];
 				}
+			}
+
+			if(isset($webtoken["identityPublicKey"])){
+				$this->identityPublicKey = $webtoken["identityPublicKey"];
 			}
 		}
 
-		$this->clientData = $this->decodeToken($this->get($this->getLInt()));
+		$this->clientDataJwt = $buffer->get($buffer->getLInt());
+		$this->clientData = Utils::decodeJWT($this->clientDataJwt);
 
 		$this->clientId = $this->clientData["ClientRandomId"] ?? null;
 		$this->serverAddress = $this->clientData["ServerAddress"] ?? null;
-		$this->skinId = $this->clientData["SkinId"] ?? null;
 
-		if(isset($this->clientData["SkinData"])){
-			$this->skin = base64_decode($this->clientData["SkinData"]);
-		}
+		$this->locale = $this->clientData["LanguageCode"] ?? null;
 	}
 
-	public function encode(){
+	protected function encodePayload(){
 		//TODO
-	}
-
-	public function decodeToken($token){
-		$tokens = explode(".", $token);
-		list($headB64, $payloadB64, $sigB64) = $tokens;
-
-		return json_decode(base64_decode($payloadB64), true);
 	}
 
 	public function handle(NetworkSession $session) : bool{

@@ -14,32 +14,64 @@
  * (at your option) any later version.
  *
  * @author PocketMine Team
- * @link   http://www.pocketmine.net/
+ * @link http://www.pocketmine.net/
  *
  *
- */
+*/
 
-/**
- * Events called when a player attempts to perform movement cheats such as clipping through blocks.
- */
+declare(strict_types=1);
+
+
 namespace pocketmine\event\player\cheat;
 
 use pocketmine\event\Cancellable;
-use pocketmine\Player;
 use pocketmine\math\Vector3;
+use pocketmine\Player;
 
+/**
+ * Called when a player attempts to perform movement cheats such as clipping through blocks.
+ */
 class PlayerIllegalMoveEvent extends PlayerCheatEvent implements Cancellable{
 	public static $handlerList = null;
 
+	/** @var Vector3 */
 	private $attemptedPosition;
+	/** @var Vector3 */
+	private $originalPosition;
+	/** @var Vector3 */
+	private $expectedPosition;
 
-	public function __construct(Player $player, Vector3 $attemptedPosition){
-		$this->attemptedPosition = $attemptedPosition;
+	/**
+	 * @param Player  $player
+	 * @param Vector3 $attemptedPosition
+	 * @param Vector3 $originalPosition
+	 */
+	public function __construct(Player $player, Vector3 $attemptedPosition, Vector3 $originalPosition){
 		$this->player = $player;
+		$this->attemptedPosition = $attemptedPosition;
+		$this->originalPosition = $originalPosition;
+		$this->expectedPosition = $player->asVector3();
 	}
 
+	/**
+	 * Returns the position the player attempted to move to.
+	 * @return Vector3
+	 */
 	public function getAttemptedPosition() : Vector3{
 		return $this->attemptedPosition;
 	}
 
+	/**
+	 * @return Vector3
+	 */
+	public function getOriginalPosition() : Vector3{
+		return $this->originalPosition;
+	}
+
+	/**
+	 * @return Vector3
+	 */
+	public function getExpectedPosition() : Vector3{
+		return $this->expectedPosition;
+	}
 }

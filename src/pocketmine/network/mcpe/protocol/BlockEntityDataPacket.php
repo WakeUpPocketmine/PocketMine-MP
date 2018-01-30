@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
@@ -27,20 +29,23 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class BlockEntityDataPacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::BLOCK_ENTITY_DATA_PACKET;
+	public const NETWORK_ID = ProtocolInfo::BLOCK_ENTITY_DATA_PACKET;
 
+	/** @var int */
 	public $x;
+	/** @var int */
 	public $y;
+	/** @var int */
 	public $z;
+	/** @var string */
 	public $namedtag;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->getBlockPosition($this->x, $this->y, $this->z);
-		$this->namedtag = $this->get(true);
+		$this->namedtag = $this->getRemaining();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putBlockPosition($this->x, $this->y, $this->z);
 		$this->put($this->namedtag);
 	}

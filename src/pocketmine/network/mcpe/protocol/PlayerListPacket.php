@@ -19,22 +19,26 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
 
+use pocketmine\entity\Skin;
 use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 
 class PlayerListPacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::PLAYER_LIST_PACKET;
+	public const NETWORK_ID = ProtocolInfo::PLAYER_LIST_PACKET;
 
-	const TYPE_ADD = 0;
-	const TYPE_REMOVE = 1;
+	public const TYPE_ADD = 0;
+	public const TYPE_REMOVE = 1;
 
-	//REMOVE: UUID, ADD: UUID, entity id, name, skinId, skin
-	/** @var array[] */
+	/** @var PlayerListEntry[] */
 	public $entries = [];
+	/** @var int */
 	public $type;
 
 	public function clean(){
@@ -42,35 +46,48 @@ class PlayerListPacket extends DataPacket{
 		return parent::clean();
 	}
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->type = $this->getByte();
 		$count = $this->getUnsignedVarInt();
 		for($i = 0; $i < $count; ++$i){
+			$entry = new PlayerListEntry();
+
 			if($this->type === self::TYPE_ADD){
-				$this->entries[$i][0] = $this->getUUID();
-				$this->entries[$i][1] = $this->getEntityUniqueId();
-				$this->entries[$i][2] = $this->getString();
-				$this->entries[$i][3] = $this->getString();
-				$this->entries[$i][4] = $this->getString();
+				$entry->uuid = $this->getUUID();
+				$entry->entityUniqueId = $this->getEntityUniqueId();
+				$entry->username = $this->getString();
+				$entry->skin = new Skin(
+					$this->getString(), //id
+					$this->getString(), //data
+					$this->getString(), //cape
+					$this->getString(), //geometry name
+					$this->getString() //geometry data
+				);
+				$entry->xboxUserId = $this->getString();
 			}else{
-				$this->entries[$i][0] = $this->getUUID();
+				$entry->uuid = $this->getUUID();
 			}
+
+			$this->entries[$i] = $entry;
 		}
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putByte($this->type);
 		$this->putUnsignedVarInt(count($this->entries));
-		foreach($this->entries as $d){
+		foreach($this->entries as $entry){
 			if($this->type === self::TYPE_ADD){
-				$this->putUUID($d[0]);
-				$this->putEntityUniqueId($d[1]);
-				$this->putString($d[2]);
-				$this->putString($d[3]);
-				$this->putString($d[4]);
+				$this->putUUID($entry->uuid);
+				$this->putEntityUniqueId($entry->entityUniqueId);
+				$this->putString($entry->username);
+				$this->putString($entry->skin->getSkinId());
+				$this->putString($entry->skin->getSkinData());
+				$this->putString($entry->skin->getCapeData());
+				$this->putString($entry->skin->getGeometryName());
+				$this->putString($entry->skin->getGeometryData());
+				$this->putString($entry->xboxUserId);
 			}else{
-				$this->putUUID($d[0]);
+				$this->putUUID($entry->uuid);
 			}
 		}
 	}

@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -26,8 +28,9 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class UnknownPacket extends DataPacket{
-	const NETWORK_ID = -1; //Invalid, do not try to write this
+	public const NETWORK_ID = -1; //Invalid, do not try to write this
 
+	/** @var string */
 	public $payload;
 
 	public function pid(){
@@ -42,8 +45,7 @@ class UnknownPacket extends DataPacket{
 	}
 
 	public function decode(){
-		$this->offset -= 1; //Rewind one byte so we can read the PID
-		$this->payload = $this->get(true);
+		$this->payload = $this->getRemaining();
 	}
 
 	public function encode(){

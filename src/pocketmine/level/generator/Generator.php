@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 /**
  * Noise classes used in Levels
  */
@@ -27,12 +29,13 @@ namespace pocketmine\level\generator;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\generator\noise\Noise;
 use pocketmine\level\generator\normal\Normal;
+use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 
 abstract class Generator{
 	private static $list = [];
 
-	public static function addGenerator($object, $name){
+	public static function addGenerator($object, $name) : bool{
 		if(is_subclass_of($object, Generator::class) and !isset(Generator::$list[$name = strtolower($name)])){
 			Generator::$list[$name] = $object;
 
@@ -45,7 +48,7 @@ abstract class Generator{
 	/**
 	 * @return string[]
 	 */
-	public static function getGeneratorList(){
+	public static function getGeneratorList() : array{
 		return array_keys(Generator::$list);
 	}
 
@@ -74,22 +77,20 @@ abstract class Generator{
 
 	/**
 	 * @param Noise $noise
-	 * @param int   $xSize
-	 * @param int   $samplingRate
-	 * @param int   $x
-	 * @param int   $y
-	 * @param int   $z
+	 * @param int $xSize
+	 * @param int $samplingRate
+	 * @param int $x
+	 * @param int $y
+	 * @param int $z
 	 *
 	 * @return \SplFixedArray
-	 *
-	 * @throws \InvalidArgumentCountException
 	 */
-	public static function getFastNoise1D(Noise $noise, $xSize, $samplingRate, $x, $y, $z){
+	public static function getFastNoise1D(Noise $noise, int $xSize, int $samplingRate, int $x, int $y, int $z) : \SplFixedArray{
 		if($samplingRate === 0){
 			throw new \InvalidArgumentException("samplingRate cannot be 0");
 		}
 		if($xSize % $samplingRate !== 0){
-			throw new \InvalidArgumentCountException("xSize % samplingRate must return 0");
+			throw new \InvalidArgumentException("xSize % samplingRate must return 0");
 		}
 
 		$noiseArray = new \SplFixedArray($xSize + 1);
@@ -110,23 +111,20 @@ abstract class Generator{
 
 	/**
 	 * @param Noise $noise
-	 * @param int   $xSize
-	 * @param int   $zSize
-	 * @param int   $samplingRate
-	 * @param int   $x
-	 * @param int   $y
-	 * @param int   $z
+	 * @param int $xSize
+	 * @param int $zSize
+	 * @param int $samplingRate
+	 * @param int $x
+	 * @param int $y
+	 * @param int $z
 	 *
 	 * @return \SplFixedArray
-	 *
-	 * @throws \InvalidArgumentException
-	 * @throws \InvalidArgumentCountException
 	 */
-	public static function getFastNoise2D(Noise $noise, $xSize, $zSize, $samplingRate, $x, $y, $z){
+	public static function getFastNoise2D(Noise $noise, int $xSize, int $zSize, int $samplingRate, int $x, int $y, int $z) : \SplFixedArray{
 		assert($samplingRate !== 0, new \InvalidArgumentException("samplingRate cannot be 0"));
 
-		assert($xSize % $samplingRate === 0, new \InvalidArgumentCountException("xSize % samplingRate must return 0"));
-		assert($zSize % $samplingRate === 0, new \InvalidArgumentCountException("zSize % samplingRate must return 0"));
+		assert($xSize % $samplingRate === 0, new \InvalidArgumentException("xSize % samplingRate must return 0"));
+		assert($zSize % $samplingRate === 0, new \InvalidArgumentException("zSize % samplingRate must return 0"));
 
 		$noiseArray = new \SplFixedArray($xSize + 1);
 
@@ -160,30 +158,27 @@ abstract class Generator{
 
 	/**
 	 * @param Noise $noise
-	 * @param int   $xSize
-	 * @param int   $ySize
-	 * @param int   $zSize
-	 * @param int   $xSamplingRate
-	 * @param int   $ySamplingRate
-	 * @param int   $zSamplingRate
-	 * @param int   $x
-	 * @param int   $y
-	 * @param int   $z
+	 * @param int $xSize
+	 * @param int $ySize
+	 * @param int $zSize
+	 * @param int $xSamplingRate
+	 * @param int $ySamplingRate
+	 * @param int $zSamplingRate
+	 * @param int $x
+	 * @param int $y
+	 * @param int $z
 	 *
-	 * @return \SplFixedArray
-	 *
-	 * @throws \InvalidArgumentException
-	 * @throws \InvalidArgumentCountException
+	 * @return array
 	 */
-	public static function getFastNoise3D(Noise $noise, $xSize, $ySize, $zSize, $xSamplingRate, $ySamplingRate, $zSamplingRate, $x, $y, $z){
+	public static function getFastNoise3D(Noise $noise, int $xSize, int $ySize, int $zSize, int $xSamplingRate, int $ySamplingRate, int $zSamplingRate, int $x, int $y, int $z) : array{
 
 		assert($xSamplingRate !== 0, new \InvalidArgumentException("xSamplingRate cannot be 0"));
 		assert($zSamplingRate !== 0, new \InvalidArgumentException("zSamplingRate cannot be 0"));
 		assert($ySamplingRate !== 0, new \InvalidArgumentException("ySamplingRate cannot be 0"));
 
-		assert($xSize % $xSamplingRate === 0, new \InvalidArgumentCountException("xSize % xSamplingRate must return 0"));
-		assert($zSize % $zSamplingRate === 0, new \InvalidArgumentCountException("zSize % zSamplingRate must return 0"));
-		assert($ySize % $ySamplingRate === 0, new \InvalidArgumentCountException("ySize % ySamplingRate must return 0"));
+		assert($xSize % $xSamplingRate === 0, new \InvalidArgumentException("xSize % xSamplingRate must return 0"));
+		assert($zSize % $zSamplingRate === 0, new \InvalidArgumentException("zSize % zSamplingRate must return 0"));
+		assert($ySize % $ySamplingRate === 0, new \InvalidArgumentException("ySize % ySamplingRate must return 0"));
 
 		$noiseArray = array_fill(0, $xSize + 1, array_fill(0, $zSize + 1, []));
 
@@ -237,13 +232,13 @@ abstract class Generator{
 
 	abstract public function init(ChunkManager $level, Random $random);
 
-	abstract public function generateChunk($chunkX, $chunkZ);
+	abstract public function generateChunk(int $chunkX, int $chunkZ);
 
-	abstract public function populateChunk($chunkX, $chunkZ);
+	abstract public function populateChunk(int $chunkX, int $chunkZ);
 
-	abstract public function getSettings();
+	abstract public function getSettings() : array;
 
-	abstract public function getName();
+	abstract public function getName() : string;
 
-	abstract public function getSpawn();
+	abstract public function getSpawn() : Vector3;
 }

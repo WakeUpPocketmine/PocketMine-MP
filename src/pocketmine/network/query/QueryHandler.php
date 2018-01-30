@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 /**
  * Implementation of the UT3 Query Protocol (GameSpot)
  * Source: http://wiki.unrealadmin.org/UT3_query_protocol
@@ -31,8 +33,8 @@ use pocketmine\utils\Binary;
 class QueryHandler{
 	private $server, $lastToken, $token, $longData, $shortData, $timeout;
 
-	const HANDSHAKE = 9;
-	const STATISTICS = 0;
+	public const HANDSHAKE = 9;
+	public const STATISTICS = 0;
 
 	public function __construct(){
 		$this->server = Server::getInstance();

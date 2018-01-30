@@ -17,30 +17,44 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-rm server.log 2> /dev/null
-mkdir -p ./plugins
+DATA_DIR="test_data"
+PLUGINS_DIR="$DATA_DIR/plugins"
 
-cp -r tests/plugins/PocketMine-DevTools ./plugins
+rm -rf "$DATA_DIR"
+rm PocketMine-MP.phar 2> /dev/null
 
-"$PHP_BINARY" ./plugins/PocketMine-DevTools/src/DevTools/ConsoleScript.php --make ./plugins/PocketMine-DevTools --relative ./plugins/PocketMine-DevTools --out ./plugins/DevTools.phar
-rm -rf ./plugins/PocketMine-DevTools
+cd tests/plugins/PocketMine-DevTools
+"$PHP_BINARY" -dphar.readonly=0 ./src/DevTools/ConsoleScript.php --make ./ --relative ./ --out ../../../DevTools.phar
+cd ../../..
 
-echo -e "version\nmakeserver\nstop\n" | "$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2
-if ls plugins/DevTools/PocketMine*.phar >/dev/null 2>&1; then
-    echo Server phar created successfully.
+"$PHP_BINARY" -dphar.readonly=0 DevTools.phar --make src,vendor --relative ./ --entry src/pocketmine/PocketMine.php --out PocketMine-MP.phar
+if [ -f PocketMine-MP.phar ]; then
+	echo Server phar created successfully.
 else
-    echo No phar created!
-    exit 1
+	echo Server phar was not created!
+	exit 1
 fi
 
-cp -r tests/plugins/PocketMine-TesterPlugin ./plugins
-"$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2
+mkdir "$DATA_DIR"
+mkdir "$PLUGINS_DIR"
+mv DevTools.phar "$PLUGINS_DIR"
+cp -r tests/plugins/PocketMine-TesterPlugin "$PLUGINS_DIR"
+echo -e "stop\n" | "$PHP_BINARY" PocketMine-MP.phar --no-wizard --disable-ansi --disable-readline --debug.level=2 --data="$DATA_DIR" --plugins="$PLUGINS_DIR" --anonymous-statistics.enabled=0
 
-result=$(grep 'TesterPlugin' server.log | grep 'Finished' | grep -v 'PASS')
+output=$(grep '\[TesterPlugin\]' "$DATA_DIR/server.log")
+if [ "$output" == "" ]; then
+	echo TesterPlugin failed to run tests, check the logs
+	exit 1
+fi
+
+result=$(echo "$output" | grep 'Finished' | grep -v 'PASS')
 if [ "$result" != "" ]; then
-   echo "$result"
-   echo Some tests did not complete successfully, changing build status to failed
-   exit 1
+	echo "$result"
+	echo Some tests did not complete successfully, changing build status to failed
+	exit 1
+elif [ $(grep -c "ERROR\|CRITICAL\|EMERGENCY" "$DATA_DIR/server.log") -ne 0 ]; then
+	echo Server log contains error messages, changing build status to failed
+	exit 1
 else
-    echo All tests passed
+	echo All tests passed
 fi

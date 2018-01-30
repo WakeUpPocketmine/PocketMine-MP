@@ -19,9 +19,11 @@
  *
 */
 
+declare(strict_types=1);
+
 namespace pocketmine\entity;
 
 
 interface Ageable{
-	public function isBaby();
+	public function isBaby() : bool;
 }

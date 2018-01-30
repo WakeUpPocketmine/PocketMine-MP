@@ -19,42 +19,44 @@
  *
 */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace pocketmine\level\format\io\region;
 
-use pocketmine\level\format\Chunk;
-use pocketmine\level\format\io\ChunkException;
+use pocketmine\level\format\ChunkException;
 use pocketmine\utils\Binary;
 use pocketmine\utils\MainLogger;
 
 class RegionLoader{
-	const VERSION = 1;
-	const COMPRESSION_GZIP = 1;
-	const COMPRESSION_ZLIB = 2;
+	public const VERSION = 1;
+	public const COMPRESSION_GZIP = 1;
+	public const COMPRESSION_ZLIB = 2;
 
-	const MAX_SECTOR_LENGTH = 256 << 12; //256 sectors, (1 MiB)
-	const REGION_HEADER_LENGTH = 8192; //4096 location table + 4096 timestamps
-	const MAX_REGION_FILE_SIZE = 32 * 32 * self::MAX_SECTOR_LENGTH + self::REGION_HEADER_LENGTH; //32 * 32 1MiB chunks + header size
+	public const MAX_SECTOR_LENGTH = 256 << 12; //256 sectors, (1 MiB)
+	public const REGION_HEADER_LENGTH = 8192; //4096 location table + 4096 timestamps
+	public const MAX_REGION_FILE_SIZE = 32 * 32 * self::MAX_SECTOR_LENGTH + self::REGION_HEADER_LENGTH; //32 * 32 1MiB chunks + header size
 
 	public static $COMPRESSION_LEVEL = 7;
 
+	/** @var int */
 	protected $x;
+	/** @var int */
 	protected $z;
+	/** @var string */
 	protected $filePath;
+	/** @var resource */
 	protected $filePointer;
+	/** @var int */
 	protected $lastSector;
-	/** @var McRegion */
-	protected $levelProvider;
+	/** @var int[][] [offset in sectors, chunk size in sectors, timestamp] */
 	protected $locationTable = [];
+	/** @var int */
+	public $lastUsed = 0;
 
-	public $lastUsed;
-
-	public function __construct(McRegion $level, int $regionX, int $regionZ, string $fileExtension = McRegion::REGION_FILE_EXTENSION){
+	public function __construct(string $filePath, int $regionX, int $regionZ){
 		$this->x = $regionX;
 		$this->z = $regionZ;
-		$this->levelProvider = $level;
-		$this->filePath = $this->levelProvider->getPath() . "region/r.$regionX.$regionZ.$fileExtension";
+		$this->filePath = $filePath;
 	}
 
 	public function open(){
@@ -93,7 +95,7 @@ class RegionLoader{
 		return !($this->locationTable[$index][0] === 0 or $this->locationTable[$index][1] === 0);
 	}
 
-	public function readChunk(int $x, int $z){
+	public function readChunk(int $x, int $z) : ?string{
 		$index = self::getChunkOffset($x, $z);
 		if($index < 0 or $index >= 4096){
 			return null;
@@ -127,9 +129,9 @@ class RegionLoader{
 			return null;
 		}
 
-		$chunk = $this->levelProvider->nbtDeserialize(fread($this->filePointer, $length - 1));
-		if($chunk instanceof Chunk){
-			return $chunk;
+		$chunkData = fread($this->filePointer, $length - 1);
+		if($chunkData !== false){
+			return $chunkData;
 		}else{
 			MainLogger::getLogger()->error("Corrupted chunk detected");
 			return null;
@@ -140,7 +142,9 @@ class RegionLoader{
 		return $this->isChunkGenerated(self::getChunkOffset($x, $z));
 	}
 
-	protected function saveChunk(int $x, int $z, string $chunkData){
+	public function writeChunk(int $x, int $z, string $chunkData){
+		$this->lastUsed = time();
+
 		$length = strlen($chunkData) + 1;
 		if($length + 4 > self::MAX_SECTOR_LENGTH){
 			throw new ChunkException("Chunk is too big! " . ($length + 4) . " > " . self::MAX_SECTOR_LENGTH);
@@ -173,14 +177,6 @@ class RegionLoader{
 		$this->locationTable[$index][1] = 0;
 	}
 
-	public function writeChunk(Chunk $chunk){
-		$this->lastUsed = time();
-		$chunkData = $this->levelProvider->nbtSerialize($chunk);
-		if($chunkData !== false){
-			$this->saveChunk($chunk->getX() - ($this->getX() * 32), $chunk->getZ() - ($this->getZ() * 32), $chunkData);
-		}
-	}
-
 	protected static function getChunkOffset(int $x, int $z) : int{
 		return $x + ($z << 5);
 	}
@@ -198,8 +194,6 @@ class RegionLoader{
 
 			fclose($this->filePointer);
 		}
-
-		$this->levelProvider = null;
 	}
 
 	public function doSlowCleanUp() : int{
@@ -292,7 +286,7 @@ class RegionLoader{
 			$index = $data[$i + 1];
 			$offset = $index >> 8;
 			if($offset !== 0){
-				fseek($this->filePointer, ($offset << 12));
+				fseek($this->filePointer, $offset << 12);
 				if(fgetc($this->filePointer) === false){ //Try and read from the location
 					throw new CorruptedRegionException("Region file location offset points to invalid location");
 				}elseif(isset($usedOffsets[$offset])){

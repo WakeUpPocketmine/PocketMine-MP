@@ -19,6 +19,8 @@
  *
 */
 
+declare(strict_types=1);
+
 
 namespace pocketmine\network\mcpe\protocol;
 
@@ -28,15 +30,20 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class ResourcePackDataInfoPacket extends DataPacket{
-	const NETWORK_ID = ProtocolInfo::RESOURCE_PACK_DATA_INFO_PACKET;
+	public const NETWORK_ID = ProtocolInfo::RESOURCE_PACK_DATA_INFO_PACKET;
 
+	/** @var string */
 	public $packId;
+	/** @var int */
 	public $maxChunkSize;
+	/** @var int */
 	public $chunkCount;
+	/** @var int */
 	public $compressedPackSize;
+	/** @var string */
 	public $sha256;
 
-	public function decode(){
+	protected function decodePayload(){
 		$this->packId = $this->getString();
 		$this->maxChunkSize = $this->getLInt();
 		$this->chunkCount = $this->getLInt();
@@ -44,8 +51,7 @@ class ResourcePackDataInfoPacket extends DataPacket{
 		$this->sha256 = $this->getString();
 	}
 
-	public function encode(){
-		$this->reset();
+	protected function encodePayload(){
 		$this->putString($this->packId);
 		$this->putLInt($this->maxChunkSize);
 		$this->putLInt($this->chunkCount);

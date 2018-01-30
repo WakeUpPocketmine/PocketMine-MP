@@ -19,27 +19,27 @@
  *
 */
 
-namespace pocketmine\block;
+declare(strict_types=1);
 
-use pocketmine\item\Tool;
+namespace pocketmine\block;
 
 class Sand extends Fallable{
 
 	protected $id = self::SAND;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 0.5;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_SHOVEL;
+	public function getToolType() : int{
+		return BlockToolType::TYPE_SHOVEL;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		if($this->meta === 0x01){
 			return "Red Sand";
 		}
